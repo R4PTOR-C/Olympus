@@ -4,7 +4,7 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #f8f9fa;
+    background-color: #c8d1d0;
 }
 
 .login-container {
@@ -21,7 +21,7 @@ body, html {
 }
 
 .welcome-container {
-    background: linear-gradient(to right, #ff416c, #ff4b2b);
+    background: #19222b;
     padding: 30px;
     color: white;
     display: flex;
@@ -37,17 +37,17 @@ body, html {
 }
 
 .login-btn {
-    background-color: #ff4b2b;
-    border-color: #ff4b2b;
+    background-color: #19222b;
+    border: none;
 }
 
 .login-btn:hover {
-    background-color: #ff416c;
-    border-color: #ff416c;
+    background-color: #19222b;
+    border: none;
 }
 
 .remember-me {
-    color: #ff416c;
+    color: #19222b;
 }
 
 .forgot-password {
