@@ -27,6 +27,7 @@ function Login() {
     };
 
     return (
+        <div className="login-page-container">
         <div className="login-container d-flex">
             <div className="col-md-6 login-form">
                 <h3 className="mb-4">Sign In</h3>
@@ -76,8 +77,9 @@ function Login() {
             <div className="col-md-6 welcome-container">
                 <h2>Bem-vindo</h2>
                 <p>Não tem uma conta?</p>
-                <a href="#" className="btn btn-outline-light">Cadastrar-se</a>
+                <a href="/sign-in" className="btn btn-outline-light">Cadastrar-se</a>
             </div>
+        </div>
         </div>
     );
 }

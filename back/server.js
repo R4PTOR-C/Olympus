@@ -9,11 +9,6 @@ const cors = require('cors');
 // Configurações de Middleware
 app.use(cors({
     credentials: true,
-    origin: 'http://localhost:19000'  // Ajuste conforme necessário
-}));
-
-app.use(cors({
-    credentials: true,
     origin: 'http://localhost:3000'  // Ajuste conforme necessário
 }));
 
