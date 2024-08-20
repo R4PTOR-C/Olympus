@@ -6,11 +6,12 @@ function Usuarios_new() {
     const [genero, setGenero] = useState('');
     const [idade, setIdade] = useState('');
     const [senha, setSenha] = useState('');
+    const [funcao, setFuncao] = useState('');
 
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const usuario = { nome, email, genero, idade, senha};
+        const usuario = { nome, email, genero, idade, senha, funcao};
 
         try {
             const response = await fetch(`http://localhost:5000/usuarios`, {
@@ -70,6 +71,19 @@ function Usuarios_new() {
                         <option value="Feminino">Feminino</option>
                         <option value="V">Outras viadagens</option>
 
+                    </select>
+                </div>
+                <div className="form-group">
+                    <label>Função</label>
+                    <select
+                        className="form-control"
+                        value={funcao}
+                        onChange={(e) => setFuncao(e.target.value)}
+                        required
+                    >
+                        <option value="" disabled>Selecione a função</option>
+                        <option value="Masculino">Aluno</option>
+                        <option value="Feminino">Professor</option>
                     </select>
                 </div>
 

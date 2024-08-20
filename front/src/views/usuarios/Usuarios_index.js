@@ -28,6 +28,25 @@ const Usuarios_index = () => {
             });
     }, []);
 
+    const handleDelete = (id) => {
+        if (window.confirm("Tem certeza que deseja deletar este usuário?")) {
+            fetch(`http://localhost:5000/usuarios/${id}`, {
+                method: 'DELETE',
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao deletar o usuário');
+                    }
+                    setUsuarios(usuarios.filter(usuario => usuario.id !== id));
+                })
+                .catch(error => {
+                    console.error("Erro ao deletar o usuário:", error);
+                    setError(error.toString());
+                });
+        }
+    };
+
+
     if (loading) return <div>Carregando...</div>;
     if (error) return <div>Erro: {error}</div>;
 
@@ -44,6 +63,7 @@ const Usuarios_index = () => {
                         <th scope="col" className="px-6 py-3">Email</th>
                         <th scope="col" className="px-6 py-3">Gênero</th>
                         <th scope="col" className="px-6 py-3">Idade</th>
+                        <th scope="col" className="px-6 py-3">Função</th>
                         <th scope="col" className="px-6 py-3"></th>
                     </tr>
                     </thead>
@@ -55,6 +75,14 @@ const Usuarios_index = () => {
                             <td className="px-6 py-4">{usuario.email}</td>
                             <td className="px-6 py-4">{usuario.genero}</td>
                             <td className="px-6 py-4">{usuario.idade}</td>
+                            <td className="px-6 py-4">{usuario.funcao}</td>
+                            <td className="px-6 py-4">
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={() => handleDelete(usuario.id)}>
+                                    Deletar
+                                </button>
+                            </td>
                         </tr>
                     ))}
                     </tbody>
@@ -63,7 +91,6 @@ const Usuarios_index = () => {
         </div>
     );
 }
-
 
 
 export default Usuarios_index;

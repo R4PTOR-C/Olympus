@@ -1,9 +1,8 @@
 const express = require('express');
-const db = require('./db');
-const bcrypt = require('bcrypt');
 const session = require('express-session');
 const cors = require('cors');
 const loginRouter = require('./login'); // Importa o módulo de login
+const usuariosRouter = require('./usuarios'); // Importa o módulo de usuários
 
 const app = express();
 const PORT = 5000;
@@ -34,40 +33,12 @@ function checkAuthenticated(req, res, next) {
 // Usar as rotas de login
 app.use('/', loginRouter);
 
+// Usar as rotas de usuários
+app.use('/usuarios', usuariosRouter);
+
 // Exemplo de uma rota protegida
 app.get('/home', checkAuthenticated, (req, res) => {
     res.json({ message: 'Você está logado e pode ver isso!' });
-});
-
-app.get('/usuarios', async (req, res) => {
-    try {
-        const { rows } = await db.query('SELECT * FROM usuarios');
-        console.log(rows); // Imprime os dados na console do servidor
-        res.json(rows); // Envia os dados como JSON para o cliente
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-app.post('/usuarios', async (req, res) => {
-    const { nome, email, genero, idade, senha } = req.body;
-
-    try {
-        // Gerar um hash da senha
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(senha, saltRounds);
-
-        // Inserir o usuário com a senha hash no banco de dados
-        const resultado = await db.query(
-            'INSERT INTO usuarios (nome, email, genero, idade, senha) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [nome, email, genero, idade, hashedPassword]
-        );
-        res.status(201).json(resultado.rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
 });
 
 app.listen(PORT, () => {
