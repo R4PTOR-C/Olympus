@@ -44,6 +44,7 @@ const Usuarios_index = () => {
                         <th scope="col" className="px-6 py-3">Email</th>
                         <th scope="col" className="px-6 py-3">Gênero</th>
                         <th scope="col" className="px-6 py-3">Idade</th>
+                        <th scope="col" className="px-6 py-3"></th>
                     </tr>
                     </thead>
                     <tbody>

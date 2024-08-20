@@ -1,15 +1,17 @@
 const express = require('express');
 const db = require('./db');
 const bcrypt = require('bcrypt');
-const session = require('express-session');  // Adicionando o pacote de sessão
+const session = require('express-session');
+const cors = require('cors');
+const loginRouter = require('./login'); // Importa o módulo de login
+
 const app = express();
 const PORT = 5000;
-const cors = require('cors');
 
 // Configurações de Middleware
 app.use(cors({
     credentials: true,
-    origin: 'http://localhost:3000'  // Ajuste conforme necessário
+    origin: 'http://localhost:3000' // Ajuste conforme necessário
 }));
 
 app.use(express.json());
@@ -29,47 +31,13 @@ function checkAuthenticated(req, res, next) {
     res.status(401).json({ error: 'Não autorizado' });
 }
 
-// Rota de login
-// Rota de login
-app.post('/login', async (req, res) => {
-    const { email, senha } = req.body;
-    try {
-        const { rows } = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
-        if (rows.length === 0) {
-            return res.status(404).json({ error: 'Usuário não encontrado' });
-        }
-        const user = rows[0];
-        const senhaValida = await bcrypt.compare(senha, user.senha);
-        if (!senhaValida) {
-            return res.status(401).json({ error: 'Senha incorreta' });
-        }
-        // Armazena o ID e o nome do usuário na sessão
-        req.session.userId = user.id;
-        req.session.userName = user.nome; // Adiciona o nome do usuário na sessão
-        res.json({ message: 'Login bem-sucedido', userName: user.nome });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Rota para verificar a sessão do usuário
-app.get('/session', (req, res) => {
-    if (req.session.userId) {
-        res.json({ loggedIn: true, userName: req.session.userName });
-    } else {
-        res.json({ loggedIn: false });
-    }
-});
-
-
-
+// Usar as rotas de login
+app.use('/', loginRouter);
 
 // Exemplo de uma rota protegida
 app.get('/home', checkAuthenticated, (req, res) => {
     res.json({ message: 'Você está logado e pode ver isso!' });
 });
-
 
 app.get('/usuarios', async (req, res) => {
     try {
@@ -78,7 +46,7 @@ app.get('/usuarios', async (req, res) => {
         res.json(rows); // Envia os dados como JSON para o cliente
     } catch (err) {
         console.error(err);
-        res.status(500).json({error: 'Internal server error'});
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 

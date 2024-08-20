@@ -15,12 +15,7 @@ function Home() {
 
     return (
         <div>
-            <h1>Home Page</h1>
-            {user.loggedIn ? (
-                <p>Bem-vindo, {user.userName}!</p>
-            ) : (
-                <p>Você não está logado.</p>
-            )}
+
 
             <nav className="navbar navbar-expand-lg bg-body-tertiary">
                 <div className="container-fluid">
@@ -64,6 +59,12 @@ function Home() {
                     </div>
                 </div>
             </nav>
+            <h1>Home Page</h1>
+            {user.loggedIn ? (
+                <p>Bem-vindo, {user.userName}!</p>
+            ) : (
+                <p>Você não está logado.</p>
+            )}
         </div>
     );
 }
