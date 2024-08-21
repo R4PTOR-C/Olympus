@@ -17,6 +17,24 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const { rows } = await db.query('SELECT * FROM usuarios WHERE id = $1', [id]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        res.json(rows[0]);
+    } catch (err) {
+        console.error("Erro ao buscar o usuário:", err);
+        res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+});
+
+
 // Rota para criar um novo usuário
 router.post('/', async (req, res) => {
     const { nome, email, genero, idade, senha, funcao } = req.body;
@@ -57,25 +75,24 @@ router.delete('/:id', async (req, res) => {
 });
 
 router.put('/:id', async (req, res) => {
-    const { id } = req.params; // Pega o ID da URL
+    const { id } = req.params;
     const { nome, email, genero, idade, senha, funcao } = req.body;
 
     try {
-        let hashedPassword;
+        let query = 'UPDATE usuarios SET nome = $1, email = $2, genero = $3, idade = $4, funcao = $5';
+        const values = [nome, email, genero, idade, funcao];
+
         if (senha) {
             const saltRounds = 10;
-            hashedPassword = await bcrypt.hash(senha, saltRounds);
+            const hashedPassword = await bcrypt.hash(senha, saltRounds);
+            query += ', senha = $6';
+            values.push(hashedPassword);
         }
 
-        const resultado = await db.query(
-            `UPDATE usuarios 
-             SET nome = $1, email = $2, genero = $3, idade = $4, ${senha ? 'senha = $5,' : ''} funcao = $6 
-             WHERE id = $7 
-             RETURNING *`,
-            senha
-                ? [nome, email, genero, idade, hashedPassword, funcao, id]
-                : [nome, email, genero, idade, funcao, id]
-        );
+        query += ' WHERE id = $7 RETURNING *';
+        values.push(id);
+
+        const resultado = await db.query(query, values);
 
         if (resultado.rowCount === 0) {
             return res.status(404).json({ error: 'Usuário não encontrado' });
@@ -87,5 +104,6 @@ router.put('/:id', async (req, res) => {
         res.status(500).json({ error: 'Erro interno do servidor' });
     }
 });
+
 
 module.exports = router;

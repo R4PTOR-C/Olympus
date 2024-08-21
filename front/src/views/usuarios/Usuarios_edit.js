@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 const UsuariosEdit = () => {
     const { id } = useParams();
-    const history = useNavigate();
+    const navigate = useNavigate();
     const [usuario, setUsuario] = useState({
         nome: '',
         email: '',
@@ -49,7 +49,7 @@ const UsuariosEdit = () => {
                 if (!response.ok) {
                     throw new Error('Erro ao atualizar o usuário');
                 }
-                history.push('/usuarios');
+                navigate('/usuarios');
             })
             .catch(error => {
                 console.error("Erro ao atualizar o usuário:", error);
