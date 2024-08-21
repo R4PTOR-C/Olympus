@@ -77,6 +77,11 @@ const Usuarios_index = () => {
                             <td className="px-6 py-4">{usuario.idade}</td>
                             <td className="px-6 py-4">{usuario.funcao}</td>
                             <td className="px-6 py-4">
+                                <Link
+                                    to={`/usuarios/edit/${usuario.id}`}
+                                    className="btn btn-primary">
+                                    Editar
+                                </Link>
                                 <button
                                     className="btn btn-danger"
                                     onClick={() => handleDelete(usuario.id)}>

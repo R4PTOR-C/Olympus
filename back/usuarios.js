@@ -56,4 +56,36 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+router.put('/:id', async (req, res) => {
+    const { id } = req.params; // Pega o ID da URL
+    const { nome, email, genero, idade, senha, funcao } = req.body;
+
+    try {
+        let hashedPassword;
+        if (senha) {
+            const saltRounds = 10;
+            hashedPassword = await bcrypt.hash(senha, saltRounds);
+        }
+
+        const resultado = await db.query(
+            `UPDATE usuarios 
+             SET nome = $1, email = $2, genero = $3, idade = $4, ${senha ? 'senha = $5,' : ''} funcao = $6 
+             WHERE id = $7 
+             RETURNING *`,
+            senha
+                ? [nome, email, genero, idade, hashedPassword, funcao, id]
+                : [nome, email, genero, idade, funcao, id]
+        );
+
+        if (resultado.rowCount === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+
+        res.json({ message: 'Usuário atualizado com sucesso', usuario: resultado.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+});
+
 module.exports = router;

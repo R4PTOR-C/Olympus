@@ -82,8 +82,8 @@ function Usuarios_new() {
                         required
                     >
                         <option value="" disabled>Selecione a função</option>
-                        <option value="Masculino">Aluno</option>
-                        <option value="Feminino">Professor</option>
+                        <option value="Aluno">Aluno</option>
+                        <option value="Professor">Professor</option>
                     </select>
                 </div>
 
