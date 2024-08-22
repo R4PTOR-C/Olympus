@@ -5,6 +5,7 @@ import Usuarios_new from "./views/usuarios/Usuarios_new";
 import Login from "./views/login";
 import Home from "./views/home";
 import UsuariosEdit from './views/usuarios/Usuarios_edit';
+import Academias_new from "./views/academias/Academias_new";
 import './App.css';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
             <Route path="/" element={<Login />} />
             <Route path="/home" element={<Home />} />
             <Route path="/usuarios/edit/:id" element={<UsuariosEdit/>} />
+            <Route path="/academias" element={<Academias_new/>}/>
         </Routes>
       </Router>
   );

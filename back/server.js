@@ -1,8 +1,9 @@
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
-const loginRouter = require('./login'); // Importa o módulo de login
+const loginRouter = require('./login/login'); // Importa o módulo de login
 const usuariosRouter = require('./usuarios'); // Importa o módulo de usuários
+const academiaRouter = require('./academias');
 
 const app = express();
 const PORT = 5000;
@@ -35,6 +36,8 @@ app.use('/', loginRouter);
 
 // Usar as rotas de usuários
 app.use('/usuarios', usuariosRouter);
+
+app.use('/academias', academiaRouter);
 
 // Exemplo de uma rota protegida
 app.get('/home', checkAuthenticated, (req, res) => {
