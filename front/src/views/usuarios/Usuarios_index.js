@@ -7,10 +7,11 @@ const Usuarios_index = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    const apiUrl = process.env.REACT_APP_API_BASE_URL;
+
     useEffect(() => {
         setLoading(true);
-        //maxdoc.onrender.com
-        fetch('http://localhost:5000/usuarios')
+        fetch(`${apiUrl}/usuarios`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Erro na resposta do servidor');
@@ -26,11 +27,11 @@ const Usuarios_index = () => {
                 setError(error.toString());
                 setLoading(false);
             });
-    }, []);
+    }, [apiUrl]);
 
     const handleDelete = (id) => {
         if (window.confirm("Tem certeza que deseja deletar este usuário?")) {
-            fetch(`http://localhost:5000/usuarios/${id}`, {
+            fetch(`${apiUrl}/usuarios/${id}`, {
                 method: 'DELETE',
             })
                 .then(response => {
@@ -46,12 +47,10 @@ const Usuarios_index = () => {
         }
     };
 
-
     if (loading) return <div>Carregando...</div>;
     if (error) return <div>Erro: {error}</div>;
 
     return (
-
         <div className="overflow-auto">
             <h1 className="text-2xl font-bold mb-4">Usuários</h1>
             <div className="table-responsive">
@@ -77,11 +76,6 @@ const Usuarios_index = () => {
                             <td className="px-6 py-4">{usuario.idade}</td>
                             <td className="px-6 py-4">{usuario.funcao}</td>
                             <td className="px-6 py-4">
-                                <Link
-                                    to={`/usuarios/edit/${usuario.id}`}
-                                    className="btn btn-primary">
-                                    Editar
-                                </Link>
                                 <button
                                     className="btn btn-danger"
                                     onClick={() => handleDelete(usuario.id)}>
@@ -96,6 +90,5 @@ const Usuarios_index = () => {
         </div>
     );
 }
-
 
 export default Usuarios_index;
