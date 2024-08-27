@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 function Academias_new() {
     const [nome, setNome] = useState('');
@@ -6,14 +7,45 @@ function Academias_new() {
     const [nome_dono, setNomeDono] = useState('');
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
+    const [cep, setCep] = useState('');
+    const [logradouro, setLogradouro] = useState('');
+    const [complemento, setComplemento] = useState('');
+    const [unidade, setUnidade] = useState('');
+    const [bairro, setBairro] = useState('');
+    const [localidade, setLocalidade] = useState('');
+    const [uf, setUf] = useState('');
 
+    // Função para buscar endereço pelo CEP
+    const handleCepChange = async (e) => {
+        const cepValue = e.target.value.replace(/\D/g, ''); // Remove qualquer caractere que não seja número
+        setCep(cepValue);
+
+        if (cepValue.length === 8) {
+            try {
+                const response = await axios.get(`https://viacep.com.br/ws/${cepValue}/json/`);
+                if (response.data.erro) {
+                    alert('CEP não encontrado.');
+                } else {
+                    const { logradouro, complemento, bairro, localidade, uf } = response.data;
+                    setLogradouro(logradouro);
+                    setComplemento(complemento);
+                    setBairro(bairro);
+                    setLocalidade(localidade);
+                    setUf(uf);
+                }
+            } catch (error) {
+                console.error('Erro ao buscar CEP:', error);
+                alert('Erro ao buscar CEP.');
+            }
+        }
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const academia = { nome, cnpj, nome_dono, email, senha};
+        const academia = { nome, cnpj, nome_dono, email, senha, cep, logradouro, complemento, unidade, bairro, localidade, uf };
 
         try {
-            const response = await fetch(`http://localhost:5000/academias`, {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/academias`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -37,53 +69,72 @@ function Academias_new() {
         <div className="container mt-5">
             <h2>Adicionar Nova Academia</h2>
             <form onSubmit={handleSubmit}>
+                {/* Outros campos... */}
                 <div className="form-group">
-                    <label>Academia</label>
+                    <label>CEP</label>
                     <input
                         type="text"
                         className="form-control"
-                        value={nome}
-                        onChange={(e) => setNome(e.target.value)}
+                        value={cep}
+                        onChange={handleCepChange}
                         required
                     />
                 </div>
                 <div className="form-group">
-                    <label>CNPJ</label>
+                    <label>Logradouro</label>
                     <input
                         type="text"
                         className="form-control"
-                        value={cnpj}
-                        onChange={(e) => setCNPJ(e.target.value)}
+                        value={logradouro}
+                        onChange={(e) => setLogradouro(e.target.value)}
                         required
                     />
                 </div>
                 <div className="form-group">
-                    <label>Nome Completo</label>
+                    <label>Complemento</label>
                     <input
                         type="text"
                         className="form-control"
-                        value={nome_dono}
-                        onChange={(e) => setNomeDono(e.target.value)}
+                        value={complemento}
+                        onChange={(e) => setComplemento(e.target.value)}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Unidade</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={unidade}
+                        onChange={(e) => setUnidade(e.target.value)}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Bairro</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={bairro}
+                        onChange={(e) => setBairro(e.target.value)}
                         required
                     />
                 </div>
                 <div className="form-group">
-                    <label>Email</label>
+                    <label>Localidade</label>
                     <input
-                        type="email"
+                        type="text"
                         className="form-control"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        value={localidade}
+                        onChange={(e) => setLocalidade(e.target.value)}
                         required
                     />
                 </div>
                 <div className="form-group">
-                    <label>Senha</label>
+                    <label>UF</label>
                     <input
-                        type="password"
+                        type="text"
                         className="form-control"
-                        value={senha}
-                        onChange={(e) => setSenha(e.target.value)}
+                        value={uf}
+                        onChange={(e) => setUf(e.target.value)}
                         required
                     />
                 </div>
