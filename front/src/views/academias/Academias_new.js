@@ -69,7 +69,50 @@ function Academias_new() {
         <div className="container mt-5">
             <h2>Adicionar Nova Academia</h2>
             <form onSubmit={handleSubmit}>
-                {/* Outros campos... */}
+
+                <div className="form-group">
+                    <label>Academia</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <label>CNPJ</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={cnpj}
+                        onChange={(e) => setCNPJ(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Nome Completo</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={nome_dono}
+                        onChange={(e) => setNomeDono(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        className="form-control"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete={"off"}
+                        required
+                    />
+                </div>
+
+
                 <div className="form-group">
                     <label>CEP</label>
                     <input
@@ -135,6 +178,17 @@ function Academias_new() {
                         className="form-control"
                         value={uf}
                         onChange={(e) => setUf(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Senha</label>
+                    <input
+                        type="password"
+                        className="form-control"
+                        value={senha}
+                        onChange={(e) => setSenha(e.target.value)}
+                        autoComplete={"off"}
                         required
                     />
                 </div>
