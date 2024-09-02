@@ -188,7 +188,7 @@ function Academias_new() {
                         className="form-control"
                         value={senha}
                         onChange={(e) => setSenha(e.target.value)}
-                        autoComplete={"off"}
+                        autoComplete="new-password"
                         required
                     />
                 </div>

@@ -43,6 +43,8 @@ router.post('/', async (req, res) => {
     const { nome, email, genero, idade, senha, funcao } = req.body;
 
     try {
+        const normalizedEmail = email.toLowerCase();
+
         // Gerar um hash da senha
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(senha, saltRounds);
@@ -50,7 +52,7 @@ router.post('/', async (req, res) => {
         // Inserir o usuário com a senha hash no banco de dados
         const resultado = await db.query(
             'INSERT INTO usuarios (nome, email, genero, idade, senha, funcao) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [nome, email, genero, idade, hashedPassword, funcao]
+            [nome, normalizedEmail, genero, idade, hashedPassword, funcao]
         );
         res.status(201).json(resultado.rows[0]);
     } catch (err) {
@@ -112,13 +114,16 @@ router.put('/:id', async (req, res) => {
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
     try {
+        // Converta o e-mail para minúsculas
+        const normalizedEmail = email.toLowerCase();
+
         // Verifique se o e-mail é fornecido
-        if (!email) {
+        if (!normalizedEmail) {
             return res.status(400).json({ error: 'Email é obrigatório' });
         }
 
         // Verifique se o usuário existe
-        const result = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+        const result = await db.query('SELECT * FROM usuarios WHERE email = $1', [normalizedEmail]);
         const user = result.rows[0];
 
         if (!user) {
@@ -130,7 +135,7 @@ router.post('/forgot-password', async (req, res) => {
         const tokenExpires = new Date(Date.now() + 3600000); // Adiciona uma hora
 
         // Atualize o usuário com o token e a expiração
-        await db.query('UPDATE usuarios SET reset_password_token = $1, reset_password_expires = $2 WHERE email = $3', [token, tokenExpires, email]);
+        await db.query('UPDATE usuarios SET reset_password_token = $1, reset_password_expires = $2 WHERE email = $3', [token, tokenExpires, normalizedEmail]);
 
         // Configure o transporte do email
         const transporter = nodemailer.createTransport({
@@ -143,7 +148,7 @@ router.post('/forgot-password', async (req, res) => {
 
         // Configure as opções do email
         const mailOptions = {
-            to: email,
+            to: normalizedEmail,
             from: 'olympusgymapp@gmail.com',
             subject: 'Redefinição de senha',
             text: `Você está recebendo este email porque você (ou outra pessoa) solicitou a redefinição de senha para a sua conta.\n\n
@@ -156,10 +161,11 @@ router.post('/forgot-password', async (req, res) => {
         await transporter.sendMail(mailOptions);
         res.status(200).json({ message: 'Email de redefinição de senha enviado' });
     } catch (error) {
-        console.error('Erro no endpoint /forgot-password:', error); // Adicione esta linha para mais detalhes no console
+        console.error('Erro no endpoint /forgot-password:', error);
         res.status(500).json({ error: 'Erro ao processar solicitação' });
     }
 });
+
 
 // Rota para redefinir a senha
 router.post('/reset-password/:token', async (req, res) => {

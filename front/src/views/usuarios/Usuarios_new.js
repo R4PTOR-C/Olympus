@@ -56,6 +56,7 @@ function Usuarios_new() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
+                        autoComplete={"off"}
                     />
                 </div>
                 <div className="form-group">
@@ -106,6 +107,7 @@ function Usuarios_new() {
                         value={senha}
                         onChange={(e) => setSenha(e.target.value)}
                         required
+                        autoComplete="new-password"
                     />
                 </div>
                 <button type="submit" className="btn btn-primary">Adicionar</button>

@@ -10,7 +10,9 @@ const router = express.Router();
 router.post('/login', async (req, res) => {
     const { email, senha } = req.body;
     try {
-        const { rows } = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+        const normalizedEmail = email.toLowerCase();
+
+        const { rows } = await db.query('SELECT * FROM usuarios WHERE email = $1', [normalizedEmail]);
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Usuário não encontrado' });
         }
