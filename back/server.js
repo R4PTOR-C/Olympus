@@ -3,8 +3,8 @@ const session = require('express-session');
 const cors = require('cors');
 const path = require('path');
 const usuariosRouter = require('./usuarios'); // Ajuste o caminho conforme necessário
-const loginRouter = require('./login/login');
-const academiaRouter = require('./academias');
+const loginRouter = require('./login/usuarios_login');
+const academiaRouter = require('./academias/academias');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
