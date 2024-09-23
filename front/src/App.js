@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
 import Usuarios_index from './views/usuarios/Usuarios_index'
 import Usuarios_new from "./views/usuarios/Usuarios_new";
+import Usuarios_view from "./views/usuarios/Usuarios_view";
 import Login from "./views/login";
 import Home from "./views/home";
 import UsuariosEdit from './views/usuarios/Usuarios_edit';
@@ -20,6 +21,7 @@ function App() {
             <Route path="/" element={<Login />} />
             <Route path="/home" element={<Home />} />
             <Route path="/usuarios/edit/:id" element={<UsuariosEdit/>} />
+            <Route path="/usuarios/view/:id" element={<Usuarios_view />} />
             <Route path="/academias" element={<Academias_new/>}/>
             <Route path="/academias_login" element={<Academias_login/>}/>
             <Route path="/forgot-password" element={<ForgotPassword/>}/>
