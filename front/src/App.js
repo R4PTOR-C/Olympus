@@ -10,6 +10,7 @@ import Academias_new from "./views/academias/Academias_new";
 import ForgotPassword from "./views/usuarios/Forgot_password";
 import ResetPassword from "./views/usuarios/Reset_password";
 import Academias_login from "./views/academias/Academias_login";
+import Exercicios_new from "./views/exercicios/Exercicios_new";
 import './App.css';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <Route path="/usuarios/view/:id" element={<Usuarios_view />} />
             <Route path="/academias" element={<Academias_new/>}/>
             <Route path="/academias_login" element={<Academias_login/>}/>
+            <Route path="/exercicios" element={<Exercicios_new />} />
             <Route path="/forgot-password" element={<ForgotPassword/>}/>
             <Route path="/nova_senha/:token" element={<ResetPassword/>}/>
 

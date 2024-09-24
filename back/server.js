@@ -5,6 +5,7 @@ const path = require('path');
 const usuariosRouter = require('./usuarios'); // Ajuste o caminho conforme necessário
 const loginRouter = require('./login/usuarios_login');
 const academiaRouter = require('./academias/academias');
+const exerciciosRouter = require('./exercicios');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,6 +30,7 @@ app.use(session({
 app.use('/usuarios', usuariosRouter); // Adiciona o roteador de usuários
 app.use('/', loginRouter); // Adiciona o roteador de login
 app.use('/academias', academiaRouter); // Adiciona o roteador de academias
+app.use('/exercicios', exerciciosRouter);
 
 // Middleware para verificar se o usuário está autenticado
 function checkAuthenticated(req, res, next) {
