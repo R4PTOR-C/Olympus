@@ -4,26 +4,47 @@ import { useParams } from 'react-router-dom';
 const Usuarios_view = () => {
     const { id } = useParams(); // ID do usuário a ser visualizado
     const [usuario, setUsuario] = useState(null);
+    const [treinos, setTreinos] = useState([]); // Estado para armazenar os treinos
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         // Buscar os detalhes do usuário com base no ID
-        fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`)
-            .then(response => {
+        const fetchUsuario = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`);
                 if (!response.ok) {
                     throw new Error('Erro ao buscar os dados do usuário');
                 }
-                return response.json();
-            })
-            .then(data => {
+                const data = await response.json();
                 setUsuario(data);
-                setLoading(false);
-            })
-            .catch(err => {
+            } catch (err) {
+                setError(err.message);
+            }
+        };
+
+        // Buscar os treinos do usuário com base no ID
+        const fetchTreinos = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`);
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar os treinos do usuário');
+                }
+                const data = await response.json();
+                setTreinos(data);
+            } catch (err) {
+                setError(err.message);
+            }
+        };
+
+        // Carregar os dados do usuário e os treinos
+        Promise.all([fetchUsuario(), fetchTreinos()])
+            .then(() => setLoading(false))
+            .catch((err) => {
                 setError(err.message);
                 setLoading(false);
             });
+
     }, [id]);
 
     if (loading) return <div>Carregando...</div>;
@@ -40,6 +61,25 @@ const Usuarios_view = () => {
                     <p><strong>Gênero:</strong> {usuario.genero}</p>
                     <p><strong>Idade:</strong> {usuario.idade}</p>
                     <p><strong>Função:</strong> {usuario.funcao}</p>
+
+                    <h3>Treinos</h3>
+                    <div className="row">
+                        {treinos.length > 0 ? (
+                            treinos.map(treino => (
+                                <div className="col-md-4" key={treino.id}>
+                                    <div className="card mb-3">
+                                        <div className="card-body">
+                                            <h5 className="card-title">{treino.nome_treino}</h5>
+                                            <p className="card-text"><strong>Descrição:</strong> {treino.descricao}</p>
+                                            <p className="card-text"><strong>Dia da Semana:</strong> {treino.dia_semana}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p>Esse usuário não tem treinos cadastrados.</p>
+                        )}
+                    </div>
                 </div>
             ) : (
                 <p>Usuário não encontrado</p>

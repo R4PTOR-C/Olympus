@@ -31,7 +31,7 @@ function Exercicios_new() {
 
     return (
         <div className="container mt-5">
-            <h2>Adicionar Novo Usuário</h2>
+            <h2>Adicionar Novo Exercicio</h2>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label>Nome</label>

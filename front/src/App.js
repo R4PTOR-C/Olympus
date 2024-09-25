@@ -11,6 +11,7 @@ import ForgotPassword from "./views/usuarios/Forgot_password";
 import ResetPassword from "./views/usuarios/Reset_password";
 import Academias_login from "./views/academias/Academias_login";
 import Exercicios_new from "./views/exercicios/Exercicios_new";
+import TreinosForm from './views/treinos/TreinosForm'; // Importar o componente de formulário de treinos
 import './App.css';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/home" element={<Home />} />
             <Route path="/usuarios/edit/:id" element={<UsuariosEdit/>} />
             <Route path="/usuarios/view/:id" element={<Usuarios_view />} />
+            <Route path="/usuarios/:id/treinos" element={<TreinosForm />} /> {/* Nova rota */}
             <Route path="/academias" element={<Academias_new/>}/>
             <Route path="/academias_login" element={<Academias_login/>}/>
             <Route path="/exercicios" element={<Exercicios_new />} />

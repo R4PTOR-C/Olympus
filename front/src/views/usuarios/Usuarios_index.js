@@ -76,6 +76,7 @@ const Usuarios_index = () => {
                             <td className="px-6 py-4">{usuario.idade}</td>
                             <td className="px-6 py-4">{usuario.funcao}</td>
                             <td className="px-6 py-4">
+                                <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success">Criar Treino</Link> {/* Botão para criar treino */}
                                 <Link to={`/usuarios/view/${usuario.id}`} className="btn btn-info mr-2">Ver</Link>
                                 <button
                                     className="btn btn-danger"

@@ -6,6 +6,7 @@ const usuariosRouter = require('./usuarios'); // Ajuste o caminho conforme neces
 const loginRouter = require('./login/usuarios_login');
 const academiaRouter = require('./academias/academias');
 const exerciciosRouter = require('./exercicios');
+const treinosRouter = require('./treinos'); // Importa o módulo de treinos
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,6 +32,8 @@ app.use('/usuarios', usuariosRouter); // Adiciona o roteador de usuários
 app.use('/', loginRouter); // Adiciona o roteador de login
 app.use('/academias', academiaRouter); // Adiciona o roteador de academias
 app.use('/exercicios', exerciciosRouter);
+app.use('/treinos', treinosRouter); // Adiciona o roteador de treinos
+
 
 // Middleware para verificar se o usuário está autenticado
 function checkAuthenticated(req, res, next) {
