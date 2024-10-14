@@ -23,16 +23,27 @@ const Usuarios_view = () => {
             }
         };
 
-        // Buscar os treinos do usuário com base no ID
+        // Buscar os treinos do usuário com base no ID e seus respectivos exercícios
         const fetchTreinos = async () => {
             try {
                 const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`);
                 if (!response.ok) {
-                    throw new Error('Erro ao buscar os treinos do usuário');
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
                 }
-                const data = await response.json();
-                setTreinos(data);
+                const treinosData = await response.json();
+
+                // Para cada treino, buscar os exercícios associados
+                const treinosComExercicios = await Promise.all(
+                    treinosData.map(async (treino) => {
+                        const exerciciosResponse = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treino.id}/exercicios`);
+                        const exerciciosData = await exerciciosResponse.json();
+                        return { ...treino, exercicios: exerciciosData || [] }; // Garante que seja sempre um array
+                    })
+                );
+
+                setTreinos(treinosComExercicios);
             } catch (err) {
+                console.error('Erro ao buscar os treinos:', err);
                 setError(err.message);
             }
         };
@@ -72,6 +83,16 @@ const Usuarios_view = () => {
                                             <h5 className="card-title">{treino.nome_treino}</h5>
                                             <p className="card-text"><strong>Descrição:</strong> {treino.descricao}</p>
                                             <p className="card-text"><strong>Dia da Semana:</strong> {treino.dia_semana}</p>
+                                            <h6>Exercícios:</h6>
+                                            {Array.isArray(treino.exercicios) && treino.exercicios.length > 0 ? (
+                                                <ul>
+                                                    {treino.exercicios.map(exercicio => (
+                                                        <li key={exercicio.id}>{exercicio.nome_exercicio}</li>
+                                                    ))}
+                                                </ul>
+                                            ) : (
+                                                <p>Sem exercícios cadastrados.</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

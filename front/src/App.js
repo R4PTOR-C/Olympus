@@ -24,7 +24,7 @@ function App() {
             <Route path="/home" element={<Home />} />
             <Route path="/usuarios/edit/:id" element={<UsuariosEdit/>} />
             <Route path="/usuarios/view/:id" element={<Usuarios_view />} />
-            <Route path="/usuarios/:id/treinos" element={<TreinosForm />} /> {/* Nova rota */}
+            <Route path="/usuarios/:id/treinos" element={<TreinosForm />} />
             <Route path="/academias" element={<Academias_new/>}/>
             <Route path="/academias_login" element={<Academias_login/>}/>
             <Route path="/exercicios" element={<Exercicios_new />} />

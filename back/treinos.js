@@ -22,22 +22,33 @@ router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
     }
 });
 
-// Rota para adicionar exercícios a um treino
+// Rota para adicionar múltiplos exercícios a um treino
 router.post('/treinos/:treinoId/exercicios', async (req, res) => {
     const { treinoId } = req.params; // ID do treino
-    const { exercicio_id, series, repeticoes, carga, descanso } = req.body;
+    const { exercicios } = req.body; // Espera um array de exercicio_id
+
+    if (!Array.isArray(exercicios) || exercicios.length === 0) {
+        return res.status(400).json({ error: 'É necessário fornecer uma lista de exercícios.' });
+    }
 
     try {
-        // Inserir o exercício com os detalhes no treino
-        await db.query(
-            'INSERT INTO treinos_exercicios (treino_id, exercicio_id, series, repeticoes, carga, descanso) VALUES ($1, $2, $3, $4, $5, $6)',
-            [treinoId, exercicio_id, series, repeticoes, carga, descanso]
-        );
+        // Iniciar transação para garantir que todos os exercícios sejam inseridos
+        await db.query('BEGIN');
 
-        res.status(201).json({ message: 'Exercício adicionado ao treino com sucesso' });
+        // Inserir cada exercício no treino
+        for (const exercicio_id of exercicios) {
+            await db.query(
+                'INSERT INTO treinos_exercicios (treino_id, exercicio_id) VALUES ($1, $2)',
+                [treinoId, exercicio_id]
+            );
+        }
+
+        await db.query('COMMIT'); // Confirma a transação
+        res.status(201).json({ message: 'Exercícios adicionados ao treino com sucesso' });
     } catch (error) {
-        console.error('Erro ao adicionar exercício ao treino:', error);
-        res.status(500).json({ error: 'Erro ao adicionar exercício ao treino' });
+        await db.query('ROLLBACK'); // Desfaz a transação em caso de erro
+        console.error('Erro ao adicionar exercícios ao treino:', error);
+        res.status(500).json({ error: 'Erro ao adicionar exercícios ao treino' });
     }
 });
 
@@ -58,16 +69,20 @@ router.get('/usuarios/:usuarioId/treinos', async (req, res) => {
     }
 });
 
-
-
 // Rota para listar todos os exercícios de um treino específico
 router.get('/treinos/:treinoId/exercicios', async (req, res) => {
     const { treinoId } = req.params;
 
     try {
+        // Verificar se o treino existe
+        const treinoExiste = await db.query('SELECT * FROM treinos WHERE id = $1', [treinoId]);
+        if (treinoExiste.rowCount === 0) {
+            return res.status(404).json({ error: 'Treino não encontrado' });
+        }
+
         // Recuperar todos os exercícios do treino
         const result = await db.query(
-            `SELECT te.*, e.nome_exercicio 
+            `SELECT te.exercicio_id, e.nome_exercicio
              FROM treinos_exercicios te
              JOIN exercicios e ON te.exercicio_id = e.id
              WHERE te.treino_id = $1`,
@@ -81,6 +96,7 @@ router.get('/treinos/:treinoId/exercicios', async (req, res) => {
     }
 });
 
+
 // Rota para listar todos os exercícios
 router.get('/exercicios', async (req, res) => {
     try {
@@ -91,6 +107,5 @@ router.get('/exercicios', async (req, res) => {
         res.status(500).json({ error: 'Erro ao listar exercícios' });
     }
 });
-
 
 module.exports = router;

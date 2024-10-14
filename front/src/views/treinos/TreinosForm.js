@@ -7,14 +7,14 @@ const TreinosForm = () => {
     const [nomeTreino, setNomeTreino] = useState('');
     const [descricao, setDescricao] = useState('');
     const [diaSemana, setDiaSemana] = useState('');
-    const [exercicios, setExercicios] = useState([]); // Estado para armazenar exercícios
-    const [exercicioSelecionado, setExercicioSelecionado] = useState(''); // Estado para o exercício selecionado
+    const [exercicios, setExercicios] = useState([]); // Estado para armazenar exercícios disponíveis
+    const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]); // Estado para armazenar os IDs dos exercícios selecionados
 
     // Carregar os exercícios quando o componente é montado
     useEffect(() => {
         const fetchExercicios = async () => {
             try {
-                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/exercicios`);
+                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`);
                 const data = await response.json();
                 setExercicios(data); // Armazena os exercícios no estado
             } catch (error) {
@@ -25,6 +25,18 @@ const TreinosForm = () => {
         fetchExercicios();
     }, []);
 
+    // Função para adicionar um exercício selecionado à lista
+    const handleAddExercicio = () => {
+        setExerciciosSelecionados([...exerciciosSelecionados, '']); // Adiciona um campo vazio para seleção de exercício
+    };
+
+    // Função para atualizar um exercício selecionado na lista
+    const handleExercicioChange = (index, value) => {
+        const novosExerciciosSelecionados = [...exerciciosSelecionados];
+        novosExerciciosSelecionados[index] = value;
+        setExerciciosSelecionados(novosExerciciosSelecionados);
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -32,7 +44,7 @@ const TreinosForm = () => {
             nome_treino: nomeTreino,
             descricao,
             dia_semana: diaSemana,
-            exercicio_id: exercicioSelecionado
+            exercicios: exerciciosSelecionados.filter(exercicio => exercicio !== '') // Filtrar para evitar campos vazios
         };
 
         try {
@@ -54,7 +66,6 @@ const TreinosForm = () => {
             console.error('Erro ao conectar ao servidor:', error);
         }
     };
-
 
     return (
         <div className="container mt-5">
@@ -98,24 +109,31 @@ const TreinosForm = () => {
                     </select>
                 </div>
 
-                <div className="form-group">
-                    <label>Selecionar Exercício</label>
-                    <select
-                        className="form-control"
-                        value={exercicioSelecionado}
-                        onChange={(e) => setExercicioSelecionado(e.target.value)}
-                        required
-                    >
-                        <option value="">Selecione um Exercício</option>
-                        {exercicios.map((exercicio) => (
-                            <option key={exercicio.id} value={exercicio.id}>
-                                {exercicio.nome_exercicio}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <h3>Exercícios</h3>
+                {exerciciosSelecionados.map((exercicio, index) => (
+                    <div key={index} className="form-group">
+                        <label>Selecionar Exercício</label>
+                        <select
+                            className="form-control"
+                            value={exercicio}
+                            onChange={(e) => handleExercicioChange(index, e.target.value)}
+                            required
+                        >
+                            <option value="">Selecione um Exercício</option>
+                            {exercicios.map((ex) => (
+                                <option key={ex.id} value={ex.id}>
+                                    {ex.nome_exercicio}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                ))}
 
-                <button type="submit" className="btn btn-primary">Adicionar Treino</button>
+                <button type="button" className="btn btn-secondary" onClick={handleAddExercicio}>
+                    Adicionar Outro Exercício
+                </button>
+
+                <button type="submit" className="btn btn-primary mt-3">Adicionar Treino</button>
             </form>
         </div>
     );
