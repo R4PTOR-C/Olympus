@@ -37,14 +37,15 @@ const TreinosForm = () => {
         setExerciciosSelecionados(novosExerciciosSelecionados);
     };
 
+    // Função para enviar o treino e associar exercícios
     const handleSubmit = async (event) => {
         event.preventDefault();
 
+        // Primeiro passo: Criar o treino
         const treino = {
             nome_treino: nomeTreino,
             descricao,
             dia_semana: diaSemana,
-            exercicios: exerciciosSelecionados.filter(exercicio => exercicio !== '') // Filtrar para evitar campos vazios
         };
 
         try {
@@ -57,13 +58,44 @@ const TreinosForm = () => {
             });
 
             if (response.ok) {
-                alert('Treino adicionado com sucesso!');
+                const novoTreino = await response.json(); // Obtenha os dados do treino recém-criado, incluindo o ID
+
+                // Segundo passo: Enviar os exercícios para serem vinculados ao treino
+                await adicionarExerciciosAoTreino(novoTreino.id);  // Chame a função que adiciona os exercícios
+
+                alert('Treino e exercícios adicionados com sucesso!');
                 navigate(`/usuarios/view/${id}`);
             } else {
                 alert('Erro ao adicionar o treino');
             }
         } catch (error) {
             console.error('Erro ao conectar ao servidor:', error);
+        }
+    };
+
+    // Função para adicionar exercícios ao treino recém-criado
+    const adicionarExerciciosAoTreino = async (treinoId) => {
+        if (exerciciosSelecionados.filter(exercicio => exercicio !== '').length === 0) {
+            alert('Nenhum exercício selecionado!');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    exercicios: exerciciosSelecionados.filter(exercicio => exercicio !== '') // Somente enviar IDs de exercícios válidos
+                }),
+            });
+
+            if (!response.ok) {
+                alert('Erro ao adicionar os exercícios ao treino');
+            }
+        } catch (error) {
+            console.error('Erro ao adicionar exercícios ao treino:', error);
         }
     };
 
