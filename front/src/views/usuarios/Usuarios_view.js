@@ -58,6 +58,29 @@ const Usuarios_view = () => {
 
     }, [id]);
 
+    // Função para deletar um treino
+    const handleDeleteTreino = async (treinoId) => {
+        const confirmDelete = window.confirm("Tem certeza que deseja excluir este treino?");
+        if (!confirmDelete) return;
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                // Remover o treino do estado
+                setTreinos(treinos.filter(treino => treino.id !== treinoId));
+                alert("Treino excluído com sucesso.");
+            } else {
+                alert("Erro ao excluir o treino.");
+            }
+        } catch (error) {
+            console.error('Erro ao excluir treino:', error);
+            alert("Erro ao excluir o treino.");
+        }
+    };
+
     if (loading) return <div>Carregando...</div>;
     if (error) return <div>Erro: {error}</div>;
 
@@ -93,6 +116,9 @@ const Usuarios_view = () => {
                                             ) : (
                                                 <p>Sem exercícios cadastrados.</p>
                                             )}
+                                            <button className="btn btn-danger mt-2" onClick={() => handleDeleteTreino(treino.id)}>
+                                                Excluir Treino
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

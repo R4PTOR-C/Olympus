@@ -108,4 +108,22 @@ router.get('/exercicios', async (req, res) => {
     }
 });
 
+// Rota para deletar um treino
+router.delete('/treinos/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await db.query('DELETE FROM treinos WHERE id = $1 RETURNING *', [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Treino não encontrado' });
+        }
+
+        res.json({ message: 'Treino excluído com sucesso', treino: result.rows[0] });
+    } catch (error) {
+        console.error('Erro ao excluir treino:', error);
+        res.status(500).json({ error: 'Erro ao excluir treino' });
+    }
+});
+
 module.exports = router;
