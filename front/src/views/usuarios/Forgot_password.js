@@ -8,7 +8,7 @@ function ForgotPassword() {
         event.preventDefault();
 
         try {
-            const response = await fetch('http://localhost:5000/usuarios/forgot-password', {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/forgot-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
