@@ -1,4 +1,4 @@
-import logo from './logo.svg';
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
 import Usuarios_index from './views/usuarios/Usuarios_index'
 import Usuarios_new from "./views/usuarios/Usuarios_new";
