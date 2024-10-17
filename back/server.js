@@ -46,12 +46,12 @@ app.get('/home', checkAuthenticated, (req, res) => {
     res.json({ message: 'Você está logado e pode ver isso!' });
 });
 
-// Serve arquivos estáticos do React
-app.use(express.static(path.join(__dirname, 'build')));
+// Serve os arquivos estáticos do frontend a partir da pasta correta (front/build)
+app.use(express.static(path.join(__dirname, '../front/build')));
 
-// Catch-all para redirecionar todas as rotas para o index.html
+// Catch-all route to serve index.html for React Router
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    res.sendFile(path.join(__dirname, '../front/build', 'index.html'));
 });
 
 
