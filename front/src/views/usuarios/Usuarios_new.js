@@ -14,7 +14,7 @@ function Usuarios_new() {
         const usuario = { nome, email, genero, idade, senha, funcao};
 
         try {
-            const response = await fetch(`http://localhost:5000/usuarios`, {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
