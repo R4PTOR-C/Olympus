@@ -67,7 +67,7 @@ function Login() {
                     </div>
                     <button type="submit" className="btn btn-primary btn-block login-btn">Entrar</button>
                     <div className="d-flex justify-content-between mt-3">
-                        <Link href="/forgot-password" className="forgot-password">Esqueceu a senha?</Link>
+                        <Link to="/forgot-password" className="forgot-password">Esqueceu a senha?</Link>
                     </div>
                 </form>
                 <div className="social-icons mt-3">
