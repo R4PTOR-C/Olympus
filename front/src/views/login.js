@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import '../styles/Login.css'; // Importa o CSS personalizado para estilos adicionais
 
 function Login() {
@@ -78,7 +78,7 @@ function Login() {
             <div className="col-md-6 welcome-container">
                 <h2>Bem-vindo</h2>
                 <p>Não tem uma conta?</p>
-                <a href="/sign-in" className="btn btn-outline-light">Cadastrar-se</a>
+                <Link to="/sign-in" className="btn btn-outline-light">Cadastrar-se</Link>
             </div>
         </div>
         </div>
