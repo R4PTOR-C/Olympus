@@ -20,10 +20,11 @@ function Login() {
         const data = await response.json();
         if (response.ok) {
             console.log('Login bem-sucedido:', data);
-            navigate('/home');
-        } else {
-            console.error('Erro de login:', data.error);
+            setTimeout(() => {
+                navigate('/home');
+            }, 100); // Aguarda 100ms antes de navegar
         }
+
     };
 
     return (
