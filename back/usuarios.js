@@ -153,7 +153,7 @@ router.post('/forgot-password', async (req, res) => {
             subject: 'Redefinição de senha',
             text: `Você está recebendo este email porque você (ou outra pessoa) solicitou a redefinição de senha para a sua conta.\n\n
                    Por favor, clique no seguinte link ou cole-o no seu navegador para completar o processo dentro de uma hora:\n\n
-                   http://localhost:3000/nova_senha/${token}\n\n
+                   https://olympus-33lb.onrender.com/nova_senha/${token}\n\n
                    Se você não solicitou essa redefinição, por favor, ignore este email e sua senha permanecerá inalterada.\n`,
         };
 
