@@ -5,18 +5,25 @@ function Home() {
 
     useEffect(() => {
         fetch(`${process.env.REACT_APP_API_BASE_URL}/session`, { credentials: 'include' })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar sessão');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.loggedIn) {
                     setUser({ loggedIn: true, userName: data.userName });
                 }
+            })
+            .catch(err => {
+                console.error('Erro ao verificar sessão:', err);
             });
     }, []);
 
+
     return (
         <div>
-
-
             <nav className="navbar navbar-expand-lg bg-body-tertiary">
                 <div className="container-fluid">
                     <a className="navbar-brand" href="#">Navbar</a>
