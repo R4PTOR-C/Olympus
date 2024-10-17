@@ -33,6 +33,7 @@ router.post('/login', async (req, res) => {
 
 // Rota para verificar a sessão do usuário
 router.get('/session', (req, res) => {
+    console.log('Sessão no servidor:', req.session);
     if (req.session.userId) {
         res.json({ loggedIn: true, userName: req.session.userName });
     } else {

@@ -23,8 +23,13 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'default_secret',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === 'production' } // Secure cookies em produção
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none', // Permite cookies em diferentes origens
+        httpOnly: true
+    }
 }));
+
 
 // Rotas de API
 app.use('/usuarios', usuariosRouter);
