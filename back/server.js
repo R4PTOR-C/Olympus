@@ -17,23 +17,21 @@ app.use(cors({
     origin: [process.env.FRONTEND_URL || 'http://localhost:3000', 'http://localhost:19000'] // Array de strings para múltiplas origens
 }));
 
-
 app.use(express.json());
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'default_secret',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === 'production' } // Secure cookies in production
+    cookie: { secure: process.env.NODE_ENV === 'production' } // Secure cookies em produção
 }));
 
-// Rotas
-app.use('/usuarios', usuariosRouter); // Adiciona o roteador de usuários
-app.use('/', loginRouter); // Adiciona o roteador de login
-app.use('/academias', academiaRouter); // Adiciona o roteador de academias
+// Rotas de API
+app.use('/usuarios', usuariosRouter);
+app.use('/', loginRouter);
+app.use('/academias', academiaRouter);
 app.use('/exercicios', exerciciosRouter);
-app.use('/treinos', treinosRouter); // Adiciona o roteador de treinos
-
+app.use('/treinos', treinosRouter);
 
 // Middleware para verificar se o usuário está autenticado
 function checkAuthenticated(req, res, next) {
@@ -48,8 +46,13 @@ app.get('/home', checkAuthenticated, (req, res) => {
     res.json({ message: 'Você está logado e pode ver isso!' });
 });
 
-// Serve arquivos estáticos (opcional, se estiver servindo um frontend estático)
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve arquivos estáticos do build do React
+app.use(express.static(path.join(__dirname, 'build')));
+
+// Rota catch-all para enviar o index.html para qualquer rota desconhecida
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 
 app.listen(PORT, () => {
     console.log(`Servidor backend rodando na porta ${PORT}`);
