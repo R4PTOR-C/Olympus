@@ -4,7 +4,7 @@ function Home() {
     const [user, setUser] = useState({ loggedIn: false, userName: '' });
 
     useEffect(() => {
-        fetch('http://localhost:5000/session', { credentials: 'include' })
+        fetch(`${process.env.REACT_APP_API_BASE_URL}/session`, { credentials: 'include' })
             .then(response => response.json())
             .then(data => {
                 if (data.loggedIn) {
