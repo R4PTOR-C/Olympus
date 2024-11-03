@@ -31,12 +31,13 @@ router.post('/login', async (req, res) => {
 
 // Rota para verificar a sessão do usuário
 router.get('/session', (req, res) => {
-    console.log('Sessão no servidor:', req.session); // Verifique se `req.session` contém `userId`
+    console.log('Sessão no servidor:', req.session);
     if (req.session && req.session.userId) {
-        res.json({ loggedIn: true, userName: req.session.userName });
+        res.json({ loggedIn: true, userName: req.session.userName, userId: req.session.userId });
     } else {
         res.json({ loggedIn: false });
     }
 });
+
 
 module.exports = router;
