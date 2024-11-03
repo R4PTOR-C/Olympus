@@ -126,4 +126,26 @@ router.delete('/treinos/:id', async (req, res) => {
     }
 });
 
+router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/registro', async (req, res) => {
+    const { usuarioId, treinoId, exercicioId } = req.params;
+    const { carga, repeticoes, series } = req.body;
+
+    try {
+        const result = await db.query(
+            `INSERT INTO exercicios_usuario (usuario_id, treino_id, exercicio_id, carga, repeticoes, series)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             ON CONFLICT (usuario_id, treino_id, exercicio_id)
+             DO UPDATE SET carga = $4, repeticoes = $5, series = $6
+             RETURNING *`,
+            [usuarioId, treinoId, exercicioId, carga, repeticoes, series]
+        );
+
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Erro ao registrar informações de exercício:', error);
+        res.status(500).json({ error: 'Erro ao registrar informações de exercício' });
+    }
+});
+
+
 module.exports = router;

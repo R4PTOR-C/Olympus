@@ -14,6 +14,7 @@ import Exercicios_new from "./views/exercicios/Exercicios_new";
 import TreinosForm from './views/treinos/TreinosForm';
 import Navbar from "./views/components/navbar";
 import { AuthProvider } from './AuthContext';
+import Exercicios_index from "./views/exercicios/Exercicios_index";
 import './App.css';
 
 const routesWithNavbar = ["/home", "/usuarios", "/exercicios", "/academias"];
@@ -34,7 +35,8 @@ function App() {
             <Route path="/usuarios/:id/treinos" element={<TreinosForm />} />
             <Route path="/academias" element={<Academias_new/>}/>
             <Route path="/academias_login" element={<Academias_login/>}/>
-            <Route path="/exercicios" element={<Exercicios_new />} />
+            <Route path="/exercicios_new" element={<Exercicios_new />} />
+            <Route path="/treinos/:treinoId/exercicios" element={<Exercicios_index />} />
             <Route path="/forgot-password" element={<ForgotPassword/>}/>
             <Route path="/nova_senha/:token" element={<ResetPassword/>}/>
 

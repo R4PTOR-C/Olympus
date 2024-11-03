@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Home() {
     const [user, setUser] = useState({ loggedIn: false, userName: '', userId: null });
     const [treinos, setTreinos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate(); // Hook para navegação
 
     useEffect(() => {
         // Verificar sessão do usuário
@@ -51,7 +53,7 @@ function Home() {
                         <div className="row">
                             {treinos.map(treino => (
                                 <div className="col-md-4 mb-4" key={treino.id}>
-                                    <div className="card h-100">
+                                    <div className="card h-100" onClick={() => navigate(`/treinos/${treino.id}/exercicios`)} style={{ cursor: 'pointer' }}>
                                         <div className="card-body">
                                             <h5 className="card-title">{treino.nome_treino}</h5>
                                             <p className="card-text"><strong>Descrição:</strong> {treino.descricao}</p>
