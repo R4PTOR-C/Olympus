@@ -11,13 +11,17 @@ import ForgotPassword from "./views/usuarios/Forgot_password";
 import ResetPassword from "./views/usuarios/Reset_password";
 import Academias_login from "./views/academias/Academias_login";
 import Exercicios_new from "./views/exercicios/Exercicios_new";
-import TreinosForm from './views/treinos/TreinosForm'; // Importar o componente de formulário de treinos
+import TreinosForm from './views/treinos/TreinosForm';
+import Navbar from "./views/components/navbar";
 import './App.css';
+
+const routesWithNavbar = ["/home", "/usuarios", "/exercicios", "/academias"];
 
 function App() {
   return (
       <Router>
-        <Routes>
+          {routesWithNavbar.includes(window.location.pathname) && <Navbar />}
+          <Routes>
             <Route path="/usuarios" element={<Usuarios_index />} />
             <Route path="/sign-in" element={<Usuarios_new />} />
             <Route path="/" element={<Login />} />

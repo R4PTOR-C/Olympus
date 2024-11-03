@@ -19,16 +19,20 @@ app.use(cors({
 
 app.use(express.json());
 
+// No app.js ou server.js
 app.use(session({
     secret: process.env.SESSION_SECRET || 'default_secret',
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none', // Permite cookies em diferentes origens
-        httpOnly: true
+        secure: process.env.NODE_ENV === 'production', // Defina como false em localhost
+        httpOnly: true,
+        sameSite: 'lax', // 'lax' ou 'none' se precisar de cross-origin
     }
 }));
+
+
+
 
 
 // Rotas de API

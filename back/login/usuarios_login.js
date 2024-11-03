@@ -1,5 +1,3 @@
-
-// usuarios_login.js
 const express = require('express');
 const bcrypt = require('bcrypt');
 const db = require('../db');
@@ -26,15 +24,15 @@ router.post('/login', async (req, res) => {
         req.session.userName = user.nome; // Adiciona o nome do usuário na sessão
         res.json({ message: 'Login bem-sucedido', userName: user.nome });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Erro durante o login:', err);
+        res.status(500).json({ error: 'Erro interno do servidor' });
     }
 });
 
 // Rota para verificar a sessão do usuário
 router.get('/session', (req, res) => {
-    console.log('Sessão no servidor:', req.session);
-    if (req.session.userId) {
+    console.log('Sessão no servidor:', req.session); // Verifique se `req.session` contém `userId`
+    if (req.session && req.session.userId) {
         res.json({ loggedIn: true, userName: req.session.userName });
     } else {
         res.json({ loggedIn: false });
