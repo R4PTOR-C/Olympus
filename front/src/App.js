@@ -13,12 +13,15 @@ import Academias_login from "./views/academias/Academias_login";
 import Exercicios_new from "./views/exercicios/Exercicios_new";
 import TreinosForm from './views/treinos/TreinosForm';
 import Navbar from "./views/components/navbar";
+import { AuthProvider } from './AuthContext';
 import './App.css';
 
 const routesWithNavbar = ["/home", "/usuarios", "/exercicios", "/academias"];
 
 function App() {
   return (
+      <AuthProvider>
+
       <Router>
           {routesWithNavbar.includes(window.location.pathname) && <Navbar />}
           <Routes>
@@ -37,6 +40,8 @@ function App() {
 
         </Routes>
       </Router>
+      </AuthProvider>
+
   );
 }
 

@@ -43,20 +43,24 @@ function Home() {
     if (error) return <div>Erro: {error}</div>;
 
     return (
-        <div>
-            <h1>Home Page</h1>
+        <div className="container mt-4">
             {user.loggedIn ? (
                 <div>
-                    <p>Bem-vindo, {user.userName}!</p>
                     <h2>Seus Treinos</h2>
                     {treinos.length > 0 ? (
-                        <ul>
+                        <div className="row">
                             {treinos.map(treino => (
-                                <li key={treino.id}>
-                                    <strong>{treino.nome_treino}</strong> - {treino.descricao} ({treino.dia_semana})
-                                </li>
+                                <div className="col-md-4 mb-4" key={treino.id}>
+                                    <div className="card h-100">
+                                        <div className="card-body">
+                                            <h5 className="card-title">{treino.nome_treino}</h5>
+                                            <p className="card-text"><strong>Descrição:</strong> {treino.descricao}</p>
+                                            <p className="card-text"><strong>Dia da Semana:</strong> {treino.dia_semana}</p>
+                                        </div>
+                                    </div>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     ) : (
                         <p>Você não tem treinos cadastrados.</p>
                     )}

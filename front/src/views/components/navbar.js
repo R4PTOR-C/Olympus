@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../../AuthContext';
 
 function Navbar() {
+    const user = useContext(AuthContext);
+
     return (
         <nav className="navbar navbar-expand-lg bg-body-tertiary">
             <div className="container-fluid">
@@ -46,6 +49,11 @@ function Navbar() {
                             <a className="nav-link disabled" aria-disabled="true">Disabled</a>
                         </li>
                     </ul>
+                    {user.loggedIn && (
+                        <span className="navbar-text">
+                            Olá, {user.userName}!
+                        </span>
+                    )}
                     <form className="d-flex" role="search">
                         <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
                         <button className="btn btn-outline-success" type="submit">Search</button>
