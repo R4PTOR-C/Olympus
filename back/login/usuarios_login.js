@@ -22,7 +22,8 @@ router.post('/login', async (req, res) => {
         // Armazena o ID e o nome do usuário na sessão
         req.session.userId = user.id;
         req.session.userName = user.nome; // Adiciona o nome do usuário na sessão
-        res.json({ message: 'Login bem-sucedido', userName: user.nome });
+        req.session.userFuncao = user.funcao; // Armazena a função na sessão
+        res.json({ message: 'Login bem-sucedido', userName: user.nome, funcao: user.funcao });
     } catch (err) {
         console.error('Erro durante o login:', err);
         res.status(500).json({ error: 'Erro interno do servidor' });
@@ -33,7 +34,7 @@ router.post('/login', async (req, res) => {
 router.get('/session', (req, res) => {
     console.log('Sessão no servidor:', req.session);
     if (req.session && req.session.userId) {
-        res.json({ loggedIn: true, userName: req.session.userName, userId: req.session.userId });
+        res.json({ loggedIn: true, userName: req.session.userName, userId: req.session.userId, userFuncao: req.session.userFuncao });
     } else {
         res.json({ loggedIn: false });
     }

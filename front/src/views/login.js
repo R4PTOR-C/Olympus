@@ -23,8 +23,10 @@ function Login() {
             const data = await response.json();
             if (response.ok) {
                 console.log('Login bem-sucedido:', data);
+                const role = data.funcao || 'Aluno'; // Define 'Aluno' como valor padrão
+                const redirectPath = role === 'Professor' ? '/usuarios' : '/home';
                 setTimeout(() => {
-                    navigate('/home');
+                    navigate(redirectPath);
                 }, 100); // Aguarda 100ms antes de navegar
             } else {
                 console.error('Erro no login:', data.error);
