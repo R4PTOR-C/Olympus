@@ -147,5 +147,27 @@ router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/regi
     }
 });
 
+router.get('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId', async (req, res) => {
+    const { usuarioId, treinoId, exercicioId } = req.params;
+
+    try {
+        const result = await db.query(
+            `SELECT * FROM exercicios_usuario
+             WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3`,
+            [usuarioId, treinoId, exercicioId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Informações não encontradas para o exercício' });
+        }
+
+        res.json(result.rows[0]); // Retorna as informações registradas
+    } catch (error) {
+        console.error('Erro ao buscar as informações do exercício:', error);
+        res.status(500).json({ error: 'Erro ao buscar as informações do exercício' });
+    }
+});
+
+
 
 module.exports = router;
