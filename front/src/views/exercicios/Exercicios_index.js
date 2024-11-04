@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
+import { AuthContext } from '../../AuthContext'; // Importa o contexto de autenticação
 
-function Exercicios_new() {
+function Exercicios_index() {
     const { treinoId } = useParams(); // Pega o ID do treino da URL
     const [exercicios, setExercicios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { userId } = useContext(AuthContext); // Pega o ID do usuário logado
 
     useEffect(() => {
         // Buscar os exercícios do treino específico
@@ -33,7 +35,7 @@ function Exercicios_new() {
 
     return (
         <div className="container mt-4">
-            <h2>Exercícios do Treino</h2>
+            <h2>Exercícios do Treino do Aluno com ID: {userId}</h2>
             {exercicios.length > 0 ? (
                 <div className="row">
                     {exercicios.map(exercicio => (
@@ -53,4 +55,4 @@ function Exercicios_new() {
     );
 }
 
-export default Exercicios_new;
+export default Exercicios_index;
