@@ -30,6 +30,17 @@ app.use(session({
         sameSite: 'lax', // 'lax' ou 'none' se precisar de cross-origin
     }
 }));
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'default_secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // true apenas em produção com HTTPS
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' para produção, 'lax' para desenvolvimento
+    }
+}));
+
 
 
 
