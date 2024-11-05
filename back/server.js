@@ -24,26 +24,11 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // true em produção para HTTPS
+        secure: process.env.NODE_ENV === 'production', // Ativa secure apenas em produção
         httpOnly: true,
-        sameSite: 'lax' // 'none' para permitir cookies cross-origin
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // 'none' em produção, 'lax' em desenvolvimento
     }
 }));
-
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'default_secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production', // true apenas em produção com HTTPS
-        httpOnly: true,
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' para produção, 'lax' para desenvolvimento
-    }
-}));
-
-
-
-
 
 
 // Rotas de API
