@@ -24,12 +24,11 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false, // Defina temporariamente como false para testar
+        secure: process.env.NODE_ENV === 'production', // true em produção para HTTPS
         httpOnly: true,
-        sameSite: 'none'
+        sameSite: 'none' // 'none' para permitir cookies cross-origin
     }
 }));
-
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'default_secret',
