@@ -23,6 +23,7 @@ router.post('/login', async (req, res) => {
         req.session.userId = user.id;
         req.session.userName = user.nome; // Adiciona o nome do usuário na sessão
         req.session.userFuncao = user.funcao; // Armazena a função na sessão
+        console.log("Sessão após login:", req.session); // Log para verificar a sessão
         res.json({ message: 'Login bem-sucedido', userName: user.nome, funcao: user.funcao });
     } catch (err) {
         console.error('Erro durante o login:', err);
