@@ -13,10 +13,9 @@ const PORT = process.env.PORT || 5000;
 
 // Configurações de Middleware
 app.use(cors({
-    origin: true, // Permite todas as origens durante o teste
-    credentials: true
+    credentials: true,
+    origin: 'https://olympus-33lb.onrender.com'
 }));
-
 
 
 app.use(express.json());
