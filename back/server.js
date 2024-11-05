@@ -24,7 +24,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // Ativa secure apenas em produção
+        secure: true, // Garante que o cookie é enviado apenas em HTTPS
         httpOnly: true,
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // 'none' em produção, 'lax' em desenvolvimento
     }
