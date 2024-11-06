@@ -24,13 +24,14 @@ app.set('trust proxy', 1); // Necessário para HTTPS e cookies com 'secure' em p
 app.use(session({
     secret: process.env.SESSION_SECRET || 'default_secret',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // true apenas em produção com HTTPS
-        httpOnly: true,
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' para produção, 'lax' para desenvolvimento
+        secure: false, // Desativa HTTPS para testes
+        httpOnly: false, // Permite acesso ao cookie pelo JavaScript (opcional, apenas para teste)
+        sameSite: 'lax' // Configuração mais permissiva para testes
     }
 }));
+
 
 
 
