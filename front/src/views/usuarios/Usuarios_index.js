@@ -125,6 +125,15 @@ const Usuarios_index = () => {
 
             {/* Cards para telas menores */}
             <div className="d-lg-none">
+                <div className="mb-4">
+                    <input
+                        type="text"
+                        placeholder="Buscar por nome ou email..."
+                        className="form-control"
+                        value={searchTerm}
+                        onChange={handleSearch}
+                    />
+                </div>
                 {filteredUsuarios.map(usuario => (
                     <div key={usuario.id} className="card mb-3">
                         <div className="card-body">
@@ -134,7 +143,8 @@ const Usuarios_index = () => {
                             <p className="card-text"><strong>Gênero:</strong> {usuario.genero}</p>
                             <p className="card-text"><strong>Idade:</strong> {usuario.idade}</p>
                             <div className="card-actions">
-                                <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success me-2">Criar Treino</Link>
+                                <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success me-2">Criar
+                                    Treino</Link>
                                 <Link to={`/usuarios/view/${usuario.id}`} className="btn btn-info me-2">Ver</Link>
                                 <button
                                     className="btn btn-danger"
