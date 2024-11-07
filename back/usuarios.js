@@ -42,15 +42,15 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-const uploadDir = path.join(__dirname, 'uploads');
+// Define o caminho absoluto para a pasta 'uploads'
+const uploadDir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Configuração do multer para armazenamento da imagem
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Define a pasta de armazenamento
+        cb(null, uploadDir); // Define a pasta de armazenamento como um caminho absoluto
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -59,7 +59,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-
 // Rota para criar um novo usuário com upload de avatar
 router.post('/', upload.single('avatar'), async (req, res) => {
     const { nome, email, genero, idade, senha, funcao } = req.body;
