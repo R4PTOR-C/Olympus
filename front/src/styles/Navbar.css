@@ -1,32 +1,4 @@
 /* Navbar.css */
-.navbar .container-fluid {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.navbar .navbar-collapse {
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-.navbar .navbar-nav {
-    flex-grow: 1;
-    justify-content: flex-start; /* Links do lado esquerdo */
-}
-
-.navbar .search-container {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center; /* Pesquisa centralizada */
-}
-
-.navbar .user-links {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end; /* Alinha os links do usuário à direita */
-}
 
 .custom-navbar-bg {
     background-color: #19222B !important;
@@ -44,4 +16,19 @@
 .custom-navbar-bg .nav-link:hover,
 .custom-navbar-bg .nav-link.active {
     color: #f0f0f0 !important; /* Ou qualquer tom de branco que preferir */
+}
+
+.navbar-toggler-custom {
+    border-color: white; /* Define a cor da borda do botão para branco */
+}
+
+.navbar-toggler-custom .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(255, 255, 255, 1)' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+/* Centralizar o campo de pesquisa */
+.search-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
 }
