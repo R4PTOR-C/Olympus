@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import '../styles/Login.css'; // Importa o CSS personalizado para estilos adicionais
+import { AuthContext } from '../AuthContext';
+import '../styles/Login.css';
 
 function Login() {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { login } = useContext(AuthContext); // Pega a função de login do AuthContext
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -17,17 +19,26 @@ function Login() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include',
                 body: JSON.stringify({ email, senha }),
             });
             const data = await response.json();
+
             if (response.ok) {
                 console.log('Login bem-sucedido:', data);
-                const role = data.funcao || 'Aluno'; // Define 'Aluno' como valor padrão
-                const redirectPath = role === 'Professor' ? '/usuarios' : '/home';
+
+                // Armazena o token JWT no localStorage
+                localStorage.setItem('token', data.token);
+
+                // Chama a função de login para atualizar o contexto
+                login({ userName: data.userName, userId: data.userId, funcao: data.funcao });
+
+                // Define o redirecionamento com base na função
+                const role = data.funcao || 'Aluno';
+                const redirectPath = role === 'Professor' ? '/home' : '/usuarios';
+
                 setTimeout(() => {
                     navigate(redirectPath);
-                }, 100); // Aguarda 100ms antes de navegar
+                }, 100);
             } else {
                 console.error('Erro no login:', data.error);
                 alert(data.error || 'Erro ao fazer login. Tente novamente.');

@@ -1,6 +1,6 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
-import Usuarios_index from './views/usuarios/Usuarios_index'
+import React, { useContext } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import Usuarios_index from './views/usuarios/Usuarios_index';
 import Usuarios_new from "./views/usuarios/Usuarios_new";
 import Usuarios_view from "./views/usuarios/Usuarios_view";
 import Login from "./views/login";
@@ -13,39 +13,46 @@ import Academias_login from "./views/academias/Academias_login";
 import Exercicios_new from "./views/exercicios/Exercicios_new";
 import TreinosForm from './views/treinos/TreinosForm';
 import Navbar from "./views/components/navbar";
-import { AuthProvider } from './AuthContext';
 import Exercicios_index from "./views/exercicios/Exercicios_index";
 import Professor_new from "./views/professores/Professores_new";
+import { AuthProvider, AuthContext } from './AuthContext';
 import './App.css';
 
-const routesWithNavbar = ["/home", "/usuarios", "/exercicios", "/academias"];
+// Componente para rotas protegidas
+function ProtectedRoute({ children }) {
+  const { loggedIn } = useContext(AuthContext); // Acessa o contexto aqui dentro
+  return loggedIn ? children : <Navigate to="/" />;
+}
 
 function App() {
   return (
       <AuthProvider>
-
-      <Router>
-          {routesWithNavbar.includes(window.location.pathname) && <Navbar />}
-          <Routes>
-            <Route path="/usuarios" element={<Usuarios_index />} />
-            <Route path="/sign-in" element={<Usuarios_new />} />
-            <Route path="/professor_new" element={<Professor_new/>}/>
-            <Route path="/" element={<Login />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/usuarios/edit/:id" element={<UsuariosEdit/>} />
-            <Route path="/usuarios/view/:id" element={<Usuarios_view />} />
-            <Route path="/usuarios/:id/treinos" element={<TreinosForm />} />
-            <Route path="/academias" element={<Academias_new/>}/>
-            <Route path="/academias_login" element={<Academias_login/>}/>
-            <Route path="/exercicios_new" element={<Exercicios_new />} />
-            <Route path="/treinos/:treinoId/exercicios" element={<Exercicios_index />} />
-            <Route path="/forgot-password" element={<ForgotPassword/>}/>
-            <Route path="/nova_senha/:token" element={<ResetPassword/>}/>
-
-        </Routes>
-      </Router>
+        <Router>
+          <AuthContext.Consumer>
+            {({ loggedIn }) => (
+                <>
+                  {loggedIn && <Navbar />}
+                  <Routes>
+                    <Route path="/" element={<Login />} />
+                    <Route path="/sign-in" element={<Usuarios_new />} />
+                    <Route path="/professor_new" element={<Professor_new />} />
+                    <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                    <Route path="/usuarios" element={<ProtectedRoute><Usuarios_index /></ProtectedRoute>} />
+                    <Route path="/usuarios/edit/:id" element={<ProtectedRoute><UsuariosEdit /></ProtectedRoute>} />
+                    <Route path="/usuarios/view/:id" element={<ProtectedRoute><Usuarios_view /></ProtectedRoute>} />
+                    <Route path="/usuarios/:id/treinos" element={<ProtectedRoute><TreinosForm /></ProtectedRoute>} />
+                    <Route path="/academias" element={<ProtectedRoute><Academias_new /></ProtectedRoute>} />
+                    <Route path="/academias_login" element={<Academias_login />} />
+                    <Route path="/exercicios_new" element={<ProtectedRoute><Exercicios_new /></ProtectedRoute>} />
+                    <Route path="/treinos/:treinoId/exercicios" element={<ProtectedRoute><Exercicios_index /></ProtectedRoute>} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/nova_senha/:token" element={<ResetPassword />} />
+                  </Routes>
+                </>
+            )}
+          </AuthContext.Consumer>
+        </Router>
       </AuthProvider>
-
   );
 }
 

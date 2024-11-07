@@ -6,17 +6,25 @@ function Home() {
     const [treinos, setTreinos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const navigate = useNavigate(); // Hook para navegação
+    const navigate = useNavigate();
 
     useEffect(() => {
-        // Verificar sessão do usuário
-        fetch(`${process.env.REACT_APP_API_BASE_URL}/session`, { credentials: 'include' })
+        // Verificar token JWT no localStorage
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            navigate('/login'); // Redireciona para a página de login se não houver token
+            return;
+        }
+
+        // Verificar usuário com o token JWT
+        fetch(`${process.env.REACT_APP_API_BASE_URL}/session`, {
+            headers: { Authorization: `Bearer ${token}` }
+        })
             .then(response => response.json())
             .then(data => {
-                console.log('Dados da sessão no cliente:', data); // Log para depuração
                 if (data.loggedIn) {
                     setUser({ loggedIn: true, userName: data.userName, userId: data.userId });
-                    fetchTreinos(data.userId); // Buscar treinos do usuário logado
+                    fetchTreinos(data.userId, token); // Buscar treinos do usuário logado com o token
                 }
                 setLoading(false);
             })
@@ -25,14 +33,15 @@ function Home() {
                 setError('Erro ao verificar sessão');
                 setLoading(false);
             });
-    }, []);
+    }, [navigate]);
 
-    const fetchTreinos = async (userId) => {
+    const fetchTreinos = async (userId, token) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos`, { credentials: 'include' });
-            if (!response.ok) {
-                throw new Error('Erro ao buscar os treinos');
-            }
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Erro ao buscar os treinos');
+
             const data = await response.json();
             setTreinos(data);
         } catch (err) {
