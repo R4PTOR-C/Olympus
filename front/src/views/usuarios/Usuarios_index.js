@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 
 const Usuarios_index = () => {
     const [usuarios, setUsuarios] = useState([]);
+    const [filteredUsuarios, setFilteredUsuarios] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
@@ -20,6 +22,7 @@ const Usuarios_index = () => {
             .then(data => {
                 const alunos = data.filter(usuario => usuario.funcao === "Aluno");
                 setUsuarios(alunos);
+                setFilteredUsuarios(alunos); // Inicia a lista filtrada com todos os usuários
                 setLoading(false);
             })
             .catch(error => {
@@ -39,11 +42,27 @@ const Usuarios_index = () => {
                         throw new Error('Erro ao deletar o usuário');
                     }
                     setUsuarios(usuarios.filter(usuario => usuario.id !== id));
+                    setFilteredUsuarios(filteredUsuarios.filter(usuario => usuario.id !== id));
                 })
                 .catch(error => {
                     console.error("Erro ao deletar o usuário:", error);
                     setError("Erro ao tentar deletar o usuário. Tente novamente.");
                 });
+        }
+    };
+
+    const handleSearch = (e) => {
+        const term = e.target.value;
+        setSearchTerm(term);
+
+        if (term) {
+            const filtered = usuarios.filter(usuario =>
+                usuario.nome.toLowerCase().includes(term.toLowerCase()) ||
+                usuario.email.toLowerCase().includes(term.toLowerCase())
+            );
+            setFilteredUsuarios(filtered);
+        } else {
+            setFilteredUsuarios(usuarios); // Mostra todos se o termo de busca estiver vazio
         }
     };
 
@@ -54,8 +73,20 @@ const Usuarios_index = () => {
         <div className="usuarios-container">
             <h1 className="text-2xl font-bold mb-4">Alunos</h1>
 
+
+
             {/* Tabela para telas maiores */}
             <div className="table-responsive d-none d-lg-block">
+                {/* Campo de pesquisa */}
+                <div className="mb-4">
+                    <input
+                        type="text"
+                        placeholder="Buscar por nome ou email..."
+                        className="form-control"
+                        value={searchTerm}
+                        onChange={handleSearch}
+                    />
+                </div>
                 <table className="table table-hover">
                     <thead className="bg-gray-200">
                     <tr>
@@ -68,7 +99,7 @@ const Usuarios_index = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {usuarios.map(usuario => (
+                    {filteredUsuarios.map(usuario => (
                         <tr key={usuario.id}>
                             <th scope="row">{usuario.id}</th>
                             <td>{usuario.nome}</td>
@@ -76,7 +107,8 @@ const Usuarios_index = () => {
                             <td>{usuario.genero}</td>
                             <td>{usuario.idade}</td>
                             <td>
-                                <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success me-2">Criar Treino</Link>
+                                <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success me-2">Criar
+                                    Treino</Link>
                                 <Link to={`/usuarios/view/${usuario.id}`} className="btn btn-info me-2">Ver</Link>
                                 <button
                                     className="btn btn-danger"
@@ -93,7 +125,7 @@ const Usuarios_index = () => {
 
             {/* Cards para telas menores */}
             <div className="d-lg-none">
-                {usuarios.map(usuario => (
+                {filteredUsuarios.map(usuario => (
                     <div key={usuario.id} className="card mb-3">
                         <div className="card-body">
                             <h5 className="card-title">{usuario.nome}</h5>
