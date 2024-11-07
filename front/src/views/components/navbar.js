@@ -35,9 +35,17 @@ function Navbar() {
                                 </li>
                             </>
                         ) : (
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/home">Home</Link>
-                            </li>
+                            <>
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/home">Exercicios</Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="#">Avaliação Física</Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="#">Calendario</Link>
+                                </li>
+                            </>
                         )}
                         {user.loggedIn && (
                             <span className="navbar-text ms-3">
