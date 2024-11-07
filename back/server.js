@@ -14,6 +14,7 @@ const PORT = process.env.PORT || 5000;
 // Configurações de Middleware
 app.use(cors({
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'], // Defina explicitamente os cabeçalhos necessários
     origin: [process.env.FRONTEND_URL || 'http://localhost:3000', 'https://olympus-33lb.onrender.com']
 }));
 
