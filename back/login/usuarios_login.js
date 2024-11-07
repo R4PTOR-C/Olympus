@@ -24,12 +24,12 @@ router.post('/login', async (req, res) => {
 
         // Gera o token JWT com informações do usuário
         const token = jwt.sign(
-            { userId: user.id, userName: user.nome, userFuncao: user.funcao },
+            { userId: user.id, userName: user.nome, userFuncao: user.funcao, userAvatar: user.avatar },
             JWT_SECRET,
             { expiresIn: '1h' } // Define a duração do token
         );
 
-        res.json({ message: 'Login bem-sucedido', token, userName: user.nome, funcao: user.funcao });
+        res.json({ message: 'Login bem-sucedido', token, userName: user.nome, funcao: user.funcao, avatar: user.avatar });
     } catch (err) {
         console.error('Erro durante o login:', err);
         res.status(500).json({ error: 'Erro interno do servidor' });
@@ -61,7 +61,8 @@ router.get('/session', authenticateJWT, (req, res) => {
         loggedIn: true,
         userName: req.user.userName,
         userId: req.user.userId,
-        userFuncao: req.user.userFuncao
+        userFuncao: req.user.userFuncao,
+        userAvatar: req.user.userAvatar
     });
 });
 

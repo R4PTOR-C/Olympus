@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
                     });
                     const data = await response.json();
                     if (data.loggedIn) {
-                        setUser({ loggedIn: true, userName: data.userName, userId: data.userId, funcao: data.userFuncao });
+                        setUser({ loggedIn: true, userName: data.userName, userId: data.userId, funcao: data.userFuncao, avatar: data.userAvatar });
                     } else {
                         setUser({ loggedIn: false });
                     }
@@ -41,7 +41,8 @@ export const AuthProvider = ({ children }) => {
             loggedIn: true,
             userName: userData.userName,
             userId: userData.userId,
-            funcao: userData.funcao
+            funcao: userData.funcao,
+            avatar: userData.avatar
         });
     };
 
