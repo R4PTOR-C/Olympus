@@ -8,9 +8,10 @@ function Navbar() {
     // Construir a URL do avatar, assumindo que está sendo servido a partir de "/uploads"
     const avatarUrl = user.avatar ? `${process.env.REACT_APP_API_BASE_URL}/uploads/${user.avatar}` : null;
 
-
-    console.log("Avatar URL:", avatarUrl);
-    console.log("User Avatar Field:", user.avatar);
+    // Função de logout
+    const handleLogout = () => {
+        user.logout();
+    };
 
     return (
         <nav className="navbar navbar-expand-lg custom-navbar-bg">
@@ -55,29 +56,43 @@ function Navbar() {
                             </>
                         )}
                         {user.loggedIn && (
-                            <>
-                                <span className="navbar-text ms-3">
+                            <li className="nav-item dropdown ms-3">
+                                {/* Nome do usuário como um botão dropdown */}
+                                <a
+                                    className="nav-link dropdown-toggle"
+                                    href="#"
+                                    id="userDropdown"
+                                    role="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                >
+                                    {avatarUrl ? (
+                                        <img
+                                            src={avatarUrl}
+                                            alt="Avatar do usuário"
+                                            className="rounded-circle me-2"
+                                            style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                        />
+                                    ) : (
+                                        <span className="me-2">{user.userName}</span>
+                                    )}
                                     Olá, {user.userName}!
-                                </span>
-                                {avatarUrl ? (
-                                    <li className="nav-item ms-3">
-                                        <Link to={`/usuarios/edit/${user.userId}`}>
-                                            <img
-                                                src={avatarUrl}
-                                                alt="Avatar do usuário"
-                                                className="rounded-circle"
-                                                style={{ width: '40px', height: '40px', objectFit: 'cover', cursor: 'pointer' }}
-                                            />
+                                </a>
+                                {/* Dropdown menu */}
+                                <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li>
+                                        <Link className="dropdown-item" to={`/usuarios/edit/${user.userId}`}>
+                                            Perfil
                                         </Link>
                                     </li>
-                                ) : (
-                                    <li className="nav-item ms-3">
-                                        <Link to={`/usuarios/edit/${user.userId}`}>
-                                            <span className="btn btn-secondary">Perfil</span>
-                                        </Link>
+                                    <li><hr className="dropdown-divider" /></li>
+                                    <li>
+                                        <button className="dropdown-item" onClick={handleLogout}>
+                                            Logout
+                                        </button>
                                     </li>
-                                )}
-                            </>
+                                </ul>
+                            </li>
                         )}
                     </ul>
                 </div>
