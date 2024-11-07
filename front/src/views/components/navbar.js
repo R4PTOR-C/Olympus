@@ -6,9 +6,11 @@ function Navbar() {
     const user = useContext(AuthContext);
 
     return (
-        <nav className="navbar navbar-expand-lg bg-body-tertiary">
+        <nav className="navbar navbar-expand-lg custom-navbar-bg">
             <div className="container-fluid">
-                <a className="navbar-brand" href="#">Navbar</a>
+                <a className="navbar-brand" href="#">OLYMPUS</a>
+
+                {/* Botão de Toggle para exibir a navbar no mobile */}
                 <button
                     className="navbar-toggler"
                     type="button"
@@ -20,44 +22,37 @@ function Navbar() {
                 >
                     <span className="navbar-toggler-icon"></span>
                 </button>
+
+                {/* Conteúdo colapsável da navbar */}
                 <div className="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li className="nav-item">
-                            <Link className="nav-link active" aria-current="page" to="/home">Home</Link>
-                        </li>
-                        <li className="nav-item">
-                            <Link className="nav-link" to="/link">Link</Link>
-                        </li>
-                        <li className="nav-item dropdown">
-                            <a
-                                className="nav-link dropdown-toggle"
-                                href="#"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                            >
-                                Dropdown
-                            </a>
-                            <ul className="dropdown-menu">
-                                <li><a className="dropdown-item" href="#">Action</a></li>
-                                <li><a className="dropdown-item" href="#">Another action</a></li>
-                                <li><hr className="dropdown-divider" /></li>
-                                <li><a className="dropdown-item" href="#">Something else here</a></li>
-                            </ul>
-                        </li>
-                        <li className="nav-item">
-                            <a className="nav-link disabled" aria-disabled="true">Disabled</a>
-                        </li>
-                    </ul>
-                    {user.loggedIn && (
-                        <span className="navbar-text">
-                            Olá, {user.userName}!
-                        </span>
-                    )}
-                    <form className="d-flex" role="search">
-                        <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
-                        <button className="btn btn-outline-success" type="submit">Search</button>
-                    </form>
+                    {/* Pesquisa centralizada */}
+                    <div className="search-container">
+                        <form className="d-flex" role="search">
+                            <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
+                            <button className="btn btn-outline-success" type="submit">Search</button>
+                        </form>
+                    </div>
+
+                    {/* Links de navegação e mensagem de usuário */}
+                    <div className="user-links">
+                        <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+                            {user.funcao === 'Professor' ? (
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/usuarios">Usuarios</Link>
+                                </li>
+                            ) : (
+                                <li className="nav-item">
+                                    <Link className="nav-link" to="/home">Home</Link>
+                                </li>
+                            )}
+                        </ul>
+                        {user.loggedIn && (
+                            <span className="navbar-text me-3">
+                                Olá, {user.userName}!
+                            </span>
+                        )}
+                        <button className="btn btn-outline-primary" type="button">Logout</button>
+                    </div>
                 </div>
             </div>
         </nav>

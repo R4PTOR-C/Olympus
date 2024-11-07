@@ -1,0 +1,47 @@
+/* Navbar.css */
+.navbar .container-fluid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navbar .navbar-collapse {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.navbar .navbar-nav {
+    flex-grow: 1;
+    justify-content: flex-start; /* Links do lado esquerdo */
+}
+
+.navbar .search-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center; /* Pesquisa centralizada */
+}
+
+.navbar .user-links {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Alinha os links do usuário à direita */
+}
+
+.custom-navbar-bg {
+    background-color: #19222B !important;
+    color: white !important;
+}
+
+/* Cor do texto para links e elementos de navegação */
+.custom-navbar-bg .navbar-brand,
+.custom-navbar-bg .nav-link,
+.custom-navbar-bg .navbar-text {
+    color: white !important;
+}
+
+/* Para links quando hover e ativos */
+.custom-navbar-bg .nav-link:hover,
+.custom-navbar-bg .nav-link.active {
+    color: #f0f0f0 !important; /* Ou qualquer tom de branco que preferir */
+}
