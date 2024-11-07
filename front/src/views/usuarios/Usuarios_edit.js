@@ -17,7 +17,7 @@ const UsuariosEdit = () => {
 
     useEffect(() => {
         // Fetch user data
-        fetch(`http://localhost:5000/usuarios/${id}`)
+        fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Erro na resposta do servidor');
@@ -58,7 +58,7 @@ const UsuariosEdit = () => {
             formData.append('avatar', avatar); // Adiciona o avatar ao FormData se houver um novo arquivo
         }
 
-        fetch(`http://localhost:5000/usuarios/${id}`, {
+        fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`, {
             method: 'PUT',
             body: formData,
         })
