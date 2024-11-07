@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
 const Usuarios_view = () => {
-    const { id } = useParams(); // ID do usuário a ser visualizado
+    const { id } = useParams();
     const [usuario, setUsuario] = useState(null);
-    const [treinos, setTreinos] = useState([]); // Estado para armazenar os treinos
+    const [treinos, setTreinos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -32,12 +32,11 @@ const Usuarios_view = () => {
                 }
                 const treinosData = await response.json();
 
-                // Para cada treino, buscar os exercícios associados
                 const treinosComExercicios = await Promise.all(
                     treinosData.map(async (treino) => {
                         const exerciciosResponse = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treino.id}/exercicios`);
                         const exerciciosData = await exerciciosResponse.json();
-                        return { ...treino, exercicios: exerciciosData || [] }; // Garante que seja sempre um array
+                        return { ...treino, exercicios: exerciciosData || [] };
                     })
                 );
 
@@ -48,17 +47,14 @@ const Usuarios_view = () => {
             }
         };
 
-        // Carregar os dados do usuário e os treinos
         Promise.all([fetchUsuario(), fetchTreinos()])
             .then(() => setLoading(false))
             .catch((err) => {
                 setError(err.message);
                 setLoading(false);
             });
-
     }, [id]);
 
-    // Função para deletar um treino
     const handleDeleteTreino = async (treinoId) => {
         const confirmDelete = window.confirm("Tem certeza que deseja excluir este treino?");
         if (!confirmDelete) return;
@@ -69,7 +65,6 @@ const Usuarios_view = () => {
             });
 
             if (response.ok) {
-                // Remover o treino do estado
                 setTreinos(treinos.filter(treino => treino.id !== treinoId));
                 alert("Treino excluído com sucesso.");
             } else {
@@ -84,11 +79,15 @@ const Usuarios_view = () => {
     if (loading) return <div>Carregando...</div>;
     if (error) return <div>Erro: {error}</div>;
 
+    // Construir a URL da imagem do avatar se existir
+    const avatarUrl = usuario && usuario.avatar ? `${process.env.REACT_APP_API_BASE_URL}/uploads/${usuario.avatar}` : null;
+
     return (
         <div className="container mt-5">
             <h2>Detalhes do Usuário</h2>
             {usuario ? (
                 <div>
+                    {avatarUrl && <img src={avatarUrl} alt="Avatar do usuário" className="img-thumbnail mb-3" style={{ width: '150px', height: '150px', objectFit: 'cover' }} />}
                     <p><strong>ID:</strong> {usuario.id}</p>
                     <p><strong>Nome:</strong> {usuario.nome}</p>
                     <p><strong>Email:</strong> {usuario.email}</p>

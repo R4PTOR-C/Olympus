@@ -52,6 +52,9 @@ app.get('/home', checkAuthenticated, (req, res) => {
 // Serve os arquivos estáticos do frontend a partir da pasta correta (front/build)
 app.use(express.static(path.join(__dirname, '../front/build')));
 
+// Servir a pasta uploads como estática
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Catch-all route to serve index.html for React Router
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../front/build', 'index.html'));

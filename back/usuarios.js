@@ -4,6 +4,9 @@ const bcrypt = require('bcrypt');
 const db = require('./db');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const multer = require('multer');
+const path = require('path');
+
 
 
 const router = express.Router();
@@ -38,22 +41,33 @@ router.get('/:id', async (req, res) => {
 });
 
 
-// Rota para criar um novo usuário
-router.post('/', async (req, res) => {
+// Configuração do multer para armazenamento da imagem
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Define a pasta de armazenamento
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname)); // Define o nome do arquivo com sufixo único
+    }
+});
+
+const upload = multer({ storage: storage });
+
+// Rota para criar um novo usuário com upload de avatar
+router.post('/', upload.single('avatar'), async (req, res) => {
     const { nome, email, genero, idade, senha, funcao } = req.body;
+    const avatar = req.file ? req.file.filename : null; // Salva o nome do arquivo de imagem, se existir
 
     try {
         const normalizedEmail = email.toLowerCase();
+        const hashedPassword = await bcrypt.hash(senha, 10);
 
-        // Gerar um hash da senha
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(senha, saltRounds);
-
-        // Inserir o usuário com a senha hash no banco de dados
         const resultado = await db.query(
-            'INSERT INTO usuarios (nome, email, genero, idade, senha, funcao) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [nome, normalizedEmail, genero, idade, hashedPassword, funcao]
+            'INSERT INTO usuarios (nome, email, genero, idade, senha, funcao, avatar) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [nome, normalizedEmail, genero, idade, hashedPassword, funcao, avatar]
         );
+
         res.status(201).json(resultado.rows[0]);
     } catch (err) {
         console.error(err);
@@ -79,22 +93,34 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-router.put('/:id', async (req, res) => {
+// Rota para atualizar o usuário e o avatar
+router.put('/:id', upload.single('avatar'), async (req, res) => {
     const { id } = req.params;
     const { nome, email, genero, idade, senha, funcao } = req.body;
+    const avatar = req.file ? req.file.filename : null; // Novo avatar se enviado
 
     try {
         let query = 'UPDATE usuarios SET nome = $1, email = $2, genero = $3, idade = $4, funcao = $5';
         const values = [nome, email, genero, idade, funcao];
+        let paramIndex = 6;
 
+        // Atualizar a senha se fornecida
         if (senha) {
             const saltRounds = 10;
             const hashedPassword = await bcrypt.hash(senha, saltRounds);
-            query += ', senha = $6';
+            query += `, senha = $${paramIndex}`;
             values.push(hashedPassword);
+            paramIndex += 1;
         }
 
-        query += ' WHERE id = $7 RETURNING *';
+        // Atualizar o avatar se fornecido
+        if (avatar) {
+            query += `, avatar = $${paramIndex}`;
+            values.push(avatar);
+            paramIndex += 1;
+        }
+
+        query += ` WHERE id = $${paramIndex} RETURNING *`;
         values.push(id);
 
         const resultado = await db.query(query, values);

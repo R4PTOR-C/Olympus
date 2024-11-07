@@ -7,36 +7,69 @@ function Usuarios_new() {
     const [idade, setIdade] = useState('');
     const [senha, setSenha] = useState('');
     const [funcao, setFuncao] = useState('');
+    const [avatar, setAvatar] = useState(null); // Novo estado para armazenar a imagem
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState(null);
 
+    const handleFileChange = (event) => {
+        setAvatar(event.target.files[0]);
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const usuario = { nome, email, genero, idade, senha, funcao};
+        setLoading(true);
+        setMessage(null);
+
+        // Usar FormData para enviar dados do formulário com a imagem
+        const formData = new FormData();
+        formData.append('nome', nome);
+        formData.append('email', email);
+        formData.append('genero', genero);
+        formData.append('idade', idade);
+        formData.append('senha', senha);
+        formData.append('funcao', funcao);
+        if (avatar) {
+            formData.append('avatar', avatar); // Adiciona a imagem ao FormData
+        }
 
         try {
             const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(usuario),
+                body: formData,
             });
 
             if (response.ok) {
-                alert('Usuário adicionado com sucesso!');
-                // Resetar o formulário ou redirecionar o usuário
+                setMessage({ type: 'success', text: 'Usuário adicionado com sucesso!' });
+                // Resetar o formulário
+                setNome('');
+                setEmail('');
+                setGenero('');
+                setIdade('');
+                setSenha('');
+                setFuncao('');
+                setAvatar(null);
             } else {
-                alert('Falha ao adicionar usuário.');
+                setMessage({ type: 'error', text: 'Falha ao adicionar usuário.' });
             }
         } catch (error) {
             console.error('Erro:', error);
-            alert('Erro ao conectar ao servidor.');
+            setMessage({ type: 'error', text: 'Erro ao conectar ao servidor.' });
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className="container mt-5">
             <h2>Adicionar Novo Usuário</h2>
+
+            {/* Mensagem de feedback */}
+            {message && (
+                <div className={`alert ${message.type === 'success' ? 'alert-success' : 'alert-danger'}`} role="alert">
+                    {message.text}
+                </div>
+            )}
+
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label>Nome</label>
@@ -48,6 +81,7 @@ function Usuarios_new() {
                         required
                     />
                 </div>
+
                 <div className="form-group">
                     <label>Email</label>
                     <input
@@ -56,9 +90,10 @@ function Usuarios_new() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        autoComplete={"off"}
+                        autoComplete="off"
                     />
                 </div>
+
                 <div className="form-group">
                     <label>Gênero</label>
                     <select
@@ -70,9 +105,9 @@ function Usuarios_new() {
                         <option value="" disabled>Selecione o gênero</option>
                         <option value="Masculino">Masculino</option>
                         <option value="Feminino">Feminino</option>
-
                     </select>
                 </div>
+
                 <div className="form-group">
                     <label>Função</label>
                     <select
@@ -95,6 +130,7 @@ function Usuarios_new() {
                         value={idade}
                         onChange={(e) => setIdade(e.target.value)}
                         required
+                        min="1"
                     />
                 </div>
 
@@ -107,9 +143,23 @@ function Usuarios_new() {
                         onChange={(e) => setSenha(e.target.value)}
                         required
                         autoComplete="new-password"
+                        minLength="6"
                     />
                 </div>
-                <button type="submit" className="btn btn-primary">Adicionar</button>
+
+                <div className="form-group">
+                    <label>Avatar</label>
+                    <input
+                        type="file"
+                        className="form-control"
+                        onChange={handleFileChange}
+                        accept="image/*" // Restringe a apenas imagens
+                    />
+                </div>
+
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                    {loading ? 'Adicionando...' : 'Adicionar'}
+                </button>
             </form>
         </div>
     );

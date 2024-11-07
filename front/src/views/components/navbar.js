@@ -5,6 +5,13 @@ import { AuthContext } from '../../AuthContext';
 function Navbar() {
     const user = useContext(AuthContext);
 
+    // Construir a URL do avatar, assumindo que está sendo servido a partir de "/uploads"
+    const avatarUrl = user.avatar ? `${process.env.REACT_APP_API_BASE_URL}/uploads/${user.avatar}` : null;
+
+
+    console.log("Avatar URL:", avatarUrl);
+    console.log("User Avatar Field:", user.avatar);
+
     return (
         <nav className="navbar navbar-expand-lg custom-navbar-bg">
             <div className="container-fluid">
@@ -48,9 +55,29 @@ function Navbar() {
                             </>
                         )}
                         {user.loggedIn && (
-                            <span className="navbar-text ms-3">
-                                Olá, {user.userName}!
-                            </span>
+                            <>
+                                <span className="navbar-text ms-3">
+                                    Olá, {user.userName}!
+                                </span>
+                                {avatarUrl ? (
+                                    <li className="nav-item ms-3">
+                                        <Link to={`/usuarios/edit/${user.userId}`}>
+                                            <img
+                                                src={avatarUrl}
+                                                alt="Avatar do usuário"
+                                                className="rounded-circle"
+                                                style={{ width: '40px', height: '40px', objectFit: 'cover', cursor: 'pointer' }}
+                                            />
+                                        </Link>
+                                    </li>
+                                ) : (
+                                    <li className="nav-item ms-3">
+                                        <Link to={`/usuarios/edit/${user.userId}`}>
+                                            <span className="btn btn-secondary">Perfil</span>
+                                        </Link>
+                                    </li>
+                                )}
+                            </>
                         )}
                     </ul>
                 </div>
