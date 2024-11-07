@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
                     });
                     const data = await response.json();
                     if (data.loggedIn) {
-                        setUser({ loggedIn: true, userName: data.userName, userId: data.userId });
+                        setUser({ loggedIn: true, userName: data.userName, userId: data.userId, funcao: data.userFuncao });
                     } else {
                         setUser({ loggedIn: false });
                     }
@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }) => {
             setLoading(false); // Define loading como false após a verificação
         };
 
+
         checkSession();
     }, []);
 
@@ -40,6 +41,7 @@ export const AuthProvider = ({ children }) => {
             loggedIn: true,
             userName: userData.userName,
             userId: userData.userId,
+            funcao: userData.funcao
         });
     };
 
@@ -48,9 +50,13 @@ export const AuthProvider = ({ children }) => {
         setUser({ loggedIn: false, userName: '', userId: null });
     };
 
+    const LoadingComponent = () => <div>Carregando...</div>;
+
+
     return (
         <AuthContext.Provider value={{ ...user, login, logout, loading }}>
-            {children}
+            {loading ? <LoadingComponent /> : children}
         </AuthContext.Provider>
-    );
+
+);
 };

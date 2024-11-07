@@ -34,7 +34,14 @@ function Login() {
 
                 // Define o redirecionamento com base na função
                 const role = data.funcao || 'Aluno';
-                const redirectPath = role === 'Professor' ? '/home' : '/usuarios';
+                const redirectPath = role === 'Professor' ? '/usuarios' : '/home';
+
+                if (role === 'Professor' || role === 'Aluno') {
+                    navigate(redirectPath);  // Redireciona para o caminho correto com base na função
+                } else {
+                    console.error('Função desconhecida:', data.funcao);
+                }
+
 
                 setTimeout(() => {
                     navigate(redirectPath);

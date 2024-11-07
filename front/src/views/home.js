@@ -10,9 +10,9 @@ function Home() {
 
     useEffect(() => {
         // Verificar token JWT no localStorage
-        const token = localStorage.getItem('jwtToken');
+        const token = localStorage.getItem('token'); // Altere aqui para 'token'
         if (!token) {
-            navigate('/login'); // Redireciona para a página de login se não houver token
+            navigate('/'); // Redireciona para a página de login se não houver token
             return;
         }
 
