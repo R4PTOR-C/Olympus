@@ -9,14 +9,12 @@ function Home() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Verificar token JWT no localStorage
-        const token = localStorage.getItem('token'); // Altere aqui para 'token'
+        const token = localStorage.getItem('token');
         if (!token) {
             navigate('/'); // Redireciona para a página de login se não houver token
             return;
         }
 
-        // Verificar usuário com o token JWT
         fetch(`${process.env.REACT_APP_API_BASE_URL}/session`, {
             headers: { Authorization: `Bearer ${token}` }
         })
@@ -24,7 +22,7 @@ function Home() {
             .then(data => {
                 if (data.loggedIn) {
                     setUser({ loggedIn: true, userName: data.userName, userId: data.userId });
-                    fetchTreinos(data.userId, token); // Buscar treinos do usuário logado com o token
+                    fetchTreinos(data.userId, token);
                 }
                 setLoading(false);
             })
@@ -50,6 +48,17 @@ function Home() {
         }
     };
 
+    // Função para obter o dia da semana atual
+    const getToday = () => {
+        const days = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+        const todayIndex = new Date().getDay();
+        return days[todayIndex];
+    };
+
+    const today = getToday();
+    const treinoDoDia = treinos.find(treino => treino.dia_semana === today);
+    const proximosTreinos = treinos.filter(treino => treino.dia_semana !== today);
+
     if (loading) return <div>Carregando...</div>;
     if (error) return <div>Erro: {error}</div>;
 
@@ -57,10 +66,23 @@ function Home() {
         <div className="container mt-4">
             {user.loggedIn ? (
                 <div>
-                    <h2>Seus Treinos</h2>
-                    {treinos.length > 0 ? (
+                    <h2>Treino do Dia</h2>
+                    {treinoDoDia ? (
+                        <div className="card mb-4" onClick={() => navigate(`/treinos/${treinoDoDia.id}/exercicios`)} style={{ cursor: 'pointer', backgroundColor: '#f8f9fa', padding: '20px', fontSize: '1.2rem' }}>
+                            <div className="card-body">
+                                <h5 className="card-title">{treinoDoDia.nome_treino}</h5>
+                                <p className="card-text"><strong>Descrição:</strong> {treinoDoDia.descricao}</p>
+                                <p className="card-text"><strong>Dia da Semana:</strong> {treinoDoDia.dia_semana}</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <p>Não há treino para hoje.</p>
+                    )}
+
+                    <h3 className="mt-5">Próximos Treinos</h3>
+                    {proximosTreinos.length > 0 ? (
                         <div className="row">
-                            {treinos.map(treino => (
+                            {proximosTreinos.map(treino => (
                                 <div className="col-md-4 mb-4" key={treino.id}>
                                     <div className="card h-100" onClick={() => navigate(`/treinos/${treino.id}/exercicios`)} style={{ cursor: 'pointer' }}>
                                         <div className="card-body">
@@ -73,7 +95,7 @@ function Home() {
                             ))}
                         </div>
                     ) : (
-                        <p>Você não tem treinos cadastrados.</p>
+                        <p>Não há próximos treinos cadastrados.</p>
                     )}
                 </div>
             ) : (
