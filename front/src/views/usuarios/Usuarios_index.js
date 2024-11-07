@@ -18,7 +18,6 @@ const Usuarios_index = () => {
                 return response.json();
             })
             .then(data => {
-                // Filtra apenas os usuários com função "Aluno"
                 const alunos = data.filter(usuario => usuario.funcao === "Aluno");
                 setUsuarios(alunos);
                 setLoading(false);
@@ -52,29 +51,31 @@ const Usuarios_index = () => {
     if (error) return <div className="text-danger">Erro: {error}</div>;
 
     return (
-        <div className="overflow-auto">
+        <div className="usuarios-container">
             <h1 className="text-2xl font-bold mb-4">Alunos</h1>
-            <div className="table-responsive">
+
+            {/* Tabela para telas maiores */}
+            <div className="table-responsive d-none d-lg-block">
                 <table className="table table-hover">
                     <thead className="bg-gray-200">
                     <tr>
-                        <th scope="col" className="px-6 py-3">ID</th>
-                        <th scope="col" className="px-6 py-3">Nome</th>
-                        <th scope="col" className="px-6 py-3">Email</th>
-                        <th scope="col" className="px-6 py-3">Gênero</th>
-                        <th scope="col" className="px-6 py-3">Idade</th>
-                        <th scope="col" className="px-6 py-3">Ações</th>
+                        <th scope="col">ID</th>
+                        <th scope="col">Nome</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Gênero</th>
+                        <th scope="col">Idade</th>
+                        <th scope="col">Ações</th>
                     </tr>
                     </thead>
                     <tbody>
                     {usuarios.map(usuario => (
                         <tr key={usuario.id}>
-                            <th scope="row" className="px-6 py-4">{usuario.id}</th>
-                            <td className="px-6 py-4">{usuario.nome}</td>
-                            <td className="px-6 py-4">{usuario.email}</td>
-                            <td className="px-6 py-4">{usuario.genero}</td>
-                            <td className="px-6 py-4">{usuario.idade}</td>
-                            <td className="px-6 py-4">
+                            <th scope="row">{usuario.id}</th>
+                            <td>{usuario.nome}</td>
+                            <td>{usuario.email}</td>
+                            <td>{usuario.genero}</td>
+                            <td>{usuario.idade}</td>
+                            <td>
                                 <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success me-2">Criar Treino</Link>
                                 <Link to={`/usuarios/view/${usuario.id}`} className="btn btn-info me-2">Ver</Link>
                                 <button
@@ -88,6 +89,31 @@ const Usuarios_index = () => {
                     ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Cards para telas menores */}
+            <div className="d-lg-none">
+                {usuarios.map(usuario => (
+                    <div key={usuario.id} className="card mb-3">
+                        <div className="card-body">
+                            <h5 className="card-title">{usuario.nome}</h5>
+                            <p className="card-text"><strong>ID:</strong> {usuario.id}</p>
+                            <p className="card-text"><strong>Email:</strong> {usuario.email}</p>
+                            <p className="card-text"><strong>Gênero:</strong> {usuario.genero}</p>
+                            <p className="card-text"><strong>Idade:</strong> {usuario.idade}</p>
+                            <div className="card-actions">
+                                <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success me-2">Criar Treino</Link>
+                                <Link to={`/usuarios/view/${usuario.id}`} className="btn btn-info me-2">Ver</Link>
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={() => handleDelete(usuario.id)}
+                                >
+                                    Deletar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );

@@ -1,0 +1,32 @@
+/* Esconde a tabela em telas menores e exibe os cards */
+.usuarios-container .table-responsive {
+    display: none;
+}
+
+@media (min-width: 992px) {
+    .usuarios-container .table-responsive {
+        display: block;
+    }
+    .usuarios-container .card {
+        display: none;
+    }
+}
+
+.card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-actions {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.card-actions .btn {
+    margin-right: 8px;
+}

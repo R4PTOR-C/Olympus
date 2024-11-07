@@ -70,7 +70,6 @@ function Usuarios_new() {
                         <option value="" disabled>Selecione o gênero</option>
                         <option value="Masculino">Masculino</option>
                         <option value="Feminino">Feminino</option>
-                        <option value="V">Outras viadagens</option>
 
                     </select>
                 </div>

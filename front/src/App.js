@@ -18,6 +18,8 @@ import Professor_new from "./views/professores/Professores_new";
 import { AuthProvider, AuthContext } from './AuthContext';
 import './App.css';
 import './styles/Navbar.css'
+import './styles/Usuarios.css'; // Certifique-se de criar um arquivo CSS para os estilos
+
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }) {
