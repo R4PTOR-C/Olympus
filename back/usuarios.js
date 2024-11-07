@@ -6,6 +6,8 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+
 
 
 
@@ -40,6 +42,10 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Configuração do multer para armazenamento da imagem
 const storage = multer.diskStorage({
