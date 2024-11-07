@@ -31,7 +31,7 @@ function Navbar() {
                                     <Link className="nav-link" to="/usuarios">Alunos</Link>
                                 </li>
                                 <li className="nav-item">
-                                    <Link className="nav-link" to="#">Exercicios</Link>
+                                    <Link className="nav-link" to="/exercicios_new">Exercicios</Link>
                                 </li>
                             </>
                         ) : (
