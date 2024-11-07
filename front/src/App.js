@@ -45,7 +45,7 @@ function AppContent() {
     return (
         <>
             {/* Renderiza a Navbar apenas se o usuário estiver logado e não estiver na página de login */}
-            {loggedIn && location.pathname !== '/' && <Navbar />}
+            {loggedIn && !['/', '/sign-in'].includes(location.pathname) && <Navbar />}
             <Routes>
                 <Route path="/" element={<Login />} />
                 <Route path="/sign-in" element={<Usuarios_new />} />
