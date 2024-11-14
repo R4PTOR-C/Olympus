@@ -1,25 +1,30 @@
+// AuthContext.js
 import React, { createContext, useState, useEffect } from 'react';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState({ loggedIn: false, userName: '', userId: null });
+    const [user, setUser] = useState({ loggedIn: false, userName: '', userId: null, avatar: null });
     const [loading, setLoading] = useState(true);
 
+    // Função para carregar a sessão ao iniciar
     useEffect(() => {
-        // Verificar sessão do usuário com o token JWT ao carregar o contexto
         const checkSession = async () => {
             const token = localStorage.getItem('token');
             if (token) {
                 try {
                     const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/session`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
+                        headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const data = await response.json();
                     if (data.loggedIn) {
-                        setUser({ loggedIn: true, userName: data.userName, userId: data.userId, funcao: data.userFuncao, avatar: data.userAvatar });
+                        setUser({
+                            loggedIn: true,
+                            userName: data.userName,
+                            userId: data.userId,
+                            funcao: data.userFuncao,
+                            avatar: data.userAvatar
+                        });
                     } else {
                         setUser({ loggedIn: false });
                     }
@@ -29,14 +34,14 @@ export const AuthProvider = ({ children }) => {
             } else {
                 setUser({ loggedIn: false });
             }
-            setLoading(false); // Define loading como false após a verificação
+            setLoading(false);
         };
-
-
         checkSession();
     }, []);
 
-    const login = (userData) => {
+    // Função para login que atualiza o estado e armazena o token
+    const login = (userData, token) => {
+        localStorage.setItem('token', token);
         setUser({
             loggedIn: true,
             userName: userData.userName,
@@ -48,16 +53,14 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem('token');
-        setUser({ loggedIn: false, userName: '', userId: null });
+        setUser({ loggedIn: false, userName: '', userId: null, avatar: null });
     };
 
-    const LoadingComponent = () => <div>Carregando...</div>;
-
+    if (loading) return <div>Carregando...</div>;
 
     return (
         <AuthContext.Provider value={{ ...user, login, logout, loading }}>
-            {loading ? <LoadingComponent /> : children}
+            {children}
         </AuthContext.Provider>
-
-);
+    );
 };

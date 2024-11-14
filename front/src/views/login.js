@@ -10,44 +10,36 @@ function Login() {
     const navigate = useNavigate();
     const { login } = useContext(AuthContext); // Pega a função de login do AuthContext
 
+    // login.js (ou outro componente de login)
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
         try {
             const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/login`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, senha }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, senha })
             });
             const data = await response.json();
 
             if (response.ok) {
                 console.log('Login bem-sucedido:', data);
+                // Chama a função de login do contexto passando os dados do usuário e o token
+                login(
+                    { userName: data.userName, userId: data.userId, funcao: data.funcao, avatar: data.avatar },
+                    data.token
+                );
 
-                // Armazena o token JWT no localStorage
-                localStorage.setItem('token', data.token);
-
-                // Chama a função de login para atualizar o contexto
-                login({ userName: data.userName, userId: data.userId, funcao: data.funcao });
-
-                // Define o redirecionamento com base na função
-                const role = data.funcao || 'Aluno';
-                const redirectPath = role === 'Professor' ? '/usuarios' : '/home';
-
-                if (role === 'Professor' || role === 'Aluno') {
-                    navigate(redirectPath);  // Redireciona para o caminho correto com base na função
+                // Redireciona com base na função do usuário
+                if (data.funcao === 'Professor') {
+                    navigate('/usuarios'); // Exemplo de rota para professores
+                } else if (data.funcao === 'Aluno') {
+                    navigate('/home'); // Exemplo de rota para alunos
                 } else {
-                    console.error('Função desconhecida:', data.funcao);
+                    // Se a função do usuário não for especificada, redireciona para uma rota padrão
+                    navigate('/home');
                 }
-
-
-                setTimeout(() => {
-                    navigate(redirectPath);
-                }, 100);
             } else {
-                console.error('Erro no login:', data.error);
                 alert(data.error || 'Erro ao fazer login. Tente novamente.');
             }
         } catch (error) {
@@ -57,6 +49,7 @@ function Login() {
             setLoading(false);
         }
     };
+
 
     return (
         <div className="login-page-container">

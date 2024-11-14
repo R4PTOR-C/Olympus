@@ -6,10 +6,12 @@ function Usuarios_new() {
     const [genero, setGenero] = useState('');
     const [idade, setIdade] = useState('');
     const [senha, setSenha] = useState('');
-    const [funcao, setFuncao] = useState('');
     const [avatar, setAvatar] = useState(null); // Novo estado para armazenar a imagem
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
+
+    const funcao = 'Aluno'; // Campo função definido automaticamente
+
 
     const handleFileChange = (event) => {
         setAvatar(event.target.files[0]);
@@ -46,7 +48,6 @@ function Usuarios_new() {
                 setGenero('');
                 setIdade('');
                 setSenha('');
-                setFuncao('');
                 setAvatar(null);
             } else {
                 setMessage({ type: 'error', text: 'Falha ao adicionar usuário.' });
@@ -105,20 +106,6 @@ function Usuarios_new() {
                         <option value="" disabled>Selecione o gênero</option>
                         <option value="Masculino">Masculino</option>
                         <option value="Feminino">Feminino</option>
-                    </select>
-                </div>
-
-                <div className="form-group">
-                    <label>Função</label>
-                    <select
-                        className="form-control"
-                        value={funcao}
-                        onChange={(e) => setFuncao(e.target.value)}
-                        required
-                    >
-                        <option value="" disabled>Selecione a função</option>
-                        <option value="Aluno">Aluno</option>
-                        <option value="Professor">Professor</option>
                     </select>
                 </div>
 

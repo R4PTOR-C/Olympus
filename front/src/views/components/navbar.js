@@ -66,18 +66,19 @@ function Navbar() {
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false"
                                 >
+                                    Olá, {user.userName}!
                                     {avatarUrl ? (
                                         <img
                                             src={avatarUrl}
                                             alt="Avatar do usuário"
-                                            className="rounded-circle me-2"
-                                            style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                            className="rounded-circle ms-2"
+                                            style={{width: '40px', height: '40px', objectFit: 'cover'}}
                                         />
                                     ) : (
-                                        <span className="me-2">{user.userName}</span>
+                                        <span className="ms-2"></span>
                                     )}
-                                    Olá, {user.userName}!
                                 </a>
+
                                 {/* Dropdown menu */}
                                 <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                     <li>
@@ -85,7 +86,9 @@ function Navbar() {
                                             Perfil
                                         </Link>
                                     </li>
-                                    <li><hr className="dropdown-divider" /></li>
+                                    <li>
+                                        <hr className="dropdown-divider"/>
+                                    </li>
                                     <li>
                                         <button className="dropdown-item" onClick={handleLogout}>
                                             Logout
