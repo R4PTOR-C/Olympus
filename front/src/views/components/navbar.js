@@ -23,13 +23,6 @@ function Navbar() {
                 </button>
 
                 <div className="collapse navbar-collapse" id="navbarSupportedContent">
-                    {/* Pesquisa centralizada */}
-                    <div className="mx-auto search-container">
-                        <form className="d-flex" role="search">
-                            <input className="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
-                            <button className="btn btn-outline-success" type="submit">Search</button>
-                        </form>
-                    </div>
 
                     {/* Links de navegação alinhados à direita */}
                     <ul className="navbar-nav ms-auto mb-2 mb-lg-0 user-links">
@@ -50,9 +43,7 @@ function Navbar() {
                                 <li className="nav-item">
                                     <Link className="nav-link" to="#">Avaliação Física</Link>
                                 </li>
-                                <li className="nav-item">
-                                    <Link className="nav-link" to="#">Calendario</Link>
-                                </li>
+                                
                             </>
                         )}
                         {user.loggedIn && (

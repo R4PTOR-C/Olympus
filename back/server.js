@@ -7,6 +7,8 @@ const loginRouter = require('./login/usuarios_login');
 const academiaRouter = require('./academias/academias');
 const exerciciosRouter = require('./exercicios');
 const treinosRouter = require('./treinos'); // Importa o módulo de treinos
+const avaliacoesRouter = require('./avaliacoes');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -43,6 +45,8 @@ app.use('/', loginRouter);
 app.use('/academias', academiaRouter);
 app.use('/exercicios', exerciciosRouter);
 app.use('/treinos', treinosRouter);
+app.use('/avaliacoes', avaliacoesRouter);
+
 
 // Rotas protegidas
 app.get('/home', checkAuthenticated, (req, res) => {
