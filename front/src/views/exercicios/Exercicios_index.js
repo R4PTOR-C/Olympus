@@ -93,20 +93,35 @@ function Exercicios_index() {
                         <div className="col-md-4 mb-4" key={exercicio.exercicio_id}>
                             <div
                                 className="card h-100"
-                                style={{cursor: 'pointer'}} // Adiciona o cursor de "pointer" para indicar que o card é clicável
-                                onClick={() => setSelectedExercicio(exercicio.exercicio_id)} // Define o card inteiro como clicável
+                                style={{cursor: 'pointer'}}
+                                onClick={() => {
+                                    // Alternar entre mostrar e ocultar o formulário
+                                    setSelectedExercicio(selectedExercicio === exercicio.exercicio_id ? null : exercicio.exercicio_id);
+                                }}
                             >
                                 <div className="card-body">
                                     <h5 className="card-title">{exercicio.nome_exercicio}</h5>
-                                    {exercicio.carga && exercicio.repeticoes && exercicio.series && (
+
+                                    {exercicio.carga && exercicio.repeticoes && exercicio.series ? (
+                                        // Exibe informações registradas do exercício
                                         <div className="mt-2">
                                             <p><strong>Carga:</strong> {exercicio.carga} kg</p>
                                             <p><strong>Repetições:</strong> {exercicio.repeticoes}</p>
                                             <p><strong>Séries:</strong> {exercicio.series}</p>
                                         </div>
+                                    ) : (
+                                        // Exibe um placeholder caso as informações não estejam disponíveis
+                                        <div className="mt-2 text-muted">
+                                            <p>Sem informações registradas.</p>
+                                            <p>Clique para adicionar detalhes.</p>
+                                        </div>
                                     )}
+
                                     {selectedExercicio === exercicio.exercicio_id && (
-                                        <div className="mt-3">
+                                        <div
+                                            className="mt-3"
+                                            onClick={(e) => e.stopPropagation()} // Previne que o clique dentro do formulário feche o card
+                                        >
                                             <form>
                                                 <div className="form-group">
                                                     <label>Carga (kg)</label>
@@ -153,6 +168,7 @@ function Exercicios_index() {
                                     )}
                                 </div>
                             </div>
+
 
                         </div>
                     ))}
