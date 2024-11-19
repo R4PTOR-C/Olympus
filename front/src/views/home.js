@@ -79,24 +79,31 @@ function Home() {
                         <p>Não há treino para hoje.</p>
                     )}
 
-                    <h3 className="mt-5">Próximos Treinos</h3>
+                    <h3 className="text-center mt-5 text-secondary">Próximos Treinos</h3>
                     {proximosTreinos.length > 0 ? (
-                        <div className="row">
+                        <div className="list-group">
                             {proximosTreinos.map(treino => (
-                                <div className="col-md-4 mb-4" key={treino.id}>
-                                    <div className="card h-100" onClick={() => navigate(`/treinos/${treino.id}/exercicios`)} style={{ cursor: 'pointer' }}>
-                                        <div className="card-body">
-                                            <h5 className="card-title">{treino.nome_treino}</h5>
-                                            <p className="card-text"><strong>Descrição:</strong> {treino.descricao}</p>
-                                            <p className="card-text"><strong>Dia da Semana:</strong> {treino.dia_semana}</p>
-                                        </div>
+                                <div
+                                    className="list-group-item list-group-item-action d-flex align-items-center mb-3 shadow-sm"
+                                    key={treino.id}
+                                    onClick={() => navigate(`/treinos/${treino.id}/exercicios`)}
+                                    style={{ cursor: 'pointer', borderRadius: '10px' }}
+                                >
+                                    <div className="me-3">
+                                        <i className="bi bi-calendar-event text-primary" style={{ fontSize: '2rem' }}></i>
+                                    </div>
+                                    <div>
+                                        <h5 className="mb-1 text-dark">{treino.nome_treino}</h5>
+                                        <p className="mb-0 text-muted"><strong>Dia:</strong> {treino.dia_semana}</p>
+                                        <p className="mb-0 text-muted"><strong>Descrição:</strong> {treino.descricao}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <p>Não há próximos treinos cadastrados.</p>
+                        <p className="text-center">Não há próximos treinos cadastrados.</p>
                     )}
+
                 </div>
             ) : (
                 <p>Você não está logado.</p>

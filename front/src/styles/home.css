@@ -1,0 +1,25 @@
+.treino-dia-card {
+    background-color: #e0f7fa; /* Azul claro */
+    border: 2px solid #26a69a; /* Verde */
+    border-radius: 10px;
+    padding: 20px;
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.treino-dia-card:hover {
+    transform: scale(1.05);
+}
+
+.treino-card-small {
+    min-width: 200px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.treino-card-small:hover {
+    transform: scale(1.05);
+    background-color: #f1f1f1;
+}

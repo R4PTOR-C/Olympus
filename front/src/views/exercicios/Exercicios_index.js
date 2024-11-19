@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext'; // Importa o contexto de autenticação
 
-function Exercicios_new() {
+function Exercicios_index() {
     const { treinoId } = useParams(); // Pega o ID do treino da URL
     const [exercicios, setExercicios] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -91,9 +91,13 @@ function Exercicios_new() {
                 <div className="row">
                     {exercicios.map(exercicio => (
                         <div className="col-md-4 mb-4" key={exercicio.exercicio_id}>
-                            <div className="card h-100">
+                            <div
+                                className="card h-100"
+                                style={{cursor: 'pointer'}} // Adiciona o cursor de "pointer" para indicar que o card é clicável
+                                onClick={() => setSelectedExercicio(exercicio.exercicio_id)} // Define o card inteiro como clicável
+                            >
                                 <div className="card-body">
-                                    <h5 className="card-title" onClick={() => setSelectedExercicio(exercicio.exercicio_id)}>{exercicio.nome_exercicio}</h5>
+                                    <h5 className="card-title">{exercicio.nome_exercicio}</h5>
                                     {exercicio.carga && exercicio.repeticoes && exercicio.series && (
                                         <div className="mt-2">
                                             <p><strong>Carga:</strong> {exercicio.carga} kg</p>
@@ -137,7 +141,10 @@ function Exercicios_new() {
                                                 <button
                                                     type="button"
                                                     className="btn btn-primary mt-3"
-                                                    onClick={() => handleFormSubmit(exercicio.exercicio_id)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // Previne que o clique no botão feche o card
+                                                        handleFormSubmit(exercicio.exercicio_id);
+                                                    }}
                                                 >
                                                     Salvar
                                                 </button>
@@ -146,6 +153,7 @@ function Exercicios_new() {
                                     )}
                                 </div>
                             </div>
+
                         </div>
                     ))}
                 </div>
@@ -156,4 +164,4 @@ function Exercicios_new() {
     );
 }
 
-export default Exercicios_new;
+export default Exercicios_index;
