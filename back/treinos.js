@@ -6,28 +6,38 @@ const router = express.Router();
 // Rota para criar um treino para um aluno
 // Rota para criar um treino para um aluno
 router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
-    const { usuarioId } = req.params; // ID do aluno
-    const { nome_treino, descricao, dia_semana } = req.body;
+    const { usuarioId } = req.params;
+    const { nome_treino, descricao, dia_semana, grupo_muscular } = req.body;
+
+    // Mapeamento de grupos musculares para imagens
+    const grupoParaImagem = {
+        Peitoral: 'peito.png',
+        Costas: 'costas.png',
+        Ombros: 'ombros.png',
+        Bíceps: 'biceps.png',
+        Tríceps: 'triceps.png',
+        Posterior: 'posterior.png',
+        Frontal: 'frontal.png',
+        Panturrilha: 'panturrilha.png',
+        Abdômen: 'abdomen.png',
+    };
 
     try {
-        // Defina o caminho da imagem genérica (substitua pelos caminhos reais)
-        const imagensGenericas = [
-            'peito.png'
-        ];
-        const imagemSelecionada = imagensGenericas[Math.floor(Math.random() * imagensGenericas.length)];
+        // Obter a imagem correspondente ou usar a padrão
+        const imagemSelecionada = grupoParaImagem[grupo_muscular] || 'default.png';
 
-        // Inserir o treino no banco de dados
         const result = await db.query(
             'INSERT INTO treinos (usuario_id, nome_treino, descricao, dia_semana, imagem) VALUES ($1, $2, $3, $4, $5) RETURNING *',
             [usuarioId, nome_treino, descricao, dia_semana, imagemSelecionada]
         );
 
-        res.status(201).json(result.rows[0]); // Retorna o treino criado
+        res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Erro ao criar o treino:', error);
         res.status(500).json({ error: 'Erro ao criar o treino' });
     }
 });
+
 
 
 // Rota para adicionar múltiplos exercícios a um treino

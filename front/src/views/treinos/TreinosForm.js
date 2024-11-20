@@ -2,24 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const TreinosForm = () => {
-    const { id } = useParams(); // Pega o ID do aluno da URL
+    const { id } = useParams(); // ID do aluno
     const navigate = useNavigate();
     const [nomeTreino, setNomeTreino] = useState('');
     const [descricao, setDescricao] = useState('');
     const [diaSemana, setDiaSemana] = useState('');
-    const [exercicios, setExercicios] = useState([]); // Exercícios disponíveis
-    const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]); // IDs dos exercícios selecionados
-    const [searchTerm, setSearchTerm] = useState(''); // Termo de busca
-    const [filteredExercicios, setFilteredExercicios] = useState([]); // Exercícios filtrados
+    const [grupoPrincipal, setGrupoPrincipal] = useState(''); // Grupo principal do treino
+    const [exercicios, setExercicios] = useState([]);
+    const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredExercicios, setFilteredExercicios] = useState([]);
+
+    // Mapeamento de grupos musculares para imagens
+    const [grupoMuscular, setGrupoMuscular] = useState('');
+
+
 
     useEffect(() => {
-        // Buscar exercícios do backend
         const fetchExercicios = async () => {
             try {
                 const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`);
                 const data = await response.json();
                 setExercicios(data);
-                setFilteredExercicios(data); // Inicialmente, todos os exercícios estão na lista filtrada
+                setFilteredExercicios(data);
             } catch (error) {
                 console.error('Erro ao carregar exercícios:', error);
             }
@@ -28,7 +33,6 @@ const TreinosForm = () => {
         fetchExercicios();
     }, []);
 
-    // Atualizar os exercícios filtrados ao digitar na barra de busca
     useEffect(() => {
         const filtered = exercicios.filter(
             (ex) =>
@@ -38,13 +42,10 @@ const TreinosForm = () => {
         setFilteredExercicios(filtered);
     }, [searchTerm, exercicios]);
 
-
     const handleExercicioChange = (exercicioId) => {
         if (exerciciosSelecionados.includes(exercicioId)) {
-            // Remover exercício se já estiver selecionado
             setExerciciosSelecionados(exerciciosSelecionados.filter((id) => id !== exercicioId));
         } else {
-            // Adicionar exercício à lista selecionada
             setExerciciosSelecionados([...exerciciosSelecionados, exercicioId]);
         }
     };
@@ -57,14 +58,15 @@ const TreinosForm = () => {
             return;
         }
 
+
         const treino = {
             nome_treino: nomeTreino,
             descricao,
             dia_semana: diaSemana,
+            grupo_muscular: grupoMuscular, // Apenas para determinar a imagem
         };
 
         try {
-            // Criar o treino
             const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -74,7 +76,6 @@ const TreinosForm = () => {
             if (response.ok) {
                 const novoTreino = await response.json();
 
-                // Associar exercícios ao treino
                 await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${novoTreino.id}/exercicios`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -131,6 +132,27 @@ const TreinosForm = () => {
                         <option value="Sexta-feira">Sexta-feira</option>
                         <option value="Sábado">Sábado</option>
                         <option value="Domingo">Domingo</option>
+                    </select>
+                </div>
+
+                <div className="form-group">
+                    <label>Grupo Muscular Principal</label>
+                    <select
+                        className="form-control"
+                        value={grupoMuscular}
+                        onChange={(e) => setGrupoMuscular(e.target.value)}
+                        required
+                    >
+                        <option value="">Selecione o Grupo</option>
+                        <option value="Peitoral">Peitoral</option>
+                        <option value="Costas">Costas</option>
+                        <option value="Ombros">Ombros</option>
+                        <option value="Bíceps">Bíceps</option>
+                        <option value="Tríceps">Tríceps</option>
+                        <option value="Posterior">Posterior</option>
+                        <option value="Frontal">Frontal</option>
+                        <option value="Panturrilha">Panturrilha</option>
+                        <option value="Abdômen">Abdômen</option>
                     </select>
                 </div>
 
