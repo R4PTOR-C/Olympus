@@ -116,6 +116,30 @@ router.get('/exercicios', async (req, res) => {
     }
 });
 
+// Rota para obter grupos musculares únicos
+router.get('/exercicios/grupos', async (req, res) => {
+    try {
+        const result = await db.query('SELECT DISTINCT grupo_muscular FROM exercicios');
+        res.json(result.rows.map(row => row.grupo_muscular)); // Retorna apenas os nomes dos grupos musculares
+    } catch (error) {
+        console.error('Erro ao buscar grupos musculares:', error);
+        res.status(500).json({ error: 'Erro ao buscar grupos musculares' });
+    }
+});
+
+router.get('/grupos', async (req, res) => {
+    try {
+        const { rows } = await db.query('SELECT DISTINCT grupo_muscular FROM exercicios WHERE grupo_muscular IS NOT NULL');
+        const grupos = rows.map(row => row.grupo_muscular);
+        res.json(grupos); // Retorna uma lista de grupos musculares
+    } catch (err) {
+        console.error('Erro ao buscar grupos musculares:', err);
+        res.status(500).json({ error: 'Erro ao buscar grupos musculares' });
+    }
+});
+
+
+
 // Rota para deletar um treino
 router.delete('/treinos/:id', async (req, res) => {
     const { id } = req.params;

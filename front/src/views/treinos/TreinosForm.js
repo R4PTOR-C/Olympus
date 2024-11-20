@@ -7,16 +7,19 @@ const TreinosForm = () => {
     const [nomeTreino, setNomeTreino] = useState('');
     const [descricao, setDescricao] = useState('');
     const [diaSemana, setDiaSemana] = useState('');
-    const [exercicios, setExercicios] = useState([]); // Estado para armazenar exercícios disponíveis
-    const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]); // Estado para armazenar os IDs dos exercícios selecionados
+    const [exercicios, setExercicios] = useState([]); // Exercícios disponíveis
+    const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]); // IDs dos exercícios selecionados
+    const [searchTerm, setSearchTerm] = useState(''); // Termo de busca
+    const [filteredExercicios, setFilteredExercicios] = useState([]); // Exercícios filtrados
 
-    // Carregar os exercícios quando o componente é montado
     useEffect(() => {
+        // Buscar exercícios do backend
         const fetchExercicios = async () => {
             try {
                 const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`);
                 const data = await response.json();
-                setExercicios(data); // Armazena os exercícios no estado
+                setExercicios(data);
+                setFilteredExercicios(data); // Inicialmente, todos os exercícios estão na lista filtrada
             } catch (error) {
                 console.error('Erro ao carregar exercícios:', error);
             }
@@ -25,23 +28,35 @@ const TreinosForm = () => {
         fetchExercicios();
     }, []);
 
-    // Função para adicionar um exercício selecionado à lista
-    const handleAddExercicio = () => {
-        setExerciciosSelecionados([...exerciciosSelecionados, '']); // Adiciona um campo vazio para seleção de exercício
+    // Atualizar os exercícios filtrados ao digitar na barra de busca
+    useEffect(() => {
+        const filtered = exercicios.filter(
+            (ex) =>
+                (ex.nome_exercicio && ex.nome_exercicio.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (ex.grupo_muscular && ex.grupo_muscular.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+        setFilteredExercicios(filtered);
+    }, [searchTerm, exercicios]);
+
+
+    const handleExercicioChange = (exercicioId) => {
+        if (exerciciosSelecionados.includes(exercicioId)) {
+            // Remover exercício se já estiver selecionado
+            setExerciciosSelecionados(exerciciosSelecionados.filter((id) => id !== exercicioId));
+        } else {
+            // Adicionar exercício à lista selecionada
+            setExerciciosSelecionados([...exerciciosSelecionados, exercicioId]);
+        }
     };
 
-    // Função para atualizar um exercício selecionado na lista
-    const handleExercicioChange = (index, value) => {
-        const novosExerciciosSelecionados = [...exerciciosSelecionados];
-        novosExerciciosSelecionados[index] = value;
-        setExerciciosSelecionados(novosExerciciosSelecionados);
-    };
-
-    // Função para enviar o treino e associar exercícios
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        // Primeiro passo: Criar o treino
+        if (exerciciosSelecionados.length === 0) {
+            alert('Selecione pelo menos um exercício!');
+            return;
+        }
+
         const treino = {
             nome_treino: nomeTreino,
             descricao,
@@ -49,58 +64,36 @@ const TreinosForm = () => {
         };
 
         try {
+            // Criar o treino
             const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(treino),
             });
 
             if (response.ok) {
-                const novoTreino = await response.json(); // Obtenha os dados do treino recém-criado, incluindo o ID
+                const novoTreino = await response.json();
 
-                // Segundo passo: Enviar os exercícios para serem vinculados ao treino
-                await adicionarExerciciosAoTreino(novoTreino.id);  // Chame a função que adiciona os exercícios
+                // Associar exercícios ao treino
+                await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${novoTreino.id}/exercicios`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exercicios: exerciciosSelecionados }),
+                });
 
                 alert('Treino e exercícios adicionados com sucesso!');
                 navigate(`/usuarios/view/${id}`);
             } else {
-                alert('Erro ao adicionar o treino');
+                alert('Erro ao criar o treino.');
             }
         } catch (error) {
-            console.error('Erro ao conectar ao servidor:', error);
-        }
-    };
-
-    // Função para adicionar exercícios ao treino recém-criado
-    const adicionarExerciciosAoTreino = async (treinoId) => {
-        if (exerciciosSelecionados.filter(exercicio => exercicio !== '').length === 0) {
-            alert('Nenhum exercício selecionado!');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    exercicios: exerciciosSelecionados.filter(exercicio => exercicio !== '') // Somente enviar IDs de exercícios válidos
-                }),
-            });
-
-            if (!response.ok) {
-                alert('Erro ao adicionar os exercícios ao treino');
-            }
-        } catch (error) {
-            console.error('Erro ao adicionar exercícios ao treino:', error);
+            console.error('Erro ao criar treino:', error);
+            alert('Erro ao conectar ao servidor.');
         }
     };
 
     return (
-        <div className="container mt-5" >
+        <div className="container mt-5">
             <h2>Criar Treino para Aluno</h2>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
@@ -141,33 +134,50 @@ const TreinosForm = () => {
                     </select>
                 </div>
 
-                <h3>Exercícios</h3>
-                {exerciciosSelecionados.map((exercicio, index) => (
-                    <div key={index} className="form-group">
-                        <label>Selecionar Exercício</label>
-                        <select
-                            className="form-control"
-                            value={exercicio}
-                            onChange={(e) => handleExercicioChange(index, e.target.value)}
-                            required
-                        >
-                            <option value="">Selecione um Exercício</option>
-                            {exercicios.map((ex) => (
-                                <option key={ex.id} value={ex.id}>
-                                    {ex.nome_exercicio}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                ))}
-                <div>
-                    <button type="button" className="btn btn-secondary" onClick={handleAddExercicio}>
-                        Adicionar Outro Exercício
-                    </button>
+                <div className="form-group mt-4">
+                    <label>Buscar Exercícios</label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Buscar por nome ou grupo muscular..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
-                <div>
-                    <button type="submit" className="btn btn-primary mt-3">Adicionar Treino</button>
+
+                <h3 className="mt-4">Exercícios Disponíveis</h3>
+                <div className="table-responsive">
+                    <table className="table table-hover">
+                        <thead>
+                        <tr>
+                            <th scope="col">Selecionar</th>
+                            <th scope="col">Nome</th>
+                            <th scope="col">Grupo Muscular</th>
+                            <th scope="col">Nível</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {filteredExercicios.map((exercicio) => (
+                            <tr key={exercicio.id}>
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        checked={exerciciosSelecionados.includes(exercicio.id)}
+                                        onChange={() => handleExercicioChange(exercicio.id)}
+                                    />
+                                </td>
+                                <td>{exercicio.nome_exercicio}</td>
+                                <td>{exercicio.grupo_muscular}</td>
+                                <td>{exercicio.nivel}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
                 </div>
+
+                <button type="submit" className="btn btn-primary mt-3">
+                    Adicionar Treino
+                </button>
             </form>
         </div>
     );
