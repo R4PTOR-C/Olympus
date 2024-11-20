@@ -15,6 +15,7 @@ import TreinosForm from './views/treinos/TreinosForm';
 import Navbar from "./views/components/navbar";
 import Exercicios_index from "./views/exercicios/Exercicios_index";
 import Professor_new from "./views/professores/Professores_new";
+import Exercicios_tabela from "./views/exercicios/Exercicios_tabela"
 import { AuthProvider, AuthContext } from './AuthContext';
 import './App.css';
 import './styles/Navbar.css'
@@ -58,6 +59,7 @@ function AppContent() {
                 <Route path="/academias" element={<ProtectedRoute><Academias_new /></ProtectedRoute>} />
                 <Route path="/academias_login" element={<Academias_login />} />
                 <Route path="/exercicios_new" element={<ProtectedRoute><Exercicios_new /></ProtectedRoute>} />
+                <Route path="/exercicios" element={<ProtectedRoute><Exercicios_tabela /></ProtectedRoute>} />
                 <Route path="/treinos/:treinoId/exercicios" element={<ProtectedRoute><Exercicios_index /></ProtectedRoute>} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/nova_senha/:token" element={<ResetPassword />} />

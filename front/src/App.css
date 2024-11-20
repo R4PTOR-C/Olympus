@@ -63,6 +63,31 @@ body {
   pointer-events: none;
 }
 
+
+/* Itens do dropdown */
+.dropdown-menu {
+  background-color: #19222B !important; /* Fundo do menu */
+  border-color: #19222B !important; /* Borda do menu */
+}
+
+/* Links dentro do dropdown */
+.dropdown-menu .dropdown-item {
+  color: white !important; /* Texto branco */
+}
+
+/* Cor ao passar o mouse sobre os itens do dropdown */
+.dropdown-menu .dropdown-item:hover {
+  background-color: #2f3840 !important; /* Fundo ao passar o mouse */
+  color: white !important; /* Texto branco */
+}
+
+/* Cor ao clicar no item do dropdown */
+.dropdown-menu .dropdown-item:active {
+  background-color: #2f3840 !important;
+  color: white !important;
+}
+
+
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;

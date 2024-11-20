@@ -17,19 +17,21 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-    const {nome_exercicio} = req.body;
+    const { nome_exercicio, grupo_muscular, nivel } = req.body;
 
     try {
-        // Inserir a academia com a senha hash no banco de dados
         const resultado = await db.query(
-            'INSERT INTO exercicios (nome_exercicio) VALUES ($1) RETURNING *',
-            [nome_exercicio]
+            `INSERT INTO exercicios (nome_exercicio, grupo_muscular, nivel) 
+             VALUES ($1, $2, $3) RETURNING *`,
+            [nome_exercicio, grupo_muscular, nivel]
         );
+
         res.status(201).json(resultado.rows[0]);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Erro ao criar o exercício:', err);
+        res.status(500).json({ error: 'Erro ao criar o exercício' });
     }
 });
+
 
 module.exports = router;

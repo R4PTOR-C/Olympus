@@ -20,11 +20,19 @@ function Navbar() {
         <nav className="navbar navbar-expand-lg custom-navbar-bg">
             <div className="container-fluid">
                 {/* Link "OLYMPUS" redirecionando condicionalmente */}
-                <Link className="navbar-brand" style={{fontFamily: 'delirium'}} to={homeLink}>
+                <Link className="navbar-brand" style={{ fontFamily: 'delirium' }} to={homeLink}>
                     OLYMPUS
                 </Link>
 
-                <button className="navbar-toggler navbar-toggler-custom" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <button
+                    className="navbar-toggler navbar-toggler-custom"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+                >
                     <span className="navbar-toggler-icon"></span>
                 </button>
 
@@ -36,8 +44,26 @@ function Navbar() {
                                 <li className="nav-item">
                                     <Link className="nav-link" to="/usuarios">Alunos</Link>
                                 </li>
-                                <li className="nav-item">
-                                    <Link className="nav-link" to="/exercicios_new">Exercícios</Link>
+                                {/* Dropdown para Exercícios */}
+                                <li className="nav-item dropdown">
+                                    <a
+                                        className="nav-link dropdown-toggle"
+                                        href="#"
+                                        id="exerciciosDropdown"
+                                        role="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                    >
+                                        Exercícios
+                                    </a>
+                                    <ul className="dropdown-menu" aria-labelledby="exerciciosDropdown">
+                                        <li>
+                                            <Link className="dropdown-item" to="/exercicios_new">Novo Exercício</Link>
+                                        </li>
+                                        <li>
+                                            <Link className="dropdown-item" to="/exercicios">Tabela de Exercícios</Link>
+                                        </li>
+                                    </ul>
                                 </li>
                             </>
                         ) : (
