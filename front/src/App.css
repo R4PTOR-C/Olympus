@@ -1,7 +1,55 @@
+@font-face {
+  font-family: 'delirium';
+  src: url('fonts/ShockSurgent-q2BO0.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'power';
+  src: url('fonts/NCLMaxipower-Demo.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.btn-primary{
+  background-color: #19222B !important;
+  color: white !important;
+  border: #19222b;
+}
+
+.btn-primary:active {
+  background-color: #2f3840 !important; /* Cor ao clicar */
+  border-color: #2f3840 !important; /* Altere a borda, se necessário */
+}
+
+.container{
+  background-color: #E8E8E9;
+  border-radius: 15px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
+}
+
+h1{
+  color: black;
+}
+
+h2, h3{;
+}
+
 body, html {
   margin: 0;
   padding: 0;
 }
+
+body {
+  background-image: url('../public/academia fundo 35.png');
+  background-size: cover; /* Ajusta a imagem para cobrir todo o espaço do body */
+  background-repeat: no-repeat; /* Impede a repetição da imagem */
+  background-attachment: fixed; /* Faz o fundo permanecer fixo ao rolar a página */
+  background-position: center; /* Centraliza a imagem no body */
+
+}
+
 
 .App {
   text-align: center;

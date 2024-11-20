@@ -100,7 +100,7 @@ const TreinosForm = () => {
     };
 
     return (
-        <div className="container mt-5">
+        <div className="container mt-5" >
             <h2>Criar Treino para Aluno</h2>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
@@ -160,12 +160,14 @@ const TreinosForm = () => {
                         </select>
                     </div>
                 ))}
-
-                <button type="button" className="btn btn-secondary" onClick={handleAddExercicio}>
-                    Adicionar Outro Exercício
-                </button>
-
-                <button type="submit" className="btn btn-primary mt-3">Adicionar Treino</button>
+                <div>
+                    <button type="button" className="btn btn-secondary" onClick={handleAddExercicio}>
+                        Adicionar Outro Exercício
+                    </button>
+                </div>
+                <div>
+                    <button type="submit" className="btn btn-primary mt-3">Adicionar Treino</button>
+                </div>
             </form>
         </div>
     );

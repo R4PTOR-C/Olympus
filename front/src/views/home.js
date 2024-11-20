@@ -66,10 +66,10 @@ function Home() {
         <div className="container mt-4">
             {user.loggedIn ? (
                 <div>
-                    <h2>Treino do Dia</h2>
                     {treinoDoDia ? (
                         <div className="card mb-4" onClick={() => navigate(`/treinos/${treinoDoDia.id}/exercicios`)} style={{ cursor: 'pointer', backgroundColor: '#f8f9fa', padding: '20px', fontSize: '1.2rem' }}>
                             <div className="card-body">
+                                <h1>Treino do Dia</h1>
                                 <h5 className="card-title">{treinoDoDia.nome_treino}</h5>
                                 <p className="card-text"><strong>Descrição:</strong> {treinoDoDia.descricao}</p>
                                 <p className="card-text"><strong>Dia da Semana:</strong> {treinoDoDia.dia_semana}</p>
@@ -79,7 +79,7 @@ function Home() {
                         <p>Não há treino para hoje.</p>
                     )}
 
-                    <h3 className="text-center mt-5 text-secondary">Próximos Treinos</h3>
+                    <h3 className="text-center mt-5" style={{ color: 'white' }}>Próximos Treinos</h3>
                     {proximosTreinos.length > 0 ? (
                         <div className="list-group">
                             {proximosTreinos.map(treino => (

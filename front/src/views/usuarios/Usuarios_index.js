@@ -70,9 +70,8 @@ const Usuarios_index = () => {
     if (error) return <div className="text-danger">Erro: {error}</div>;
 
     return (
-        <div className="usuarios-container">
+        <div className="container mt-5">
             <h1 className="text-2xl font-bold mb-4">Alunos</h1>
-
 
 
             {/* Tabela para telas maiores */}

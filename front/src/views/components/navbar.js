@@ -20,7 +20,7 @@ function Navbar() {
         <nav className="navbar navbar-expand-lg custom-navbar-bg">
             <div className="container-fluid">
                 {/* Link "OLYMPUS" redirecionando condicionalmente */}
-                <Link className="navbar-brand" to={homeLink}>
+                <Link className="navbar-brand" style={{fontFamily: 'delirium'}} to={homeLink}>
                     OLYMPUS
                 </Link>
 

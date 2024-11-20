@@ -1,5 +1,9 @@
 /* Navbar.css */
 
+
+
+
+
 .custom-navbar-bg {
     background-color: #19222B !important;
     color: white !important;
@@ -32,3 +36,14 @@
     display: flex;
     justify-content: center;
 }
+
+.navbar .nav-link {
+    color: #98BAD5; /* Cor inicial */
+    font-size: 1rem; /* Tamanho inicial da fonte */
+    transition: font-size 0.2s ease, color 0.2s ease; /* Transição suave */
+}
+
+.navbar .nav-link:hover {
+    font-size: 1.2rem; /* Tamanho da fonte ao passar o mouse */
+}
+
