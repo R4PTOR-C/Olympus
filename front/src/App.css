@@ -16,6 +16,8 @@
   background-color: #19222B !important;
   color: white !important;
   border: #19222b;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .btn-primary:active {
@@ -30,10 +32,11 @@
 }
 
 h1{
-  color: black;
+  color: #19222B;
 }
 
-h2, h3{;
+h2, h3{
+  color: #19222B;
 }
 
 body, html {

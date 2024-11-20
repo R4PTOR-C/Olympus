@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import { AuthContext } from '../../AuthContext'; // Importa o contexto de autenticação
+import { AuthContext } from '../../AuthContext';
 
 function Exercicios_index() {
     const { treinoId } = useParams(); // Pega o ID do treino da URL
+    const [treinoNome, setTreinoNome] = useState(''); // Novo estado para o nome do treino
     const [exercicios, setExercicios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -11,8 +12,25 @@ function Exercicios_index() {
     const [selectedExercicio, setSelectedExercicio] = useState(null);
     const [formData, setFormData] = useState({ carga: '', repeticoes: '', series: '' });
 
+    // Buscar detalhes do treino (nome)
     useEffect(() => {
-        // Buscar os exercícios do treino específico, incluindo informações de registro
+        const fetchTreinoNome = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`);
+                if (!response.ok) throw new Error('Erro ao buscar o nome do treino');
+                const data = await response.json();
+                setTreinoNome(data.nome_treino); // Atualiza o estado com o nome do treino
+            } catch (err) {
+                console.error('Erro ao buscar o nome do treino:', err);
+                setError('Erro ao buscar o nome do treino');
+            }
+        };
+
+        fetchTreinoNome();
+    }, [treinoId]);
+
+    // Buscar os exercícios do treino específico
+    useEffect(() => {
         const fetchExercicios = async () => {
             try {
                 const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, { credentials: 'include' });
@@ -86,14 +104,14 @@ function Exercicios_index() {
 
     return (
         <div className="container mt-4">
-            <h2>Exercícios do Treino do Aluno com ID: {userId}</h2>
+            <h2>Exercícios do Treino: <strong>{treinoNome}</strong></h2>
             {exercicios.length > 0 ? (
                 <div className="row">
                     {exercicios.map(exercicio => (
                         <div className="col-md-4 mb-4" key={exercicio.exercicio_id}>
                             <div
                                 className="card h-100"
-                                style={{cursor: 'pointer'}}
+                                style={{ cursor: 'pointer' }}
                                 onClick={() => {
                                     // Alternar entre mostrar e ocultar o formulário
                                     setSelectedExercicio(selectedExercicio === exercicio.exercicio_id ? null : exercicio.exercicio_id);
@@ -101,27 +119,20 @@ function Exercicios_index() {
                             >
                                 <div className="card-body">
                                     <h5 className="card-title">{exercicio.nome_exercicio}</h5>
-
                                     {exercicio.carga && exercicio.repeticoes && exercicio.series ? (
-                                        // Exibe informações registradas do exercício
                                         <div className="mt-2">
                                             <p><strong>Carga:</strong> {exercicio.carga} kg</p>
                                             <p><strong>Repetições:</strong> {exercicio.repeticoes}</p>
                                             <p><strong>Séries:</strong> {exercicio.series}</p>
                                         </div>
                                     ) : (
-                                        // Exibe um placeholder caso as informações não estejam disponíveis
                                         <div className="mt-2 text-muted">
                                             <p>Sem informações registradas.</p>
                                             <p>Clique para adicionar detalhes.</p>
                                         </div>
                                     )}
-
                                     {selectedExercicio === exercicio.exercicio_id && (
-                                        <div
-                                            className="mt-3"
-                                            onClick={(e) => e.stopPropagation()} // Previne que o clique dentro do formulário feche o card
-                                        >
+                                        <div className="mt-3" onClick={(e) => e.stopPropagation()}>
                                             <form>
                                                 <div className="form-group">
                                                     <label>Carga (kg)</label>
@@ -157,7 +168,7 @@ function Exercicios_index() {
                                                     type="button"
                                                     className="btn btn-primary mt-3"
                                                     onClick={(e) => {
-                                                        e.stopPropagation(); // Previne que o clique no botão feche o card
+                                                        e.stopPropagation();
                                                         handleFormSubmit(exercicio.exercicio_id);
                                                     }}
                                                 >
@@ -168,8 +179,6 @@ function Exercicios_index() {
                                     )}
                                 </div>
                             </div>
-
-
                         </div>
                     ))}
                 </div>

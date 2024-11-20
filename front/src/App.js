@@ -15,8 +15,6 @@ import TreinosForm from './views/treinos/TreinosForm';
 import Navbar from "./views/components/navbar";
 import Exercicios_index from "./views/exercicios/Exercicios_index";
 import Professor_new from "./views/professores/Professores_new";
-import Avaliacoes_new from "./views/avaliacoes/Avaliacoes_new";
-import Avaliacoes_view from "./views/avaliacoes/Avaliacoes_view";
 import { AuthProvider, AuthContext } from './AuthContext';
 import './App.css';
 import './styles/Navbar.css'

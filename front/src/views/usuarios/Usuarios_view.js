@@ -84,16 +84,28 @@ const Usuarios_view = () => {
 
     return (
         <div className="container mt-5">
-            <h2>Detalhes do Usuário</h2>
+            <h2>Detalhes do Aluno</h2>
             {usuario ? (
                 <div>
-                    {avatarUrl && <img src={avatarUrl} alt="Avatar do usuário" className="img-thumbnail mb-3" style={{ width: '150px', height: '150px', objectFit: 'cover' }} />}
-                    <p><strong>ID:</strong> {usuario.id}</p>
-                    <p><strong>Nome:</strong> {usuario.nome}</p>
-                    <p><strong>Email:</strong> {usuario.email}</p>
-                    <p><strong>Gênero:</strong> {usuario.genero}</p>
-                    <p><strong>Idade:</strong> {usuario.idade}</p>
-                    <p><strong>Função:</strong> {usuario.funcao}</p>
+                    <div className="d-flex align-items-start mb-4">
+                        {/* Imagem do avatar */}
+                        {avatarUrl && (
+                            <img
+                                src={avatarUrl}
+                                alt="Avatar do usuário"
+                                className="img-thumbnail me-4"
+                                style={{width: '200px', height: '200px', objectFit: 'cover', backgroundColor:'#E8E8E9'}}
+                            />
+                        )}
+
+                        {/* Informações do usuário */}
+                        <div>
+                            <p><strong>Nome:</strong> {usuario.nome}</p>
+                            <p><strong>Email:</strong> {usuario.email}</p>
+                            <p><strong>Gênero:</strong> {usuario.genero}</p>
+                            <p><strong>Idade:</strong> {usuario.idade}</p>
+                        </div>
+                    </div>
 
                     <h3>Treinos</h3>
                     <div className="row">
@@ -104,7 +116,8 @@ const Usuarios_view = () => {
                                         <div className="card-body">
                                             <h5 className="card-title">{treino.nome_treino}</h5>
                                             <p className="card-text"><strong>Descrição:</strong> {treino.descricao}</p>
-                                            <p className="card-text"><strong>Dia da Semana:</strong> {treino.dia_semana}</p>
+                                            <p className="card-text"><strong>Dia da Semana:</strong> {treino.dia_semana}
+                                            </p>
                                             <h6>Exercícios:</h6>
                                             {Array.isArray(treino.exercicios) && treino.exercicios.length > 0 ? (
                                                 <ul>
@@ -115,7 +128,8 @@ const Usuarios_view = () => {
                                             ) : (
                                                 <p>Sem exercícios cadastrados.</p>
                                             )}
-                                            <button className="btn btn-danger mt-2" onClick={() => handleDeleteTreino(treino.id)}>
+                                            <button className="btn btn-danger mt-2"
+                                                    onClick={() => handleDeleteTreino(treino.id)}>
                                                 Excluir Treino
                                             </button>
                                         </div>

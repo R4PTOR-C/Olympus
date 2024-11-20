@@ -66,10 +66,17 @@ function Home() {
         <div className="container mt-4">
             {user.loggedIn ? (
                 <div>
+                    <h1>Treino do Dia</h1>
                     {treinoDoDia ? (
-                        <div className="card mb-4" onClick={() => navigate(`/treinos/${treinoDoDia.id}/exercicios`)} style={{ cursor: 'pointer', backgroundColor: '#f8f9fa', padding: '20px', fontSize: '1.2rem' }}>
+                        <div className="card mb-4" onClick={() => navigate(`/treinos/${treinoDoDia.id}/exercicios`)}
+                             style={{
+                                 cursor: 'pointer',
+                                 backgroundColor: '#f8f9fa',
+                                 padding: '20px',
+                                 fontSize: '1.2rem'
+                             }}>
                             <div className="card-body">
-                                <h1>Treino do Dia</h1>
+
                                 <h5 className="card-title">{treinoDoDia.nome_treino}</h5>
                                 <p className="card-text"><strong>Descrição:</strong> {treinoDoDia.descricao}</p>
                                 <p className="card-text"><strong>Dia da Semana:</strong> {treinoDoDia.dia_semana}</p>
@@ -79,7 +86,7 @@ function Home() {
                         <p>Não há treino para hoje.</p>
                     )}
 
-                    <h3 className="text-center mt-5" style={{ color: 'white' }}>Próximos Treinos</h3>
+                    <h3 className="text-center mt-5">Próximos Treinos</h3>
                     {proximosTreinos.length > 0 ? (
                         <div className="list-group">
                             {proximosTreinos.map(treino => (
@@ -87,15 +94,16 @@ function Home() {
                                     className="list-group-item list-group-item-action d-flex align-items-center mb-3 shadow-sm"
                                     key={treino.id}
                                     onClick={() => navigate(`/treinos/${treino.id}/exercicios`)}
-                                    style={{ cursor: 'pointer', borderRadius: '10px' }}
+                                    style={{cursor: 'pointer', borderRadius: '10px'}}
                                 >
                                     <div className="me-3">
-                                        <i className="bi bi-calendar-event text-primary" style={{ fontSize: '2rem' }}></i>
+                                        <i className="bi bi-calendar-event text-primary" style={{fontSize: '2rem'}}></i>
                                     </div>
                                     <div>
                                         <h5 className="mb-1 text-dark">{treino.nome_treino}</h5>
                                         <p className="mb-0 text-muted"><strong>Dia:</strong> {treino.dia_semana}</p>
-                                        <p className="mb-0 text-muted"><strong>Descrição:</strong> {treino.descricao}</p>
+                                        <p className="mb-0 text-muted"><strong>Descrição:</strong> {treino.descricao}
+                                        </p>
                                     </div>
                                 </div>
                             ))}

@@ -56,11 +56,14 @@ export const AuthProvider = ({ children }) => {
         setUser({ loggedIn: false, userName: '', userId: null, avatar: null });
     };
 
-    if (loading) return <div>Carregando...</div>;
+    if (loading) {
+        return <div className="loading-indicator">Carregando...</div>;
+    }
 
     return (
         <AuthContext.Provider value={{ ...user, login, logout, loading }}>
-            {children}
+            {!loading ? children : <div>Carregando...</div>}
         </AuthContext.Provider>
+
     );
 };

@@ -168,6 +168,26 @@ router.get('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId', asy
     }
 });
 
+router.get('/treinos/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await db.query(
+            'SELECT * FROM treinos WHERE id = $1',
+            [id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Treino não encontrado' });
+        }
+
+        res.json(result.rows[0]); // Retorna o treino encontrado
+    } catch (error) {
+        console.error('Erro ao buscar treino pelo ID:', error);
+        res.status(500).json({ error: 'Erro ao buscar treino pelo ID' });
+    }
+});
+
 
 
 module.exports = router;

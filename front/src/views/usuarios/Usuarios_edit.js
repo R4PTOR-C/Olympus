@@ -83,7 +83,7 @@ const UsuariosEdit = () => {
     return (
         <div className="container mt-5">
             <h1 className="mb-4">Editar Usuário</h1>
-            <form onSubmit={handleSubmit} className="p-4 border rounded bg-light">
+            <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label className="form-label">Nome</label>
                     <input

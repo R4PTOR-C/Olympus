@@ -87,7 +87,7 @@ const Usuarios_index = () => {
                     />
                 </div>
                 <table className="table table-hover">
-                    <thead className="bg-gray-200">
+                    <thead className="bg-gray-200" >
                     <tr>
                         <th scope="col">ID</th>
                         <th scope="col">Nome</th>

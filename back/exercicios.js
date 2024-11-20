@@ -5,7 +5,6 @@ const db = require('./db');
 
 const router = express.Router();
 
-// Rota para listar todas as academias
 router.get('/', async (req, res) => {
     try {
         const { rows } = await db.query('SELECT * FROM exercicios');
@@ -17,7 +16,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Rota para criar uma nova academia
 router.post('/', async (req, res) => {
     const {nome_exercicio} = req.body;
 
