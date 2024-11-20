@@ -4,15 +4,22 @@ const db = require('./db'); // Importa a configuração do banco de dados
 const router = express.Router();
 
 // Rota para criar um treino para um aluno
+// Rota para criar um treino para um aluno
 router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
     const { usuarioId } = req.params; // ID do aluno
     const { nome_treino, descricao, dia_semana } = req.body;
 
     try {
+        // Defina o caminho da imagem genérica (substitua pelos caminhos reais)
+        const imagensGenericas = [
+            'peito.png'
+        ];
+        const imagemSelecionada = imagensGenericas[Math.floor(Math.random() * imagensGenericas.length)];
+
         // Inserir o treino no banco de dados
         const result = await db.query(
-            'INSERT INTO treinos (usuario_id, nome_treino, descricao, dia_semana) VALUES ($1, $2, $3, $4) RETURNING *',
-            [usuarioId, nome_treino, descricao, dia_semana]
+            'INSERT INTO treinos (usuario_id, nome_treino, descricao, dia_semana, imagem) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [usuarioId, nome_treino, descricao, dia_semana, imagemSelecionada]
         );
 
         res.status(201).json(result.rows[0]); // Retorna o treino criado
@@ -21,6 +28,7 @@ router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
         res.status(500).json({ error: 'Erro ao criar o treino' });
     }
 });
+
 
 // Rota para adicionar múltiplos exercícios a um treino
 router.post('/treinos/:treinoId/exercicios', async (req, res) => {
