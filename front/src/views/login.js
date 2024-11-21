@@ -55,7 +55,7 @@ function Login() {
         <div className="login-page-container">
             <div className="login-container d-flex">
                 <div className="col-md-6 login-form">
-                    <h3 className="mb-4">Sign In</h3>
+                    <h3 className="mb-4" style={{fontFamily: 'delirium'}}>OLYMPUS</h3>
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label htmlFor="email">Email</label>
@@ -103,10 +103,16 @@ function Login() {
                     </div>
                 </div>
                 <div className="col-md-6 welcome-container">
-                    <h2>Bem-vindo</h2>
+                    <img
+                        src="/logo.png"
+                        alt="Logo"
+                        className="logo-image"
+                        style={{maxWidth: '100%', height: 'auto', marginBottom: '20px'}}
+                    />
                     <p>Não tem uma conta?</p>
-                    <Link to="/sign-in" className="btn btn-outline-light">Cadastrar-se</Link>
+                    <Link to="/sign-in" className="signin-btn" >Cadastrar-se</Link>
                 </div>
+
             </div>
         </div>
     );

@@ -85,6 +85,25 @@ const UsuariosEdit = () => {
             <h1 className="mb-4">Editar Usuário</h1>
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
+                    <label className="form-label">Avatar Atual</label>
+                    {avatarUrl ? (
+                        <img src={avatarUrl} alt="Avatar do usuário" className="img-thumbnail mb-3"
+                             style={{width: '150px', height: '150px', objectFit: 'cover'}}/>
+                    ) : (
+                        <p>Nenhum avatar definido</p>
+                    )}
+                </div>
+                <div className="mb-3">
+                    <label className="form-label">Alterar Avatar</label>
+                    <input
+                        type="file"
+                        name="avatar"
+                        onChange={handleFileChange}
+                        className="form-control"
+                        accept="image/*"
+                    />
+                </div>
+                <div className="mb-3">
                     <label className="form-label">Nome</label>
                     <input
                         type="text"
@@ -134,24 +153,8 @@ const UsuariosEdit = () => {
                         className="form-control"
                     />
                 </div>
-                <div className="mb-3">
-                    <label className="form-label">Avatar Atual</label>
-                    {avatarUrl ? (
-                        <img src={avatarUrl} alt="Avatar do usuário" className="img-thumbnail mb-3" style={{ width: '150px', height: '150px', objectFit: 'cover' }} />
-                    ) : (
-                        <p>Nenhum avatar definido</p>
-                    )}
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Alterar Avatar</label>
-                    <input
-                        type="file"
-                        name="avatar"
-                        onChange={handleFileChange}
-                        className="form-control"
-                        accept="image/*"
-                    />
-                </div>
+
+
                 <button type="submit" className="btn btn-primary">Salvar</button>
             </form>
         </div>

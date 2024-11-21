@@ -3,7 +3,7 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #c8d1d0;
+    background-color: #19222b;
 }
 
 .login-container {
@@ -23,9 +23,9 @@
 }
 
 .welcome-container {
-    background: #19222b;
+    background: #c8d1d0;
     padding: 30px;
-    color: white;
+    color: #19222b;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -43,10 +43,27 @@
     border: none;
     width: 100%;
     padding: 12px;
-    color: white;
+    color: #19222b;
     font-size: 1rem;
     transition: background-color 0.3s ease;
 }
+
+.signin-btn {
+    background-color: #19222B;
+    color: white;
+    border: 2px solid #19222B;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.signin-btn:hover {
+    background-color: #2f3840;
+    color: #fff;
+}
+
 
 .login-btn:hover {
     background-color: #3a4755;
@@ -125,5 +142,9 @@
 
     .form-group {
         margin-bottom: 10px;
+    }
+
+    .logo-image {
+        display: none;
     }
 }
