@@ -73,7 +73,6 @@ const Usuarios_index = () => {
         <div className="container mt-5">
             <h1 className="text-2xl font-bold mb-4">Alunos</h1>
 
-
             {/* Tabela para telas maiores */}
             <div className="table-responsive d-none d-lg-block">
                 {/* Campo de pesquisa */}
@@ -87,7 +86,7 @@ const Usuarios_index = () => {
                     />
                 </div>
                 <table className="table table-hover">
-                    <thead className="bg-gray-200" >
+                    <thead className="bg-gray-200">
                     <tr>
                         <th scope="col">ID</th>
                         <th scope="col">Nome</th>
@@ -106,9 +105,9 @@ const Usuarios_index = () => {
                             <td>{usuario.genero}</td>
                             <td>{usuario.idade}</td>
                             <td>
-                                <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success me-2">Criar
-                                    Treino</Link>
+                                <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success me-2">Criar Treino</Link>
                                 <Link to={`/usuarios/view/${usuario.id}`} className="btn btn-info me-2">Ver</Link>
+                                <Link to={`/avaliacoes/${usuario.id}/new`} className="btn btn-warning me-2">Avaliação</Link>
                                 <button
                                     className="btn btn-danger"
                                     onClick={() => handleDelete(usuario.id)}
@@ -142,9 +141,9 @@ const Usuarios_index = () => {
                             <p className="card-text"><strong>Gênero:</strong> {usuario.genero}</p>
                             <p className="card-text"><strong>Idade:</strong> {usuario.idade}</p>
                             <div className="card-actions">
-                                <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success me-2">Criar
-                                    Treino</Link>
+                                <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success me-2">Criar Treino</Link>
                                 <Link to={`/usuarios/view/${usuario.id}`} className="btn btn-info me-2">Ver</Link>
+                                <Link to={`/avaliacoes/${usuario.id}/new`} className="btn btn-warning me-2">Avaliação</Link>
                                 <button
                                     className="btn btn-danger"
                                     onClick={() => handleDelete(usuario.id)}

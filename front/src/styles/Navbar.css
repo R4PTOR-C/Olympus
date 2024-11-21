@@ -6,24 +6,24 @@
 
 .custom-navbar-bg {
     background-color: #19222B !important;
-    color: white !important;
+    color: #c8d1d0 !important;
 }
 
 /* Cor do texto para links e elementos de navegação */
 .custom-navbar-bg .navbar-brand,
 .custom-navbar-bg .nav-link,
 .custom-navbar-bg .navbar-text {
-    color: white !important;
+    color: #c8d1d0 !important;
 }
 
 /* Para links quando hover e ativos */
 .custom-navbar-bg .nav-link:hover,
 .custom-navbar-bg .nav-link.active {
-    color: #f0f0f0 !important; /* Ou qualquer tom de branco que preferir */
+    color: #c8d1d0 !important; /* Ou qualquer tom de branco que preferir */
 }
 
 .navbar-toggler-custom {
-    border-color: white; /* Define a cor da borda do botão para branco */
+    border-color: #c8d1d0; /* Define a cor da borda do botão para branco */
 }
 
 .navbar-toggler-custom .navbar-toggler-icon {

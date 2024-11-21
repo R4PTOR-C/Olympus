@@ -18,6 +18,8 @@ import Professor_new from "./views/professores/Professores_new";
 import Exercicios_tabela from "./views/exercicios/Exercicios_tabela"
 import Exercicios_edit from "./views/exercicios/Exercicios_edit";
 import TreinosEdit from "./views/treinos/Treinos_edit"
+import Avaliacoes_new from "./views/avaliacoes/Avaliacoes_new";
+import Avaliacoes_view from "./views/avaliacoes/Avaliacoes_view";
 import { AuthProvider, AuthContext } from './AuthContext';
 import './App.css';
 import './styles/Navbar.css'
@@ -67,6 +69,8 @@ function AppContent() {
                 <Route path="/treinos/:treinoId/exercicios" element={<ProtectedRoute><Exercicios_index /></ProtectedRoute>} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/nova_senha/:token" element={<ResetPassword />} />
+                <Route path="/avaliacoes/:id" element={<ProtectedRoute><Avaliacoes_view /></ProtectedRoute>} />
+                <Route path="/avaliacoes/:id/new" element={<ProtectedRoute><Avaliacoes_new /></ProtectedRoute>} />
             </Routes>
         </>
     );

@@ -54,7 +54,7 @@ function Navbar() {
                                         data-bs-toggle="dropdown"
                                         aria-expanded="false"
                                     >
-                                        Treinos
+                                        Exercicios
                                     </a>
                                     <ul className="dropdown-menu" aria-labelledby="exerciciosDropdown">
                                         <li>
@@ -68,11 +68,13 @@ function Navbar() {
                             </>
                         ) : (
                             <>
+                                <img
+                                    src="/dumbbell2.png"
+                                    alt="Repetições"
+                                    style={{width: '20px', height: '20px'}}
+                                />
                                 <li className="nav-item">
-                                    <Link className="nav-link" to="/home">Exercícios</Link>
-                                </li>
-                                <li className="nav-item">
-                                    <Link className="nav-link" to="#">Avaliação Física</Link>
+                                    <Link className="nav-link" to="/home">Treinos</Link>
                                 </li>
                             </>
                         )}

@@ -16,7 +16,7 @@ const Avaliacoes_new = ({ usuarioId, onAvaliacaoCriada }) => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/avaliacoes`, {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/avaliacoes/avaliacoes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...avaliacao, usuario_id: usuarioId }),
@@ -35,6 +35,7 @@ const Avaliacoes_new = ({ usuarioId, onAvaliacaoCriada }) => {
     };
 
     return (
+        <div className="container mt-5">
         <div className="avaliacoes-new">
             <h4>Registrar Avaliação Física</h4>
             <form onSubmit={handleSubmit}>
@@ -85,6 +86,7 @@ const Avaliacoes_new = ({ usuarioId, onAvaliacaoCriada }) => {
                 </div>
                 <button type="submit" className="btn btn-primary mt-3">Registrar Avaliação</button>
             </form>
+        </div>
         </div>
     );
 };
