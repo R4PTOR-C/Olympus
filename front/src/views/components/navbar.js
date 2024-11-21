@@ -54,7 +54,7 @@ function Navbar() {
                                         data-bs-toggle="dropdown"
                                         aria-expanded="false"
                                     >
-                                        Exercícios
+                                        Treinos
                                     </a>
                                     <ul className="dropdown-menu" aria-labelledby="exerciciosDropdown">
                                         <li>
