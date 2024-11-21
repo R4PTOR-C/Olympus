@@ -55,62 +55,27 @@ router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
     }
 });
 
-//editar treinos
-router.put('/usuarios/:usuarioId/treinos/:treinoId', async (req, res) => {
-    const { usuarioId, treinoId } = req.params;
-    const { nome_treino, descricao, dia_semana, grupo_muscular, exercicios } = req.body;
-
-    // Mapeamento de grupos musculares para imagens
-    const grupoParaImagem = {
-        Peitoral: 'peito.png',
-        Costas: 'costas.png',
-        Ombros: 'ombros.png',
-        Bíceps: 'biceps.png',
-        Tríceps: 'triceps.png',
-        Posterior: 'posterior.png',
-        Frontal: 'frontal.png',
-        Panturrilha: 'panturrilha.png',
-        Abdômen: 'abdomen.png',
-    };
+router.put('/treinos/:treinoId', async (req, res) => {
+    const { treinoId } = req.params;
+    const { nome_treino, descricao, dia_semana } = req.body; // Removido grupo_muscular
 
     try {
-        // Obter a imagem correspondente ou usar a padrão
-        const imagemSelecionada = grupoParaImagem[grupo_muscular] || 'default.png';
-
-        // Atualizar os dados do treino
-        const treinoResult = await db.query(
+        const result = await db.query(
             `UPDATE treinos
-             SET nome_treino = $1, descricao = $2, dia_semana = $3, imagem = $4
-             WHERE id = $5 AND usuario_id = $6
+             SET nome_treino = $1, descricao = $2, dia_semana = $3
+             WHERE id = $4
              RETURNING *`,
-            [nome_treino, descricao, dia_semana, imagemSelecionada, treinoId, usuarioId]
+            [nome_treino, descricao, dia_semana, treinoId]
         );
 
-        if (treinoResult.rowCount === 0) {
-            return res.status(404).json({ error: 'Treino não encontrado ou não pertence ao usuário.' });
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Treino não encontrado' });
         }
 
-        // Atualizar exercícios associados ao treino
-        if (Array.isArray(exercicios) && exercicios.length > 0) {
-            // Remover exercícios antigos do treino
-            await db.query('DELETE FROM treinos_exercicios WHERE treino_id = $1', [treinoId]);
-
-            // Adicionar os novos exercícios ao treino
-            for (const exercicioId of exercicios) {
-                await db.query(
-                    'INSERT INTO treinos_exercicios (treino_id, exercicio_id) VALUES ($1, $2)',
-                    [treinoId, exercicioId]
-                );
-            }
-        }
-
-        res.status(200).json({
-            message: 'Treino atualizado com sucesso',
-            treino: treinoResult.rows[0],
-        });
+        res.json(result.rows[0]);
     } catch (error) {
-        console.error('Erro ao editar o treino e seus exercícios:', error);
-        res.status(500).json({ error: 'Erro ao editar o treino e seus exercícios.' });
+        console.error('Erro ao atualizar treino:', error);
+        res.status(500).json({ error: 'Erro ao atualizar treino' });
     }
 });
 

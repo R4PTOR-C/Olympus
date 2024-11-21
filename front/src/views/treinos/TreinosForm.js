@@ -7,16 +7,13 @@ const TreinosForm = () => {
     const [nomeTreino, setNomeTreino] = useState('');
     const [descricao, setDescricao] = useState('');
     const [diaSemana, setDiaSemana] = useState('');
-    const [grupoPrincipal, setGrupoPrincipal] = useState(''); // Grupo principal do treino
+    const [grupoMuscular, setGrupoMuscular] = useState('');
     const [exercicios, setExercicios] = useState([]);
     const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredExercicios, setFilteredExercicios] = useState([]);
-
-    // Mapeamento de grupos musculares para imagens
-    const [grupoMuscular, setGrupoMuscular] = useState('');
-
-
+    const [currentPage, setCurrentPage] = useState(1); // Página atual
+    const [itemsPerPage] = useState(10); // Número de exercícios por página
 
     useEffect(() => {
         const fetchExercicios = async () => {
@@ -40,6 +37,7 @@ const TreinosForm = () => {
                 (ex.grupo_muscular && ex.grupo_muscular.toLowerCase().includes(searchTerm.toLowerCase()))
         );
         setFilteredExercicios(filtered);
+        setCurrentPage(1); // Voltar para a primeira página ao alterar a busca
     }, [searchTerm, exercicios]);
 
     const handleExercicioChange = (exercicioId) => {
@@ -58,12 +56,11 @@ const TreinosForm = () => {
             return;
         }
 
-
         const treino = {
             nome_treino: nomeTreino,
             descricao,
             dia_semana: diaSemana,
-            grupo_muscular: grupoMuscular, // Apenas para determinar a imagem
+            grupo_muscular: grupoMuscular,
         };
 
         try {
@@ -92,6 +89,15 @@ const TreinosForm = () => {
             alert('Erro ao conectar ao servidor.');
         }
     };
+
+    // Cálculo dos índices de paginação
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredExercicios.slice(indexOfFirstItem, indexOfLastItem);
+
+    const totalPages = Math.ceil(filteredExercicios.length / itemsPerPage);
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
         <div className="container mt-5">
@@ -134,7 +140,6 @@ const TreinosForm = () => {
                         <option value="Domingo">Domingo</option>
                     </select>
                 </div>
-
                 <div className="form-group">
                     <label>Grupo Muscular Principal</label>
                     <select
@@ -172,14 +177,14 @@ const TreinosForm = () => {
                     <table className="table table-hover">
                         <thead>
                         <tr>
-                            <th scope="col">Selecionar</th>
-                            <th scope="col">Nome</th>
-                            <th scope="col">Grupo Muscular</th>
-                            <th scope="col">Nível</th>
+                            <th>Selecionar</th>
+                            <th>Nome</th>
+                            <th>Grupo Muscular</th>
+                            <th>Nível</th>
                         </tr>
                         </thead>
                         <tbody>
-                        {filteredExercicios.map((exercicio) => (
+                        {currentItems.map((exercicio) => (
                             <tr key={exercicio.id}>
                                 <td>
                                     <input
@@ -196,6 +201,25 @@ const TreinosForm = () => {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Paginação */}
+                <nav className="mt-3">
+                    <ul className="pagination justify-content-center">
+                        {[...Array(totalPages)].map((_, index) => (
+                            <li
+                                key={index}
+                                className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                            >
+                                <button
+                                    className="page-link"
+                                    onClick={() => paginate(index + 1)}
+                                >
+                                    {index + 1}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
 
                 <button type="submit" className="btn btn-primary mt-3">
                     Adicionar Treino

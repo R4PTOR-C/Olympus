@@ -11,7 +11,11 @@
   font-weight: normal;
   font-style: normal;
 }
-
+.page-link{
+  background-color: #19222B !important;
+  color: white !important;
+  border: #19222b;
+}
 .btn-primary{
   background-color: #19222B !important;
   color: white !important;

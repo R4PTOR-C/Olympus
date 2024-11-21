@@ -7,7 +7,6 @@ const TreinosEdit = () => {
     const [nomeTreino, setNomeTreino] = useState('');
     const [descricao, setDescricao] = useState('');
     const [diaSemana, setDiaSemana] = useState('');
-    const [grupoMuscular, setGrupoMuscular] = useState('');
     const [exerciciosSalvos, setExerciciosSalvos] = useState([]);
     const [exerciciosDisponiveis, setExerciciosDisponiveis] = useState([]);
     const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]);
@@ -23,7 +22,6 @@ const TreinosEdit = () => {
                 setNomeTreino(data.nome_treino);
                 setDescricao(data.descricao);
                 setDiaSemana(data.dia_semana);
-                setGrupoMuscular(data.grupo_muscular);
             } catch (error) {
                 console.error('Erro ao carregar treino:', error);
             }
@@ -77,26 +75,37 @@ const TreinosEdit = () => {
         }
     };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-
-        if (exerciciosSelecionados.length === 0) {
-            alert('Selecione pelo menos um exercício!');
-            return;
-        }
-
+    const handleSaveChanges = async () => {
         try {
-            await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, {
-                method: 'POST',
+            // Atualizar as informações do treino
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ exercicios: exerciciosSelecionados }),
+                body: JSON.stringify({
+                    nome_treino: nomeTreino,
+                    descricao,
+                    dia_semana: diaSemana,
+                }),
             });
 
-            alert('Exercícios adicionados com sucesso!');
+            if (!response.ok) {
+                throw new Error('Erro ao salvar alterações do treino.');
+            }
+
+            // Adicionar exercícios selecionados ao treino
+            if (exerciciosSelecionados.length > 0) {
+                await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exercicios: exerciciosSelecionados }),
+                });
+            }
+
+            alert('Alterações salvas com sucesso!');
             navigate(`/usuarios/view/${id}`);
         } catch (error) {
-            console.error('Erro ao adicionar exercícios:', error);
-            alert('Erro ao conectar ao servidor.');
+            console.error('Erro ao salvar alterações:', error);
+            alert('Erro ao salvar alterações do treino.');
         }
     };
 
@@ -128,19 +137,37 @@ const TreinosEdit = () => {
             <form>
                 <div className="form-group">
                     <label>Nome do Treino</label>
-                    <input type="text" className="form-control" value={nomeTreino} readOnly />
+                    <input
+                        type="text"
+                        className="form-control"
+                        value={nomeTreino}
+                        onChange={(e) => setNomeTreino(e.target.value)}
+                    />
                 </div>
                 <div className="form-group">
                     <label>Descrição</label>
-                    <textarea className="form-control" value={descricao} readOnly />
+                    <textarea
+                        className="form-control"
+                        value={descricao}
+                        onChange={(e) => setDescricao(e.target.value)}
+                    />
                 </div>
                 <div className="form-group">
                     <label>Dia da Semana</label>
-                    <input type="text" className="form-control" value={diaSemana} readOnly />
-                </div>
-                <div className="form-group">
-                    <label>Grupo Muscular Principal</label>
-                    <input type="text" className="form-control" value={grupoMuscular} readOnly />
+                    <select
+                        className="form-control"
+                        value={diaSemana}
+                        onChange={(e) => setDiaSemana(e.target.value)}
+                    >
+                        <option value="">Selecione o Dia</option>
+                        <option value="Segunda-feira">Segunda-feira</option>
+                        <option value="Terça-feira">Terça-feira</option>
+                        <option value="Quarta-feira">Quarta-feira</option>
+                        <option value="Quinta-feira">Quinta-feira</option>
+                        <option value="Sexta-feira">Sexta-feira</option>
+                        <option value="Sábado">Sábado</option>
+                        <option value="Domingo">Domingo</option>
+                    </select>
                 </div>
             </form>
 
@@ -148,10 +175,10 @@ const TreinosEdit = () => {
             <table className="table table-bordered">
                 <thead>
                 <tr>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Grupo Muscular</th>
-                    <th scope="col">Nível</th>
-                    <th scope="col">Ações</th>
+                    <th>Nome</th>
+                    <th>Grupo Muscular</th>
+                    <th>Nível</th>
+                    <th>Ações</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -187,10 +214,10 @@ const TreinosEdit = () => {
             <table className="table table-hover">
                 <thead>
                 <tr>
-                    <th scope="col">Selecionar</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Grupo Muscular</th>
-                    <th scope="col">Nível</th>
+                    <th>Selecionar</th>
+                    <th>Nome</th>
+                    <th>Grupo Muscular</th>
+                    <th>Nível</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -210,8 +237,8 @@ const TreinosEdit = () => {
                 ))}
                 </tbody>
             </table>
-            <button type="button" className="btn btn-primary mt-3" onClick={handleSubmit}>
-                Adicionar Exercícios
+            <button type="button" className="btn btn-success mt-3" onClick={handleSaveChanges}>
+                Salvar Alterações
             </button>
         </div>
     );
