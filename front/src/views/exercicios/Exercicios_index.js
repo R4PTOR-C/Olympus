@@ -122,8 +122,12 @@ function Exercicios_index() {
                                     src={`${process.env.REACT_APP_API_BASE_URL}/uploads/${exercicio.gif_url}`}
                                     alt={`GIF do exercício ${exercicio.nome_exercicio}`}
                                     className="card-img-top"
-                                    style={{ maxHeight: '200px', objectFit: 'cover' }}
-                                />
+                                    style={{
+                                        maxHeight: '200px', // Limite de altura
+                                        width: '100%', // Largura total do card
+                                        objectFit: 'contain', // Contém o GIF dentro do espaço sem cortar
+                                        borderRadius: '8px' // Bordas arredondadas para melhor aparência
+                                    }}                                />
                                 <div className="card-body">
                                     <h5 className="card-title">{exercicio.nome_exercicio}</h5>
                                     {exercicio.carga && exercicio.repeticoes && exercicio.series ? (
