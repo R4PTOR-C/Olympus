@@ -16,6 +16,7 @@ import Navbar from "./views/components/navbar";
 import Exercicios_index from "./views/exercicios/Exercicios_index";
 import Professor_new from "./views/professores/Professores_new";
 import Exercicios_tabela from "./views/exercicios/Exercicios_tabela"
+import Exercicios_edit from "./views/exercicios/Exercicios_edit";
 import { AuthProvider, AuthContext } from './AuthContext';
 import './App.css';
 import './styles/Navbar.css'
@@ -54,6 +55,7 @@ function AppContent() {
                 <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
                 <Route path="/usuarios" element={<ProtectedRoute><Usuarios_index /></ProtectedRoute>} />
                 <Route path="/usuarios/edit/:id" element={<ProtectedRoute><UsuariosEdit /></ProtectedRoute>} />
+                <Route path="/exercicios/edit/:id" element={<ProtectedRoute><Exercicios_edit /></ProtectedRoute>} />
                 <Route path="/usuarios/view/:id" element={<ProtectedRoute><Usuarios_view /></ProtectedRoute>} />
                 <Route path="/usuarios/:id/treinos" element={<ProtectedRoute><TreinosForm /></ProtectedRoute>} />
                 <Route path="/academias" element={<ProtectedRoute><Academias_new /></ProtectedRoute>} />

@@ -93,6 +93,7 @@ const Exercicios_tabela = () => {
                         <th scope="col">Nome</th>
                         <th scope="col">Grupo Muscular</th>
                         <th scope="col">Nível</th>
+                        <th scope="col">gif</th>
                         <th scope="col">Ações</th>
                     </tr>
                     </thead>
@@ -103,7 +104,11 @@ const Exercicios_tabela = () => {
                             <td>{exercicio.nome_exercicio}</td>
                             <td>{exercicio.grupo_muscular}</td>
                             <td>{exercicio.nivel}</td>
+                            <td>{exercicio.gif_url}</td>
+
                             <td>
+                                <Link to={`/exercicios/edit/${exercicio.id}`}
+                                      className="btn btn-warning me-2">Editar</Link>
                                 <Link to={`/exercicios/view/${exercicio.id}`} className="btn btn-info me-2">Ver</Link>
                                 <button
                                     className="btn btn-danger"
@@ -128,6 +133,7 @@ const Exercicios_tabela = () => {
                             <p className="card-text"><strong>Grupo Muscular:</strong> {exercicio.grupo_muscular}</p>
                             <p className="card-text"><strong>Nível:</strong> {exercicio.nivel}</p>
                             <div className="card-actions">
+                                <Link to={`/exercicios/edit/${exercicio.id}`} className="btn btn-warning me-2">Editar</Link>
                                 <Link to={`/exercicios/view/${exercicio.id}`} className="btn btn-info me-2">Ver</Link>
                                 <button
                                     className="btn btn-danger"

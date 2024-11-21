@@ -117,6 +117,13 @@ function Exercicios_index() {
                                     setSelectedExercicio(selectedExercicio === exercicio.exercicio_id ? null : exercicio.exercicio_id);
                                 }}
                             >
+                                {/* Mostrar o GIF do exercício */}
+                                <img
+                                    src={`${process.env.REACT_APP_API_BASE_URL}/uploads/${exercicio.gif_url}`}
+                                    alt={`GIF do exercício ${exercicio.nome_exercicio}`}
+                                    className="card-img-top"
+                                    style={{ maxHeight: '200px', objectFit: 'cover' }}
+                                />
                                 <div className="card-body">
                                     <h5 className="card-title">{exercicio.nome_exercicio}</h5>
                                     {exercicio.carga && exercicio.repeticoes && exercicio.series ? (
