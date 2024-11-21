@@ -67,9 +67,8 @@ router.get('/exercicios/:id', async (req, res) => {
 router.put('/:id', upload.single('gif'), async (req, res) => {
     const { id } = req.params;
     const { nome_exercicio, grupo_muscular, nivel } = req.body;
-    const gifUrl = req.file
-        ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
-        : null;
+    const gifUrl = req.file ? `${req.file.filename}` : null;
+
 
     try {
         const query = `
