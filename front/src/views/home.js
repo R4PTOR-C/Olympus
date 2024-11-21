@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 function Home() {
     const [user, setUser] = useState({ loggedIn: false, userName: '', userId: null });
     const [treinos, setTreinos] = useState([]);
+    const [exerciciosTreinoDoDia, setExerciciosTreinoDoDia] = useState([]); // Estado para os exercícios do treino do dia
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -42,9 +43,31 @@ function Home() {
 
             const data = await response.json();
             setTreinos(data);
+
+            // Buscando exercícios do treino do dia
+            const today = getToday();
+            const treinoDoDia = data.find(treino => treino.dia_semana === today);
+            if (treinoDoDia) {
+                fetchExerciciosTreino(treinoDoDia.id, token); // Busca os exercícios do treino do dia
+            }
         } catch (err) {
             console.error('Erro ao buscar treinos:', err);
             setError('Erro ao buscar os treinos');
+        }
+    };
+
+    const fetchExerciciosTreino = async (treinoId, token) => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Erro ao buscar os exercícios do treino');
+
+            const data = await response.json();
+            setExerciciosTreinoDoDia(data.slice(0, 4)); // Pega os primeiros quatro exercícios
+        } catch (err) {
+            console.error('Erro ao buscar exercícios do treino:', err);
+            setError('Erro ao buscar os exercícios do treino');
         }
     };
 
@@ -73,36 +96,53 @@ function Home() {
                         <h2>Treino do Dia</h2>
                         {treinoDoDia ? (
                             <div
-                                className="card mb-4 d-flex flex-row align-items-center"
-                                onClick={() => navigate(`/treinos/${treinoDoDia.id}/exercicios`)}
+                                className="card mb-4"
+                                onClick={() => navigate(`/treinos/${treinoDoDia.id}/exercicios`)} // Adiciona o evento de clique no card
                                 style={{
-                                    cursor: 'pointer',
                                     backgroundColor: '#f8f9fa',
                                     padding: '20px',
                                     fontSize: '1.2rem',
+                                    cursor: 'pointer', // Indica que o card é clicável
                                 }}
                             >
-                                <img
-                                    src={treinoImagemUrl(treinoDoDia.imagem)}
-                                    alt={`Imagem do treino ${treinoDoDia.nome_treino}`}
-                                    style={{
-                                        width: '150px',
-                                        height: '150px',
-                                        objectFit: 'cover',
-                                        marginRight: '20px',
-                                        borderRadius: '10px',
-                                    }}
-                                />
-                                <div>
-                                    <h5 className="card-title">{treinoDoDia.nome_treino}</h5>
-                                    <p className="card-text">
-                                        <strong>Descrição:</strong> {treinoDoDia.descricao}
-                                    </p>
-                                    <p className="card-text">
-                                        <strong>Dia da Semana:</strong> {treinoDoDia.dia_semana}
-                                    </p>
+                                {/* Imagem e informações lado a lado */}
+                                <div className="d-flex align-items-center">
+                                    <img
+                                        src={treinoImagemUrl(treinoDoDia.imagem)}
+                                        alt={`Imagem do treino ${treinoDoDia.nome_treino}`}
+                                        style={{
+                                            width: '150px',
+                                            height: '150px',
+                                            objectFit: 'cover',
+                                            marginRight: '20px',
+                                            borderRadius: '10px',
+                                        }}
+                                    />
+                                    <div>
+                                        <h5 className="card-title">{treinoDoDia.nome_treino}</h5>
+                                        <p className="card-text">
+                                            <strong>Descrição:</strong> {treinoDoDia.descricao}
+                                        </p>
+                                        <p className="card-text">
+                                            <strong>Dia da Semana:</strong> {treinoDoDia.dia_semana}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Exercícios abaixo */}
+                                <div className="mt-3">
+                                    <h6>Exercícios:</h6>
+                                    <ul>
+                                        {exerciciosTreinoDoDia.map((exercicio) => (
+                                            <li key={exercicio.exercicio_id}>
+                                                {exercicio.nome_exercicio}
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
                             </div>
+
+
                         ) : (
                             <p>Não há treino para hoje.</p>
                         )}
