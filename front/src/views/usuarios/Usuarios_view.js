@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const Usuarios_view = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [usuario, setUsuario] = useState(null);
     const [treinos, setTreinos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -94,7 +95,7 @@ const Usuarios_view = () => {
                                 src={avatarUrl}
                                 alt="Avatar do usuário"
                                 className="img-thumbnail me-4"
-                                style={{width: '200px', height: '200px', objectFit: 'cover', backgroundColor:'#E8E8E9'}}
+                                style={{ width: '200px', height: '200px', objectFit: 'cover', backgroundColor: '#E8E8E9' }}
                             />
                         )}
 
@@ -116,8 +117,7 @@ const Usuarios_view = () => {
                                         <div className="card-body">
                                             <h5 className="card-title">{treino.nome_treino}</h5>
                                             <p className="card-text"><strong>Descrição:</strong> {treino.descricao}</p>
-                                            <p className="card-text"><strong>Dia da Semana:</strong> {treino.dia_semana}
-                                            </p>
+                                            <p className="card-text"><strong>Dia da Semana:</strong> {treino.dia_semana}</p>
                                             <h6>Exercícios:</h6>
                                             {Array.isArray(treino.exercicios) && treino.exercicios.length > 0 ? (
                                                 <ul>
@@ -128,10 +128,20 @@ const Usuarios_view = () => {
                                             ) : (
                                                 <p>Sem exercícios cadastrados.</p>
                                             )}
-                                            <button className="btn btn-danger mt-2"
-                                                    onClick={() => handleDeleteTreino(treino.id)}>
-                                                Excluir Treino
-                                            </button>
+                                            <div className="d-flex justify-content-between">
+                                                <button
+                                                    className="btn btn-danger"
+                                                    onClick={() => handleDeleteTreino(treino.id)}
+                                                >
+                                                    Excluir
+                                                </button>
+                                                <button
+                                                    className="btn btn-primary"
+                                                    onClick={() => navigate(`/treinos/edit/${id}/${treino.id}`)}
+                                                >
+                                                    Editar
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

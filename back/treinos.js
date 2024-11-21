@@ -3,7 +3,24 @@ const db = require('./db'); // Importa a configuração do banco de dados
 
 const router = express.Router();
 
-// Rota para criar um treino para um aluno
+// Rota para obeter informação de treino
+router.get('/treinos/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await db.query('SELECT * FROM treinos WHERE id = $1', [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Treino não encontrado' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Erro ao buscar treino pelo ID:', error);
+        res.status(500).json({ error: 'Erro ao buscar treino pelo ID' });
+    }
+});
+
 // Rota para criar um treino para um aluno
 router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
     const { usuarioId } = req.params;
@@ -37,6 +54,66 @@ router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
         res.status(500).json({ error: 'Erro ao criar o treino' });
     }
 });
+
+//editar treinos
+router.put('/usuarios/:usuarioId/treinos/:treinoId', async (req, res) => {
+    const { usuarioId, treinoId } = req.params;
+    const { nome_treino, descricao, dia_semana, grupo_muscular, exercicios } = req.body;
+
+    // Mapeamento de grupos musculares para imagens
+    const grupoParaImagem = {
+        Peitoral: 'peito.png',
+        Costas: 'costas.png',
+        Ombros: 'ombros.png',
+        Bíceps: 'biceps.png',
+        Tríceps: 'triceps.png',
+        Posterior: 'posterior.png',
+        Frontal: 'frontal.png',
+        Panturrilha: 'panturrilha.png',
+        Abdômen: 'abdomen.png',
+    };
+
+    try {
+        // Obter a imagem correspondente ou usar a padrão
+        const imagemSelecionada = grupoParaImagem[grupo_muscular] || 'default.png';
+
+        // Atualizar os dados do treino
+        const treinoResult = await db.query(
+            `UPDATE treinos
+             SET nome_treino = $1, descricao = $2, dia_semana = $3, imagem = $4
+             WHERE id = $5 AND usuario_id = $6
+             RETURNING *`,
+            [nome_treino, descricao, dia_semana, imagemSelecionada, treinoId, usuarioId]
+        );
+
+        if (treinoResult.rowCount === 0) {
+            return res.status(404).json({ error: 'Treino não encontrado ou não pertence ao usuário.' });
+        }
+
+        // Atualizar exercícios associados ao treino
+        if (Array.isArray(exercicios) && exercicios.length > 0) {
+            // Remover exercícios antigos do treino
+            await db.query('DELETE FROM treinos_exercicios WHERE treino_id = $1', [treinoId]);
+
+            // Adicionar os novos exercícios ao treino
+            for (const exercicioId of exercicios) {
+                await db.query(
+                    'INSERT INTO treinos_exercicios (treino_id, exercicio_id) VALUES ($1, $2)',
+                    [treinoId, exercicioId]
+                );
+            }
+        }
+
+        res.status(200).json({
+            message: 'Treino atualizado com sucesso',
+            treino: treinoResult.rows[0],
+        });
+    } catch (error) {
+        console.error('Erro ao editar o treino e seus exercícios:', error);
+        res.status(500).json({ error: 'Erro ao editar o treino e seus exercícios.' });
+    }
+});
+
 
 
 
@@ -167,6 +244,27 @@ router.delete('/treinos/:id', async (req, res) => {
         res.status(500).json({ error: 'Erro ao excluir treino' });
     }
 });
+
+router.delete('/treinos/:treinoId/exercicios/:exercicioId', async (req, res) => {
+    const { treinoId, exercicioId } = req.params;
+
+    try {
+        const result = await db.query(
+            'DELETE FROM treinos_exercicios WHERE treino_id = $1 AND exercicio_id = $2 RETURNING *',
+            [treinoId, exercicioId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Exercício não encontrado no treino.' });
+        }
+
+        res.status(200).json({ message: 'Exercício removido com sucesso.', exercicio: result.rows[0] });
+    } catch (error) {
+        console.error('Erro ao remover exercício do treino:', error);
+        res.status(500).json({ error: 'Erro ao remover exercício do treino.' });
+    }
+});
+
 
 router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/registro', async (req, res) => {
     const { usuarioId, treinoId, exercicioId } = req.params;
