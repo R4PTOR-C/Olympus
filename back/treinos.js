@@ -170,31 +170,63 @@ router.delete('/treinos/:id', async (req, res) => {
 
 router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/registro', async (req, res) => {
     const { usuarioId, treinoId, exercicioId } = req.params;
-    const { carga, repeticoes, series } = req.body;
+    const {
+        carga_serie_1,
+        repeticoes_serie_1,
+        carga_serie_2,
+        repeticoes_serie_2,
+        carga_serie_3,
+        repeticoes_serie_3
+    } = req.body;
 
     try {
-        const result = await db.query(
-            `INSERT INTO exercicios_usuario (usuario_id, treino_id, exercicio_id, carga, repeticoes, series)
-             VALUES ($1, $2, $3, $4, $5, $6)
-             ON CONFLICT (usuario_id, treino_id, exercicio_id)
-             DO UPDATE SET carga = $4, repeticoes = $5, series = $6
-             RETURNING *`,
-            [usuarioId, treinoId, exercicioId, carga, repeticoes, series]
-        );
+        // Montar os valores para a query
+        const values = [usuarioId, treinoId, exercicioId];
+        const updates = [];
 
-        res.status(201).json(result.rows[0]);
+        if (carga_serie_1 !== undefined) updates.push(`carga_serie_1 = $${values.length + 1}`) && values.push(carga_serie_1);
+        if (repeticoes_serie_1 !== undefined) updates.push(`repeticoes_serie_1 = $${values.length + 1}`) && values.push(repeticoes_serie_1);
+        if (carga_serie_2 !== undefined) updates.push(`carga_serie_2 = $${values.length + 1}`) && values.push(carga_serie_2);
+        if (repeticoes_serie_2 !== undefined) updates.push(`repeticoes_serie_2 = $${values.length + 1}`) && values.push(repeticoes_serie_2);
+        if (carga_serie_3 !== undefined) updates.push(`carga_serie_3 = $${values.length + 1}`) && values.push(carga_serie_3);
+        if (repeticoes_serie_3 !== undefined) updates.push(`repeticoes_serie_3 = $${values.length + 1}`) && values.push(repeticoes_serie_3);
+
+        // Garantir que há algo para atualizar
+        if (updates.length === 0) {
+            return res.status(400).json({ error: 'Nenhum dado fornecido para atualizar.' });
+        }
+
+        const query = `
+            INSERT INTO exercicios_usuario (usuario_id, treino_id, exercicio_id, ${updates.map(u => u.split(' = ')[0]).join(', ')})
+            VALUES ($1, $2, $3, ${values.slice(3).map((_, i) => `$${i + 4}`).join(', ')})
+            ON CONFLICT (usuario_id, treino_id, exercicio_id)
+            DO UPDATE SET ${updates.join(', ')}
+            RETURNING *;
+        `;
+
+        // Executar a consulta
+        const result = await db.query(query, values);
+
+        res.status(201).json(result.rows[0]); // Sucesso
     } catch (error) {
-        console.error('Erro ao registrar informações de exercício:', error);
-        res.status(500).json({ error: 'Erro ao registrar informações de exercício' });
+        console.error('Erro ao registrar informações do exercício:', error);
+        res.status(500).json({ error: 'Erro ao registrar informações do exercício.' });
     }
 });
+
+
+
 
 router.get('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId', async (req, res) => {
     const { usuarioId, treinoId, exercicioId } = req.params;
 
     try {
         const result = await db.query(
-            `SELECT * FROM exercicios_usuario
+            `SELECT
+                carga_serie_1, repeticoes_serie_1,
+                carga_serie_2, repeticoes_serie_2,
+                carga_serie_3, repeticoes_serie_3
+             FROM exercicios_usuario
              WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3`,
             [usuarioId, treinoId, exercicioId]
         );
@@ -203,32 +235,13 @@ router.get('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId', asy
             return res.status(404).json({ error: 'Informações não encontradas para o exercício' });
         }
 
-        res.json(result.rows[0]); // Retorna as informações registradas
+        res.json(result.rows[0]);
     } catch (error) {
         console.error('Erro ao buscar as informações do exercício:', error);
         res.status(500).json({ error: 'Erro ao buscar as informações do exercício' });
     }
 });
 
-router.get('/treinos/:id', async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const result = await db.query(
-            'SELECT * FROM treinos WHERE id = $1',
-            [id]
-        );
-
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: 'Treino não encontrado' });
-        }
-
-        res.json(result.rows[0]); // Retorna o treino encontrado
-    } catch (error) {
-        console.error('Erro ao buscar treino pelo ID:', error);
-        res.status(500).json({ error: 'Erro ao buscar treino pelo ID' });
-    }
-});
 
 
 
