@@ -231,79 +231,63 @@ router.delete('/treinos/:treinoId/exercicios/:exercicioId', async (req, res) => 
 });
 
 
-router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/registro', async (req, res) => {
+router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/series', async (req, res) => {
     const { usuarioId, treinoId, exercicioId } = req.params;
-    const {
-        carga_serie_1,
-        repeticoes_serie_1,
-        carga_serie_2,
-        repeticoes_serie_2,
-        carga_serie_3,
-        repeticoes_serie_3
-    } = req.body;
+    const { series } = req.body; // series: [{ numero_serie, carga, repeticoes }, ...]
+
+    if (!Array.isArray(series) || series.length === 0) {
+        return res.status(400).json({ error: 'É necessário fornecer uma lista de séries.' });
+    }
 
     try {
-        // Montar os valores para a query
-        const values = [usuarioId, treinoId, exercicioId];
-        const updates = [];
+        await db.query('BEGIN');
 
-        if (carga_serie_1 !== undefined) updates.push(`carga_serie_1 = $${values.length + 1}`) && values.push(carga_serie_1);
-        if (repeticoes_serie_1 !== undefined) updates.push(`repeticoes_serie_1 = $${values.length + 1}`) && values.push(repeticoes_serie_1);
-        if (carga_serie_2 !== undefined) updates.push(`carga_serie_2 = $${values.length + 1}`) && values.push(carga_serie_2);
-        if (repeticoes_serie_2 !== undefined) updates.push(`repeticoes_serie_2 = $${values.length + 1}`) && values.push(repeticoes_serie_2);
-        if (carga_serie_3 !== undefined) updates.push(`carga_serie_3 = $${values.length + 1}`) && values.push(carga_serie_3);
-        if (repeticoes_serie_3 !== undefined) updates.push(`repeticoes_serie_3 = $${values.length + 1}`) && values.push(repeticoes_serie_3);
+        // Apagar séries antigas para esse exercício
+        await db.query(
+            `DELETE FROM series_usuario WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3`,
+            [usuarioId, treinoId, exercicioId]
+        );
 
-        // Garantir que há algo para atualizar
-        if (updates.length === 0) {
-            return res.status(400).json({ error: 'Nenhum dado fornecido para atualizar.' });
+        for (const s of series) {
+            await db.query(
+                `INSERT INTO series_usuario (usuario_id, treino_id, exercicio_id, numero_serie, carga, repeticoes)
+                 VALUES ($1, $2, $3, $4, $5, $6)`,
+                [usuarioId, treinoId, exercicioId, s.numero_serie, s.carga, s.repeticoes]
+            );
         }
 
-        const query = `
-            INSERT INTO exercicios_usuario (usuario_id, treino_id, exercicio_id, ${updates.map(u => u.split(' = ')[0]).join(', ')})
-            VALUES ($1, $2, $3, ${values.slice(3).map((_, i) => `$${i + 4}`).join(', ')})
-            ON CONFLICT (usuario_id, treino_id, exercicio_id)
-            DO UPDATE SET ${updates.join(', ')}
-            RETURNING *;
-        `;
-
-        // Executar a consulta
-        const result = await db.query(query, values);
-
-        res.status(201).json(result.rows[0]); // Sucesso
+        await db.query('COMMIT');
+        res.status(201).json({ message: 'Séries registradas com sucesso.' });
     } catch (error) {
-        console.error('Erro ao registrar informações do exercício:', error);
-        res.status(500).json({ error: 'Erro ao registrar informações do exercício.' });
+        await db.query('ROLLBACK');
+        console.error('Erro ao registrar séries:', error);
+        res.status(500).json({ error: 'Erro ao registrar séries.' });
     }
 });
 
 
 
 
-router.get('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId', async (req, res) => {
+
+router.get('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/series', async (req, res) => {
     const { usuarioId, treinoId, exercicioId } = req.params;
 
     try {
         const result = await db.query(
-            `SELECT
-                carga_serie_1, repeticoes_serie_1,
-                carga_serie_2, repeticoes_serie_2,
-                carga_serie_3, repeticoes_serie_3
-             FROM exercicios_usuario
-             WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3`,
+            `SELECT numero_serie, carga, repeticoes
+             FROM series_usuario
+             WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3
+             ORDER BY numero_serie`,
             [usuarioId, treinoId, exercicioId]
         );
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Informações não encontradas para o exercício' });
-        }
-
-        res.json(result.rows[0]);
+        res.json(result.rows);
     } catch (error) {
-        console.error('Erro ao buscar as informações do exercício:', error);
-        res.status(500).json({ error: 'Erro ao buscar as informações do exercício' });
+        console.error('Erro ao buscar séries do exercício:', error);
+        res.status(500).json({ error: 'Erro ao buscar séries do exercício.' });
     }
 });
+
 
 
 
