@@ -16,11 +16,19 @@ const UsuariosEdit = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Fetch user data
+        if (!id) return; // 👈 CORRETO: só continua quando o id estiver definido
+
+        console.log("ID recebido pelo useParams:", id);
+
         fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`)
-            .then(response => {
+            .then(async response => {
                 if (!response.ok) {
-                    throw new Error('Erro na resposta do servidor');
+                    if (response.status === 404) {
+                        throw new Error('Usuário não encontrado');
+                    } else {
+                        const errText = await response.text();
+                        throw new Error(`Erro ${response.status}: ${errText}`);
+                    }
                 }
                 return response.json();
             })
@@ -34,6 +42,9 @@ const UsuariosEdit = () => {
                 setLoading(false);
             });
     }, [id]);
+
+
+
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;

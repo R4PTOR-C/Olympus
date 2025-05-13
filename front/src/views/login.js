@@ -32,9 +32,9 @@ function Login() {
 
                 // Redireciona com base na função do usuário
                 if (data.funcao === 'Professor') {
-                    navigate('/usuarios'); // Exemplo de rota para professores
+                    navigate(`/usuarios/${data.userId}`); // ✅ Redireciona com o ID garantido
                 } else if (data.funcao === 'Aluno') {
-                    navigate('/home'); // Exemplo de rota para alunos
+                    navigate(`/home/${data.userId}`); // Exemplo de rota para alunos
                 } else {
                     // Se a função do usuário não for especificada, redireciona para uma rota padrão
                     navigate('/home');

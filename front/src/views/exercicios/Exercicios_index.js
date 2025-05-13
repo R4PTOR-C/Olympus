@@ -51,10 +51,34 @@ function Exercicios_index() {
         fetchExercicios();
     }, [treinoId, userId]);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+    const handleBlurSalvar = async (exercicioId) => {
+        const sanitizedFormData = Object.fromEntries(
+            Object.entries(formData).map(([key, value]) => [key, value === '' ? null : value])
+        );
+
+        try {
+            await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicioId}/registro`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(sanitizedFormData),
+                }
+            );
+
+            setExercicios((prevExercicios) =>
+                prevExercicios.map((ex) =>
+                    ex.exercicio_id === exercicioId ? { ...ex, ...sanitizedFormData } : ex
+                )
+            );
+        } catch (error) {
+            console.error('Erro ao salvar as informações do exercício:', error);
+        } finally {
+            setEditingField(null);
+        }
     };
+
 
     const handleFormSubmit = async (exercicioId) => {
         const sanitizedFormData = Object.fromEntries(
@@ -106,6 +130,9 @@ function Exercicios_index() {
         }
     };
 
+    const [editingField, setEditingField] = useState(null);
+
+
     if (loading) return <div>Carregando...</div>;
     if (error) return <div>Erro: {error}</div>;
 
@@ -115,149 +142,88 @@ function Exercicios_index() {
                 <div className="row">
                     {exercicios.map((exercicio) => (
                         <div className="col-md-4 mb-4" key={exercicio.exercicio_id}>
-                            <div
-                                className="card h-100"
-                                style={{ cursor: 'pointer' }}
-                                onClick={() => handleCardClick(exercicio)}
-                            >
+                            <div className="card h-100 p-3">
                                 <img
                                     src={`${process.env.REACT_APP_API_BASE_URL}/uploads/${exercicio.gif_url}`}
                                     alt={`GIF do exercício ${exercicio.nome_exercicio}`}
                                     className="card-img-top"
-                                    style={{
-                                        maxHeight: '200px',
-                                        width: '100%',
-                                        objectFit: 'contain',
-                                    }}
+                                    style={{ maxHeight: '200px', objectFit: 'contain' }}
                                 />
                                 <div className="card-body">
                                     <h5 className="card-title">{exercicio.nome_exercicio}</h5>
-                                    {exercicio.carga_serie_1 || exercicio.repeticoes_serie_1 ? (
-                                        <div>
-                                            <p>
-                                                <strong>Série 1:</strong> {exercicio.carga_serie_1}{' '}
-                                                <img
-                                                    src="/weight.png"
-                                                    alt="Peso"
-                                                    style={{width: '20px', height: '20px'}}
-                                                />{' '}
-                                                x {exercicio.repeticoes_serie_1}{' '}
-                                                <img
-                                                    src="/reps.png"
-                                                    alt="Repetições"
-                                                    style={{width: '20px', height: '20px'}}
+
+                                    {[1, 2, 3].map((serie) => (
+                                        <div className="d-flex align-items-center mb-2" key={serie}>
+                                            <strong className="me-2">{serie}ª:</strong>
+
+                                            {/* CARGA */}
+                                            {selectedExercicio === exercicio.exercicio_id &&
+                                            editingField === `carga_serie_${serie}` ? (
+                                                <input
+                                                    type="number"
+                                                    className="form-control form-control-sm me-2"
+                                                    style={{ width: '80px' }}
+                                                    value={formData[`carga_serie_${serie}`]}
+                                                    onChange={(e) =>
+                                                        setFormData({ ...formData, [`carga_serie_${serie}`]: e.target.value })
+                                                    }
+                                                    onBlur={() => handleBlurSalvar(exercicio.exercicio_id)}
+                                                    autoFocus
                                                 />
-                                            </p>
-                                            <p>
-                                                <strong>Série 2:</strong> {exercicio.carga_serie_2}{' '}
-                                                <img
-                                                    src="/weight.png"
-                                                    alt="Peso"
-                                                    style={{width: '20px', height: '20px'}}
-                                                />{' '}
-                                                x {exercicio.repeticoes_serie_2}{' '}
-                                                <img
-                                                    src="/reps.png"
-                                                    alt="Repetições"
-                                                    style={{width: '20px', height: '20px'}}
+                                            ) : (
+                                                <span
+                                                    className="me-2"
+                                                    style={{ cursor: 'pointer', color: 'black', textDecoration: 'none' }}
+                                                    onClick={() => {
+                                                        setSelectedExercicio(exercicio.exercicio_id);
+                                                        setEditingField(`carga_serie_${serie}`);
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            [`carga_serie_${serie}`]: exercicio[`carga_serie_${serie}`] || '',
+                                                        }));
+                                                    }}
+                                                >
+            {exercicio[`carga_serie_${serie}`] || '-'} kg
+            <img src="/weight.png" alt="Peso" style={{ width: '20px', height: '20px', marginLeft: '4px' }} />
+        </span>
+                                            )}
+
+                                            <span className="me-1">×</span>
+
+                                            {/* REPETIÇÕES */}
+                                            {selectedExercicio === exercicio.exercicio_id &&
+                                            editingField === `repeticoes_serie_${serie}` ? (
+                                                <input
+                                                    type="number"
+                                                    className="form-control form-control-sm me-2"
+                                                    style={{ width: '80px' }}
+                                                    value={formData[`repeticoes_serie_${serie}`]}
+                                                    onChange={(e) =>
+                                                        setFormData({ ...formData, [`repeticoes_serie_${serie}`]: e.target.value })
+                                                    }
+                                                    onBlur={() => handleBlurSalvar(exercicio.exercicio_id)}
+                                                    autoFocus
                                                 />
-                                            </p>
-                                            <p>
-                                                <strong>Série 3:</strong> {exercicio.carga_serie_3}{' '}
-                                                <img
-                                                    src="/weight.png"
-                                                    alt="Peso"
-                                                    style={{width: '20px', height: '20px'}}
-                                                />{' '}
-                                                x {exercicio.repeticoes_serie_3}{' '}
-                                                <img
-                                                    src="/reps.png"
-                                                    alt="Repetições"
-                                                    style={{width: '20px', height: '20px'}}
-                                                />
-                                            </p>
+                                            ) : (
+                                                <span
+                                                    style={{ cursor: 'pointer', color: 'black', textDecoration: 'none' }}
+                                                    onClick={() => {
+                                                        setSelectedExercicio(exercicio.exercicio_id);
+                                                        setEditingField(`repeticoes_serie_${serie}`);
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            [`repeticoes_serie_${serie}`]: exercicio[`repeticoes_serie_${serie}`] || '',
+                                                        }));
+                                                    }}
+                                                >
+            {exercicio[`repeticoes_serie_${serie}`] || '-'} reps
+            <img src="/reps.png" alt="Repetições" style={{ width: '20px', height: '20px', marginLeft: '4px' }} />
+        </span>
+                                            )}
                                         </div>
 
-                                    ) : (
-                                        <p className="text-muted">Sem informações registradas.</p>
-                                    )}
-                                    {selectedExercicio === exercicio.exercicio_id && (
-                                        <form
-                                            className="mt-3"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <div className="form-group">
-                                                <label>Carga Série 1 (kg)</label>
-                                                <input
-                                                    type="number"
-                                                    name="carga_serie_1"
-                                                    value={formData.carga_serie_1}
-                                                    onChange={handleInputChange}
-                                                    className="form-control"
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Repetições Série 1</label>
-                                                <input
-                                                    type="number"
-                                                    name="repeticoes_serie_1"
-                                                    value={formData.repeticoes_serie_1}
-                                                    onChange={handleInputChange}
-                                                    className="form-control"
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Carga Série 2 (kg)</label>
-                                                <input
-                                                    type="number"
-                                                    name="carga_serie_2"
-                                                    value={formData.carga_serie_2}
-                                                    onChange={handleInputChange}
-                                                    className="form-control"
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Repetições Série 2</label>
-                                                <input
-                                                    type="number"
-                                                    name="repeticoes_serie_2"
-                                                    value={formData.repeticoes_serie_2}
-                                                    onChange={handleInputChange}
-                                                    className="form-control"
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Carga Série 3 (kg)</label>
-                                                <input
-                                                    type="number"
-                                                    name="carga_serie_3"
-                                                    value={formData.carga_serie_3}
-                                                    onChange={handleInputChange}
-                                                    className="form-control"
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label>Repetições Série 3</label>
-                                                <input
-                                                    type="number"
-                                                    name="repeticoes_serie_3"
-                                                    value={formData.repeticoes_serie_3}
-                                                    onChange={handleInputChange}
-                                                    className="form-control"
-                                                />
-                                            </div>
-                                            <button
-                                                type="button"
-                                                className="btn btn-primary mt-3"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleFormSubmit(exercicio.exercicio_id);
-                                                }}
-                                            >
-                                                Salvar
-                                            </button>
-                                        </form>
-                                    )}
+                                    ))}
+                                    
                                 </div>
                             </div>
                         </div>

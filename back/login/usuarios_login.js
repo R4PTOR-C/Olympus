@@ -29,7 +29,14 @@ router.post('/login', async (req, res) => {
             { expiresIn: '1h' } // Define a duração do token
         );
 
-        res.json({ message: 'Login bem-sucedido', token, userName: user.nome, funcao: user.funcao, avatar: user.avatar });
+        res.json({
+            message: 'Login bem-sucedido',
+            token,
+            userId: user.id, // 👈 adicione isso
+            userName: user.nome,
+            funcao: user.funcao,
+            avatar: user.avatar
+        });
     } catch (err) {
         console.error('Erro durante o login:', err);
         res.status(500).json({ error: 'Erro interno do servidor' });

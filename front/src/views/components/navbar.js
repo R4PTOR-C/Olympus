@@ -14,8 +14,10 @@ function Navbar() {
     };
 
     // Determinar o link para "OLYMPUS" baseado na função do usuário
-    const homeLink = user.funcao === 'Professor' ? '/usuarios' : '/home';
-
+    const homeLink =
+        user.funcao === 'Professor'
+            ? '/usuarios'
+            : `/home/${user.userId}`; // ✅ inclui o ID do aluno
     return (
         <nav className="navbar navbar-expand-lg custom-navbar-bg">
             <div className="container-fluid">
@@ -54,7 +56,7 @@ function Navbar() {
                                         data-bs-toggle="dropdown"
                                         aria-expanded="false"
                                     >
-                                        Exercicios
+                                        Exercícios
                                     </a>
                                     <ul className="dropdown-menu" aria-labelledby="exerciciosDropdown">
                                         <li>
@@ -71,10 +73,10 @@ function Navbar() {
                                 <img
                                     src="/dumbbell2.png"
                                     alt="Repetições"
-                                    style={{width: '20px', height: '20px'}}
+                                    style={{ width: '20px', height: '20px' }}
                                 />
                                 <li className="nav-item">
-                                    <Link className="nav-link" to="/home">Treinos</Link>
+                                    <Link className="nav-link" to={`/home/${user.userId}`}>Treinos</Link> {/* ✅ Atualizado */}
                                 </li>
                             </>
                         )}
