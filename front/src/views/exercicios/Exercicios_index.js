@@ -52,9 +52,16 @@ function Exercicios_index() {
     }, [treinoId, userId]);
 
     const handleBlurSalvar = async (exercicioId) => {
-        const sanitizedFormData = Object.fromEntries(
-            Object.entries(formData).map(([key, value]) => [key, value === '' ? null : value])
-        );
+        const exercicioAtual = exercicios.find((ex) => ex.exercicio_id === exercicioId);
+
+        const sanitizedFormData = {
+            carga_serie_1: formData.carga_serie_1 !== '' ? formData.carga_serie_1 : exercicioAtual.carga_serie_1,
+            repeticoes_serie_1: formData.repeticoes_serie_1 !== '' ? formData.repeticoes_serie_1 : exercicioAtual.repeticoes_serie_1,
+            carga_serie_2: formData.carga_serie_2 !== '' ? formData.carga_serie_2 : exercicioAtual.carga_serie_2,
+            repeticoes_serie_2: formData.repeticoes_serie_2 !== '' ? formData.repeticoes_serie_2 : exercicioAtual.repeticoes_serie_2,
+            carga_serie_3: formData.carga_serie_3 !== '' ? formData.carga_serie_3 : exercicioAtual.carga_serie_3,
+            repeticoes_serie_3: formData.repeticoes_serie_3 !== '' ? formData.repeticoes_serie_3 : exercicioAtual.repeticoes_serie_3,
+        };
 
         try {
             await fetch(
@@ -80,10 +87,19 @@ function Exercicios_index() {
     };
 
 
+
     const handleFormSubmit = async (exercicioId) => {
-        const sanitizedFormData = Object.fromEntries(
-            Object.entries(formData).map(([key, value]) => [key, value === '' ? null : value])
-        );
+        const exercicioAtual = exercicios.find((ex) => ex.exercicio_id === exercicioId);
+
+        const sanitizedFormData = {
+            carga_serie_1: formData.carga_serie_1 ?? exercicioAtual.carga_serie_1,
+            repeticoes_serie_1: formData.repeticoes_serie_1 ?? exercicioAtual.repeticoes_serie_1,
+            carga_serie_2: formData.carga_serie_2 ?? exercicioAtual.carga_serie_2,
+            repeticoes_serie_2: formData.repeticoes_serie_2 ?? exercicioAtual.repeticoes_serie_2,
+            carga_serie_3: formData.carga_serie_3 ?? exercicioAtual.carga_serie_3,
+            repeticoes_serie_3: formData.repeticoes_serie_3 ?? exercicioAtual.repeticoes_serie_3,
+        };
+
 
         try {
             const response = await fetch(
@@ -119,13 +135,14 @@ function Exercicios_index() {
             setSelectedExercicio(null);
         } else {
             setFormData({
-                carga_serie_1: exercicio.carga_serie_1 || '',
-                repeticoes_serie_1: exercicio.repeticoes_serie_1 || '',
-                carga_serie_2: exercicio.carga_serie_2 || '',
-                repeticoes_serie_2: exercicio.repeticoes_serie_2 || '',
-                carga_serie_3: exercicio.carga_serie_3 || '',
-                repeticoes_serie_3: exercicio.repeticoes_serie_3 || '',
+                carga_serie_1: '',
+                repeticoes_serie_1: '',
+                carga_serie_2: '',
+                repeticoes_serie_2: '',
+                carga_serie_3: '',
+                repeticoes_serie_3: '',
             });
+
             setSelectedExercicio(exercicio.exercicio_id);
         }
     };
@@ -223,7 +240,7 @@ function Exercicios_index() {
                                         </div>
 
                                     ))}
-                                    
+
                                 </div>
                             </div>
                         </div>
