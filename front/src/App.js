@@ -20,6 +20,7 @@ import Exercicios_edit from "./views/exercicios/Exercicios_edit";
 import TreinosEdit from "./views/treinos/Treinos_edit"
 import Avaliacoes_new from "./views/avaliacoes/Avaliacoes_new";
 import Avaliacoes_view from "./views/avaliacoes/Avaliacoes_view";
+import MeuTreinoEdit from './views/treinos/MeuTreinoEdit';
 import { AuthProvider, AuthContext } from './AuthContext';
 import './App.css';
 import './styles/Navbar.css'
@@ -58,6 +59,7 @@ function AppContent() {
                 <Route path="/home/:id" element={<ProtectedRoute><Home /></ProtectedRoute>} />
                 <Route path="/usuarios" element={<ProtectedRoute><Usuarios_index /></ProtectedRoute>} />
                 <Route path="/usuarios/edit/:id" element={<ProtectedRoute><UsuariosEdit /></ProtectedRoute>} />
+                <Route path="/meu-treino/:id/:treinoId" element={<ProtectedRoute><MeuTreinoEdit /></ProtectedRoute>}/>
                 <Route path="/exercicios/edit/:id" element={<ProtectedRoute><Exercicios_edit /></ProtectedRoute>} />
                 <Route path="/treinos/edit/:id/:treinoId" element={<ProtectedRoute><TreinosEdit /></ProtectedRoute>} />
                 <Route path="/usuarios/view/:id" element={<ProtectedRoute><Usuarios_view /></ProtectedRoute>} />

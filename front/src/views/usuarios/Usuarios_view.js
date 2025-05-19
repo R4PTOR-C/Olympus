@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../AuthContext';
 
 const Usuarios_view = () => {
     const { id } = useParams();
@@ -8,53 +9,51 @@ const Usuarios_view = () => {
     const [treinos, setTreinos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { userId, funcao } = useContext(AuthContext);
+
 
     useEffect(() => {
-        // Buscar os detalhes do usuário com base no ID
-        const fetchUsuario = async () => {
-            try {
-                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`);
-                if (!response.ok) {
-                    throw new Error('Erro ao buscar os dados do usuário');
-                }
-                const data = await response.json();
-                setUsuario(data);
-            } catch (err) {
-                setError(err.message);
+        const carregarDados = async () => {
+            // Impede usuários comuns de acessar a view de outro usuário
+            if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
+                navigate(`/usuarios/view/${userId}`);
+                return; // evita continuar carregando dados indevidamente
             }
-        };
 
-        // Buscar os treinos do usuário com base no ID e seus respectivos exercícios
-        const fetchTreinos = async () => {
             try {
-                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`);
-                if (!response.ok) {
-                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
-                }
-                const treinosData = await response.json();
+                const [usuarioRes, treinosRes] = await Promise.all([
+                    fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`),
+                    fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`)
+                ]);
 
+                if (!usuarioRes.ok) throw new Error('Erro ao buscar os dados do usuário');
+                if (!treinosRes.ok) throw new Error('Erro ao buscar os treinos do usuário');
+
+                const usuarioData = await usuarioRes.json();
+                const treinosData = await treinosRes.json();
+
+                // Carregar exercícios de cada treino
                 const treinosComExercicios = await Promise.all(
                     treinosData.map(async (treino) => {
-                        const exerciciosResponse = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treino.id}/exercicios`);
-                        const exerciciosData = await exerciciosResponse.json();
+                        const exerciciosRes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treino.id}/exercicios`);
+                        const exerciciosData = await exerciciosRes.json();
                         return { ...treino, exercicios: exerciciosData || [] };
                     })
                 );
 
+                setUsuario(usuarioData);
                 setTreinos(treinosComExercicios);
+                setLoading(false);
             } catch (err) {
-                console.error('Erro ao buscar os treinos:', err);
+                console.error('Erro ao carregar dados:', err);
                 setError(err.message);
+                setLoading(false);
             }
         };
 
-        Promise.all([fetchUsuario(), fetchTreinos()])
-            .then(() => setLoading(false))
-            .catch((err) => {
-                setError(err.message);
-                setLoading(false);
-            });
-    }, [id]);
+        carregarDados();
+    }, [id, userId, funcao, navigate]);
+
 
     const handleDeleteTreino = async (treinoId) => {
         const confirmDelete = window.confirm("Tem certeza que deseja excluir este treino?");

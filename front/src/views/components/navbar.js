@@ -1,9 +1,11 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+
 
 function Navbar() {
     const user = useContext(AuthContext);
+    const navigate = useNavigate();
 
     // Construir a URL do avatar, assumindo que está sendo servido a partir de "/uploads"
     const avatarUrl = user.avatar ? `${process.env.REACT_APP_API_BASE_URL}/uploads/${user.avatar}` : null;
@@ -78,6 +80,15 @@ function Navbar() {
                                 <li className="nav-item">
                                     <Link className="nav-link" to={`/home/${user.userId}`}>Treinos</Link> {/* ✅ Atualizado */}
                                 </li>
+                                <button
+                                    className="btn btn-outline-light ms-2"
+                                    onClick={() => navigate(`/usuarios/view/${user.userId}`)}
+                                >
+                                    Meus Treinos
+                                </button>
+
+
+
                             </>
                         )}
 

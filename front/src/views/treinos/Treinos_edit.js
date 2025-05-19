@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../AuthContext';
 
 const TreinosEdit = () => {
     const { id, treinoId } = useParams();
@@ -15,15 +16,34 @@ const TreinosEdit = () => {
     const [filteredExercicios, setFilteredExercicios] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
+    const { userId, funcao } = useContext(AuthContext);
 
     useEffect(() => {
+        const bloquearSeNaoAutorizado = () => {
+            if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
+                navigate(`/usuarios/view/${userId}`);
+                return true; // bloqueado
+            }
+            return false; // autorizado
+        };
+
+        if (bloquearSeNaoAutorizado()) return;
+
         const fetchTreino = async () => {
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`);
             const data = await res.json();
+
+            // Bloquear se o treino não pertencer ao usuário logado (caso não seja professor)
+            if (funcao !== 'Professor' && parseInt(data.usuario_id) !== parseInt(userId)) {
+                navigate(`/treinos/view/${userId}`);
+                return;
+            }
+
             setNomeTreino(data.nome_treino);
             setDescricao(data.descricao);
             setDiaSemana(data.dia_semana);
         };
+
 
         const fetchExerciciosSalvos = async () => {
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`);
@@ -33,7 +53,8 @@ const TreinosEdit = () => {
 
         fetchTreino();
         fetchExerciciosSalvos();
-    }, [treinoId]);
+    }, [treinoId, id, userId, funcao, navigate]);
+
 
     useEffect(() => {
         const fetchExercicios = async () => {
@@ -222,20 +243,30 @@ const TreinosEdit = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {currentItems.map((ex) => (
-                        <tr key={ex.id}>
-                            <td>
-                                <input
-                                    type="checkbox"
-                                    checked={exerciciosSelecionados.includes(ex.id)}
-                                    onChange={() => handleExercicioChange(ex.id)}
-                                />
-                            </td>
-                            <td>{ex.nome_exercicio}</td>
-                            <td>{ex.grupo_muscular}</td>
-                            <td>{ex.nivel}</td>
-                        </tr>
-                    ))}
+                    {currentItems.map((ex) => {
+                        const jaAdicionado = exerciciosSalvos.some((s) => s.exercicio_id === ex.id);
+
+                        return (
+                            <tr
+                                key={ex.id}
+                                className={jaAdicionado ? 'table-secondary' : ''}
+                            >
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        disabled={jaAdicionado}
+                                        checked={exerciciosSelecionados.includes(ex.id)}
+                                        onChange={() => handleExercicioChange(ex.id)}
+                                    />
+                                </td>
+                                <td>{ex.nome_exercicio}</td>
+                                <td>{ex.grupo_muscular}</td>
+                                <td>{ex.nivel}</td>
+                            </tr>
+                        );
+                    })}
+
+
                     </tbody>
                 </table>
 
