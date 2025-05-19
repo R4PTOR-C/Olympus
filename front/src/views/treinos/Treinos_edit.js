@@ -2,163 +2,172 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const TreinosEdit = () => {
-    const { id, treinoId } = useParams(); // ID do aluno e do treino
+    const { id, treinoId } = useParams();
     const navigate = useNavigate();
     const [nomeTreino, setNomeTreino] = useState('');
     const [descricao, setDescricao] = useState('');
     const [diaSemana, setDiaSemana] = useState('');
+    const [grupoMuscular, setGrupoMuscular] = useState('');
+    const [exercicios, setExercicios] = useState([]);
     const [exerciciosSalvos, setExerciciosSalvos] = useState([]);
-    const [exerciciosDisponiveis, setExerciciosDisponiveis] = useState([]);
     const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredExercicios, setFilteredExercicios] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
-    // Carregar os detalhes do treino e exercícios já salvos
     useEffect(() => {
         const fetchTreino = async () => {
-            try {
-                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`);
-                const data = await response.json();
-                setNomeTreino(data.nome_treino);
-                setDescricao(data.descricao);
-                setDiaSemana(data.dia_semana);
-            } catch (error) {
-                console.error('Erro ao carregar treino:', error);
-            }
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`);
+            const data = await res.json();
+            setNomeTreino(data.nome_treino);
+            setDescricao(data.descricao);
+            setDiaSemana(data.dia_semana);
         };
 
         const fetchExerciciosSalvos = async () => {
-            try {
-                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`);
-                const data = await response.json();
-                setExerciciosSalvos(data);
-            } catch (error) {
-                console.error('Erro ao carregar exercícios salvos:', error);
-            }
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`);
+            const data = await res.json();
+            setExerciciosSalvos(data);
         };
 
         fetchTreino();
         fetchExerciciosSalvos();
     }, [treinoId]);
 
-    // Carregar exercícios disponíveis
     useEffect(() => {
         const fetchExercicios = async () => {
-            try {
-                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`);
-                const data = await response.json();
-                setExerciciosDisponiveis(data);
-                setFilteredExercicios(data);
-            } catch (error) {
-                console.error('Erro ao carregar exercícios disponíveis:', error);
-            }
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`);
+            const data = await res.json();
+            setExercicios(data);
+            setFilteredExercicios(data);
         };
 
         fetchExercicios();
     }, []);
 
-    // Filtrar exercícios disponíveis
     useEffect(() => {
-        const filtered = exerciciosDisponiveis.filter(
+        const filtered = exercicios.filter(
             (ex) =>
                 (ex.nome_exercicio && ex.nome_exercicio.toLowerCase().includes(searchTerm.toLowerCase())) ||
                 (ex.grupo_muscular && ex.grupo_muscular.toLowerCase().includes(searchTerm.toLowerCase()))
         );
         setFilteredExercicios(filtered);
-    }, [searchTerm, exerciciosDisponiveis]);
+        setCurrentPage(1);
+    }, [searchTerm, exercicios]);
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredExercicios.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredExercicios.length / itemsPerPage);
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const handleExercicioChange = (exercicioId) => {
-        if (exerciciosSelecionados.includes(exercicioId)) {
-            setExerciciosSelecionados(exerciciosSelecionados.filter((id) => id !== exercicioId));
+        setExerciciosSelecionados(prev =>
+            prev.includes(exercicioId) ? prev.filter(id => id !== exercicioId) : [...prev, exercicioId]
+        );
+    };
+
+    const handleRemoveExercicio = async (exercicioId) => {
+        if (!window.confirm("Tem certeza que deseja remover este exercício do treino?")) return;
+
+        const res = await fetch(
+            `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios/${exercicioId}`,
+            { method: 'DELETE' }
+        );
+
+        if (res.ok) {
+            setExerciciosSalvos(prev => prev.filter(ex => ex.exercicio_id !== exercicioId));
+            setExerciciosSelecionados(prev => prev.filter(id => id !== exercicioId));
+            alert('Exercício removido com sucesso.');
         } else {
-            setExerciciosSelecionados([...exerciciosSelecionados, exercicioId]);
+            alert('Erro ao remover o exercício.');
         }
     };
 
     const handleSaveChanges = async () => {
-        try {
-            // Atualizar as informações do treino
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
-                method: 'PUT',
+        if (!nomeTreino.trim() || !diaSemana) {
+            alert('Preencha todos os campos obrigatórios.');
+            return;
+        }
+
+        const treino = { nome_treino: nomeTreino, descricao, dia_semana: diaSemana };
+
+        const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(treino),
+        });
+
+        if (!res.ok) {
+            alert('Erro ao atualizar treino.');
+            return;
+        }
+
+        const novos = exerciciosSelecionados.filter(
+            id => !exerciciosSalvos.some(ex => ex.exercicio_id === id)
+        );
+
+        if (novos.length > 0) {
+            await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nome_treino: nomeTreino,
-                    descricao,
-                    dia_semana: diaSemana,
-                }),
+                body: JSON.stringify({ exercicios: novos }),
             });
+        }
 
-            if (!response.ok) {
-                throw new Error('Erro ao salvar alterações do treino.');
-            }
+        alert('Treino atualizado com sucesso!');
+        navigate(`/usuarios/view/${id}`);
 
-            // Adicionar exercícios selecionados ao treino
-            if (exerciciosSelecionados.length > 0) {
-                await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ exercicios: exerciciosSelecionados }),
-                });
-            }
 
-            alert('Alterações salvas com sucesso!');
-            navigate(`/usuarios/view/${id}`);
-        } catch (error) {
-            console.error('Erro ao salvar alterações:', error);
-            alert('Erro ao salvar alterações do treino.');
+
+    };
+
+    const handleAddExercicios = async () => {
+        const novos = exerciciosSelecionados.filter(
+            (id) => !exerciciosSalvos.some((ex) => ex.exercicio_id === id)
+        );
+
+        if (novos.length === 0) {
+            alert('Nenhum exercício novo selecionado.');
+            return;
+        }
+
+        const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ exercicios: novos }),
+        });
+
+        if (res.ok) {
+            // ✅ Recarrega os exercícios salvos
+            const atualizados = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`);
+            const dados = await atualizados.json();
+            setExerciciosSalvos(dados);
+            setExerciciosSelecionados([]);
+            alert('Exercícios adicionados com sucesso!');
+        } else {
+            alert('Erro ao adicionar exercícios.');
         }
     };
 
-    const handleRemoveExercicio = async (exercicioId) => {
-        const confirmRemove = window.confirm("Tem certeza que deseja remover este exercício do treino?");
-        if (!confirmRemove) return;
 
-        try {
-            const response = await fetch(
-                `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios/${exercicioId}`,
-                { method: 'DELETE' }
-            );
-
-            if (response.ok) {
-                setExerciciosSalvos(exerciciosSalvos.filter((ex) => ex.exercicio_id !== exercicioId));
-                alert('Exercício removido com sucesso.');
-            } else {
-                alert('Erro ao remover o exercício.');
-            }
-        } catch (error) {
-            console.error('Erro ao remover exercício:', error);
-            alert('Erro ao conectar ao servidor.');
-        }
-    };
 
     return (
         <div className="container mt-5">
             <h2>Editar Treino</h2>
-            <form>
+            <form onSubmit={(e) => { e.preventDefault(); handleSaveChanges(); }}>
                 <div className="form-group">
                     <label>Nome do Treino</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        value={nomeTreino}
-                        onChange={(e) => setNomeTreino(e.target.value)}
-                    />
+                    <input type="text" className="form-control" value={nomeTreino} onChange={(e) => setNomeTreino(e.target.value)} required />
                 </div>
                 <div className="form-group">
                     <label>Descrição</label>
-                    <textarea
-                        className="form-control"
-                        value={descricao}
-                        onChange={(e) => setDescricao(e.target.value)}
-                    />
+                    <textarea className="form-control" value={descricao} onChange={(e) => setDescricao(e.target.value)} required />
                 </div>
                 <div className="form-group">
                     <label>Dia da Semana</label>
-                    <select
-                        className="form-control"
-                        value={diaSemana}
-                        onChange={(e) => setDiaSemana(e.target.value)}
-                    >
+                    <select className="form-control" value={diaSemana} onChange={(e) => setDiaSemana(e.target.value)} required>
                         <option value="">Selecione o Dia</option>
                         <option value="Segunda-feira">Segunda-feira</option>
                         <option value="Terça-feira">Terça-feira</option>
@@ -169,77 +178,90 @@ const TreinosEdit = () => {
                         <option value="Domingo">Domingo</option>
                     </select>
                 </div>
-            </form>
 
-            <h3 className="mt-4">Exercícios Salvos</h3>
-            <table className="table table-bordered">
-                <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Grupo Muscular</th>
-                    <th>Nível</th>
-                    <th>Ações</th>
-                </tr>
-                </thead>
-                <tbody>
-                {exerciciosSalvos.map((exercicio) => (
-                    <tr key={exercicio.exercicio_id}>
-                        <td>{exercicio.nome_exercicio}</td>
-                        <td>{exercicio.grupo_muscular}</td>
-                        <td>{exercicio.nivel}</td>
-                        <td>
-                            <button
-                                className="btn btn-danger"
-                                onClick={() => handleRemoveExercicio(exercicio.exercicio_id)}
+                <h3 className="mt-4">Exercícios Salvos</h3>
+                <table className="table">
+                    <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Grupo Muscular</th>
+                        <th>Nível</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {exerciciosSalvos.map((ex) => (
+                        <tr key={ex.exercicio_id}>
+                            <td>{ex.nome_exercicio}</td>
+                            <td>{ex.grupo_muscular}</td>
+                            <td>{ex.nivel}</td>
+                            <td>
+                                <button
+                                    type="button"
+                                    className="btn btn-danger btn-sm"
+                                    onClick={() => handleRemoveExercicio(ex.exercicio_id)}
+                                >
+                                    Remover
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+
+                <h3 className="mt-4">Adicionar Exercícios</h3>
+                <input type="text" className="form-control mb-3" placeholder="Buscar por nome ou grupo muscular..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+
+                <table className="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Selecionar</th>
+                        <th>Nome</th>
+                        <th>Grupo Muscular</th>
+                        <th>Nível</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {currentItems.map((ex) => (
+                        <tr key={ex.id}>
+                            <td>
+                                <input
+                                    type="checkbox"
+                                    checked={exerciciosSelecionados.includes(ex.id)}
+                                    onChange={() => handleExercicioChange(ex.id)}
+                                />
+                            </td>
+                            <td>{ex.nome_exercicio}</td>
+                            <td>{ex.grupo_muscular}</td>
+                            <td>{ex.nivel}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+
+                <nav className="mt-3">
+                    <ul className="pagination justify-content-center">
+                        {[...Array(totalPages)].map((_, index) => (
+                            <li
+                                key={index}
+                                className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
                             >
-                                Remover
-                            </button>
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
+                                <button className="page-link" onClick={() => paginate(index + 1)}>
+                                    {index + 1}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
 
-            <h3 className="mt-4">Adicionar Exercícios</h3>
-            <div className="form-group">
-                <label>Buscar Exercícios</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Buscar por nome ou grupo muscular..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-            <table className="table table-hover">
-                <thead>
-                <tr>
-                    <th>Selecionar</th>
-                    <th>Nome</th>
-                    <th>Grupo Muscular</th>
-                    <th>Nível</th>
-                </tr>
-                </thead>
-                <tbody>
-                {filteredExercicios.map((exercicio) => (
-                    <tr key={exercicio.id}>
-                        <td>
-                            <input
-                                type="checkbox"
-                                checked={exerciciosSelecionados.includes(exercicio.id)}
-                                onChange={() => handleExercicioChange(exercicio.id)}
-                            />
-                        </td>
-                        <td>{exercicio.nome_exercicio}</td>
-                        <td>{exercicio.grupo_muscular}</td>
-                        <td>{exercicio.nivel}</td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-            <button type="button" className="btn btn-success mt-3" onClick={handleSaveChanges}>
-                Salvar Alterações
-            </button>
+                <div className="d-flex gap-2 mt-3">
+                    <button type="submit" className="btn btn-dark btn-sm">Salvar Alterações</button>
+                    <button type="button" className="btn btn-success btn-sm" onClick={handleAddExercicios}>
+                        Adicionar Exercícios
+                    </button>
+                </div>
+
+            </form>
         </div>
     );
 };
