@@ -59,7 +59,7 @@ function Exercicios_index() {
 
     const handleRemoverSerie = async (numero_serie, exercicioId) => {
         const listaAtual = formData[exercicioId] || exercicios.find(ex => ex.exercicio_id === exercicioId)?.series || [];
-        const novaLista = listaAtual.filter(s => s.numero_serie !== numero_serie);
+        const novaLista = listaAtual.filter(s => Number(s.numero_serie) !== Number(numero_serie));
 
         const reorganizado = novaLista.map((s, index) => ({
             ...s,

@@ -233,21 +233,22 @@ router.delete('/treinos/:treinoId/exercicios/:exercicioId', async (req, res) => 
 
 router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/series', async (req, res) => {
     const { usuarioId, treinoId, exercicioId } = req.params;
-    const { series } = req.body; // series: [{ numero_serie, carga, repeticoes }, ...]
+    const { series } = req.body;
 
-    if (!Array.isArray(series) || series.length === 0) {
+    if (!Array.isArray(series)) {
         return res.status(400).json({ error: 'É necessário fornecer uma lista de séries.' });
     }
 
     try {
         await db.query('BEGIN');
 
-        // Apagar séries antigas para esse exercício
+        // Sempre apagamos as séries antigas
         await db.query(
             `DELETE FROM series_usuario WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3`,
             [usuarioId, treinoId, exercicioId]
         );
 
+        // Só insere se houver séries
         for (const s of series) {
             await db.query(
                 `INSERT INTO series_usuario (usuario_id, treino_id, exercicio_id, numero_serie, carga, repeticoes)
@@ -264,6 +265,7 @@ router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/seri
         res.status(500).json({ error: 'Erro ao registrar séries.' });
     }
 });
+
 
 
 
