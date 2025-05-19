@@ -124,7 +124,7 @@ function Exercicios_index() {
                         <div className="col-md-4 mb-4" key={exercicio.exercicio_id}>
                             <div className="card h-100 p-3">
                                 <img
-                                    src={`${process.env.REACT_APP_API_BASE_URL}/uploads/${exercicio.gif_url}`}
+                                    src={exercicio.gif_url}
                                     alt={`GIF do exercício ${exercicio.nome_exercicio}`}
                                     className="card-img-top"
                                     style={{ maxHeight: '200px', objectFit: 'contain' }}

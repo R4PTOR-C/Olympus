@@ -1,41 +1,45 @@
 // exercicios.js
 const express = require('express');
-const bcrypt = require('bcrypt');
 const db = require('./db');
-const multer = require('multer');
-const path = require('path');
 const router = express.Router();
 
-// Configuração do Multer para salvar arquivos
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Pasta onde os GIFs serão armazenados
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}${path.extname(file.originalname)}`); // Nome único para o arquivo
+const multer = require('multer');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('./config/cloudinary');
+
+// Configura o storage para Cloudinary
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'olympus_exercicios', // Nome da pasta no Cloudinary
+        allowed_formats: ['gif'],
+        resource_type: 'image',
     },
 });
 
 const upload = multer({ storage });
+
+// Listar exercícios
 router.get('/', async (req, res) => {
     try {
         const { rows } = await db.query('SELECT * FROM exercicios');
-        console.log(rows); // Imprime os dados na console do servidor
-        res.json(rows); // Envia os dados como JSON para o cliente
+        res.json(rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-router.post('/', async (req, res) => {
+// Criar exercício (com upload opcional de gif)
+router.post('/', upload.single('gif'), async (req, res) => {
     const { nome_exercicio, grupo_muscular, nivel } = req.body;
+    const gifUrl = req.file?.path || null; // URL pública do Cloudinary
 
     try {
         const resultado = await db.query(
-            `INSERT INTO exercicios (nome_exercicio, grupo_muscular, nivel) 
-             VALUES ($1, $2, $3) RETURNING *`,
-            [nome_exercicio, grupo_muscular, nivel]
+            `INSERT INTO exercicios (nome_exercicio, grupo_muscular, nivel, gif_url)
+             VALUES ($1, $2, $3, $4) RETURNING *`,
+            [nome_exercicio, grupo_muscular, nivel, gifUrl]
         );
 
         res.status(201).json(resultado.rows[0]);
@@ -45,6 +49,7 @@ router.post('/', async (req, res) => {
     }
 });
 
+// Buscar por ID
 router.get('/exercicios/:id', async (req, res) => {
     const { id } = req.params;
 
@@ -62,19 +67,21 @@ router.get('/exercicios/:id', async (req, res) => {
     }
 });
 
-
-// Rota para atualizar exercícios
+// Atualizar exercício (com gif opcional)
 router.put('/:id', upload.single('gif'), async (req, res) => {
     const { id } = req.params;
     const { nome_exercicio, grupo_muscular, nivel } = req.body;
-    const gifUrl = req.file ? `${req.file.filename}` : null;
-
+    const gifUrl = req.file?.path || null;
 
     try {
         const query = `
             UPDATE exercicios
-            SET nome_exercicio = $1, grupo_muscular = $2, nivel = $3, gif_url = COALESCE($4, gif_url)
-            WHERE id = $5 RETURNING *
+            SET nome_exercicio = $1,
+                grupo_muscular = $2,
+                nivel = $3,
+                gif_url = COALESCE($4, gif_url)
+            WHERE id = $5
+                RETURNING *;
         `;
         const values = [nome_exercicio, grupo_muscular, nivel, gifUrl, id];
         const result = await db.query(query, values);
@@ -89,6 +96,5 @@ router.put('/:id', upload.single('gif'), async (req, res) => {
         res.status(500).json({ error: 'Erro ao atualizar exercício.' });
     }
 });
-
 
 module.exports = router;

@@ -4,6 +4,19 @@ function Exercicios_new() {
     const [nome_exercicio, setNome_exercicio] = useState('');
     const [grupo_muscular, setGrupo_muscular] = useState('');
     const [nivel, setNivel] = useState('');
+    const [gif, setGif] = useState(null);
+
+    const GRUPOS_MUSCULARES = [
+        "Peitoral",
+        "Bíceps",
+        "Tríceps",
+        "Costas",
+        "Ombros",
+        "Pernas",
+        "Abdômen",
+        "Panturrilha"
+    ];
+
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -31,6 +44,17 @@ function Exercicios_new() {
             console.error('Erro:', error);
             alert('Erro ao conectar ao servidor.');
         }
+
+        const formData = new FormData();
+        formData.append('nome_exercicio', nome_exercicio);
+        formData.append('grupo_muscular', grupo_muscular);
+        formData.append('nivel', nivel);
+        formData.append('gif', gif);
+
+        await fetch('http://localhost:5000/exercicios', {
+            method: 'POST',
+            body: formData,
+        });
     };
 
     return (
@@ -49,13 +73,17 @@ function Exercicios_new() {
                 </div>
                 <div className="form-group mt-3">
                     <label>Grupo Muscular</label>
-                    <input
-                        type="text"
+                    <select
                         className="form-control"
                         value={grupo_muscular}
                         onChange={(e) => setGrupo_muscular(e.target.value)}
                         required
-                    />
+                    >
+                        <option value="">Selecione o grupo muscular</option>
+                        {GRUPOS_MUSCULARES.map((grupo) => (
+                            <option key={grupo} value={grupo}>{grupo}</option>
+                        ))}
+                    </select>
                 </div>
                 <div className="form-group mt-3">
                     <label>Nível</label>
@@ -71,6 +99,14 @@ function Exercicios_new() {
                         <option value="Avançado">Avançado</option>
                     </select>
                 </div>
+
+                <input
+                    type="file"
+                    className="form-control"
+                    accept=".gif"
+                    onChange={(e) => setGif(e.target.files[0])}
+                    required
+                />
                 <button type="submit" className="btn btn-primary mt-3">Adicionar</button>
             </form>
         </div>
