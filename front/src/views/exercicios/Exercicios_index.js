@@ -15,9 +15,29 @@ function Exercicios_index() {
     const [diaSemana, setDiaSemana] = useState('');
     const [dataUltimoTreino, setDataUltimoTreino] = useState('');
     const [modoEdicao, setModoEdicao] = useState(false);
+    const [treinoRealizadoId, setTreinoRealizadoId] = useState(null);
+
 
 
     useEffect(() => {
+
+        const verificarTreinoAtivo = async () => {
+            try {
+                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/ativo`, {
+                    credentials: 'include'
+                });
+                if (!res.ok) throw new Error('Erro ao verificar treino ativo');
+                const data = await res.json();
+                if (data.ativo) {
+                    setModoEdicao(true);
+                    setTreinoRealizadoId(data.treinoRealizadoId); // 👈 salva o ID
+                }
+
+            } catch (err) {
+                console.error('Erro ao verificar treino ativo:', err);
+            }
+        };
+
         const fetchExercicios = async () => {
             try {
                 const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, { credentials: 'include' });
@@ -66,6 +86,7 @@ function Exercicios_index() {
             }
         };
 
+        verificarTreinoAtivo();
         fetchTreinoInfo();
         fetchExercicios();
     }, [treinoId, userId]);
@@ -116,19 +137,45 @@ function Exercicios_index() {
         }
     };
 
-    const handleNovoTreino = () => {
-        setModoEdicao(true);
-        setFormData({}); // Limpa todos os campos
-        setExercicios(prev =>
-            prev.map(ex => ({ ...ex, series: [] }))
-        );
+    const handleNovoTreino = async () => {
+        try {
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/iniciar`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error('Erro ao iniciar treino');
+
+            setModoEdicao(true);
+            setTreinoRealizadoId(data.treinoRealizado.id); // 👈 salva o novo ID
+            setFormData({});
+            setExercicios(prev =>
+                prev.map(ex => ({ ...ex, series: [] }))
+            );
+        } catch (err) {
+            console.error('Erro ao iniciar novo treino:', err);
+            alert('Não foi possível iniciar o treino.');
+        }
     };
 
+
     const handleFinalizarTreino = async () => {
-        setModoEdicao(false);
-        setLoading(true);
+        if (!treinoRealizadoId) return;
 
         try {
+            await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos_realizados/${treinoRealizadoId}/finalizar`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            setModoEdicao(false);
+            setTreinoRealizadoId(null);
+            const dataHoje = new Date().toISOString().split('T')[0];
+            setDataUltimoTreino(dataHoje);
+
+
+            // Atualiza os dados do treino como antes
+            setLoading(true);
             const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios`, {
                 credentials: 'include'
             });
@@ -149,12 +196,14 @@ function Exercicios_index() {
             if (exerciciosComSeries.length && exerciciosComSeries[0].series.length) {
                 setDataUltimoTreino(exerciciosComSeries[0].series[0].data_treino);
             }
+
         } catch (err) {
-            console.error('Erro ao finalizar e recarregar treino:', err);
+            console.error('Erro ao finalizar treino:', err);
         } finally {
             setLoading(false);
         }
     };
+
 
 
 
