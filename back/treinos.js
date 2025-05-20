@@ -389,6 +389,29 @@ router.get('/usuarios/:usuarioId/treinos/:treinoId/ativo', async (req, res) => {
     }
 });
 
+// Rota para listar todos os treinos realizados por um usuário em um treino específico
+router.get('/treinos_realizados', async (req, res) => {
+    const { usuario_id, treino_id } = req.query;
+
+    if (!usuario_id || !treino_id) {
+        return res.status(400).json({ error: 'Parâmetros usuario_id e treino_id são obrigatórios.' });
+    }
+
+    try {
+        const result = await db.query(
+            `SELECT *
+             FROM treinos_realizados
+             WHERE usuario_id = $1 AND treino_id = $2
+             ORDER BY data DESC`,
+            [usuario_id, treino_id]
+        );
+
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Erro ao buscar treinos realizados:', error);
+        res.status(500).json({ error: 'Erro ao buscar treinos realizados.' });
+    }
+});
 
 
 

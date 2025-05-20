@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
+import ModalHistorico from '../components/ModalHistorico';
+
 
 function Exercicios_index() {
     const { treinoId } = useParams();
@@ -16,6 +18,8 @@ function Exercicios_index() {
     const [dataUltimoTreino, setDataUltimoTreino] = useState('');
     const [modoEdicao, setModoEdicao] = useState(false);
     const [treinoRealizadoId, setTreinoRealizadoId] = useState(null);
+    const [mostrarModalHistorico, setMostrarModalHistorico] = useState(false);
+
 
 
 
@@ -245,15 +249,27 @@ function Exercicios_index() {
                     )}
 
                 </div>
-                {modoEdicao ? (
-                    <button className="btn btn-outline-danger btn-sm" onClick={handleFinalizarTreino}>
-                        Finalizar Treino
+                <div className="d-flex align-items-center gap-2">
+                    {modoEdicao ? (
+                        <button className="btn btn-outline-danger btn-sm" onClick={handleFinalizarTreino}>
+                            Finalizar Treino
+                        </button>
+                    ) : (
+                        <button className="btn btn-outline-success btn-sm" onClick={handleNovoTreino}>
+                            Iniciar Novo Treino
+                        </button>
+                    )}
+
+                    {/* Botão com ícone de histórico */}
+                    <button
+                        className="btn btn-outline-secondary btn-sm"
+                        onClick={() => setMostrarModalHistorico(true)}
+                        title="Ver histórico de treinos"
+                    >
+                        <i className="bi bi-clock-history"></i>
                     </button>
-                ) : (
-                    <button className="btn btn-outline-success btn-sm" onClick={handleNovoTreino}>
-                        Iniciar Novo Treino
-                    </button>
-                )}
+                </div>
+
 
             </div>
             <div className="row">
@@ -366,6 +382,14 @@ function Exercicios_index() {
                     );
                 })}
             </div>
+            {mostrarModalHistorico && (
+                <ModalHistorico
+                    usuarioId={userId}
+                    treinoId={treinoId}
+                    onClose={() => setMostrarModalHistorico(false)}
+                />
+            )}
+
         </div>
     );
 }
