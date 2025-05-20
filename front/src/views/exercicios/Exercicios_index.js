@@ -11,6 +11,11 @@ function Exercicios_index() {
     const [editingField, setEditingField] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [nomeTreino, setNomeTreino] = useState('');
+    const [diaSemana, setDiaSemana] = useState('');
+    const [dataUltimoTreino, setDataUltimoTreino] = useState('');
+    const [modoEdicao, setModoEdicao] = useState(false);
+
 
     useEffect(() => {
         const fetchExercicios = async () => {
@@ -26,6 +31,12 @@ function Exercicios_index() {
                             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicio.exercicio_id}/series`, { credentials: 'include' });
                             if (res.ok) {
                                 const series = await res.json();
+
+                                // Pega a data da primeira série válida encontrada
+                                if (!dataUltimoTreino && series.length > 0 && series[0].data_treino) {
+                                    setDataUltimoTreino(series[0].data_treino);
+                                }
+
                                 return { ...exercicio, series };
                             }
                         } catch (err) {
@@ -43,8 +54,22 @@ function Exercicios_index() {
             }
         };
 
+        const fetchTreinoInfo = async () => {
+            try {
+                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`);
+                if (!res.ok) throw new Error('Erro ao buscar informações do treino');
+                const data = await res.json();
+                setNomeTreino(data.nome_treino);
+                setDiaSemana(data.dia_semana);
+            } catch (err) {
+                console.error('Erro ao buscar treino:', err);
+            }
+        };
+
+        fetchTreinoInfo();
         fetchExercicios();
     }, [treinoId, userId]);
+
 
     const handleAddSerie = (exercicioId) => {
         const listaAtual = formData[exercicioId] || exercicios.find(ex => ex.exercicio_id === exercicioId)?.series || [];
@@ -91,6 +116,47 @@ function Exercicios_index() {
         }
     };
 
+    const handleNovoTreino = () => {
+        setModoEdicao(true);
+        setFormData({}); // Limpa todos os campos
+        setExercicios(prev =>
+            prev.map(ex => ({ ...ex, series: [] }))
+        );
+    };
+
+    const handleFinalizarTreino = async () => {
+        setModoEdicao(false);
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios`, {
+                credentials: 'include'
+            });
+            const exerciciosAtualizados = await response.json();
+
+            const exerciciosComSeries = await Promise.all(
+                exerciciosAtualizados.map(async (exercicio) => {
+                    const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicio.exercicio_id}/series`, {
+                        credentials: 'include'
+                    });
+                    const series = res.ok ? await res.json() : [];
+                    return { ...exercicio, series };
+                })
+            );
+
+            setExercicios(exerciciosComSeries);
+            setFormData({});
+            if (exerciciosComSeries.length && exerciciosComSeries[0].series.length) {
+                setDataUltimoTreino(exerciciosComSeries[0].series[0].data_treino);
+            }
+        } catch (err) {
+            console.error('Erro ao finalizar e recarregar treino:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
 
     const handleBlurSalvar = async (exercicioId) => {
         const series = formData[exercicioId] || [];
@@ -117,6 +183,30 @@ function Exercicios_index() {
 
     return (
         <div className="container mt-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 className="mb-0">Treino: {nomeTreino}</h4>
+                    <small className="text-muted">Dia da semana: {diaSemana}</small>
+                    {dataUltimoTreino && (
+                        <div>
+                            <small className="text-muted">
+                                Treino realizado em: {new Date(dataUltimoTreino).toLocaleDateString('pt-BR')}
+                            </small>
+                        </div>
+                    )}
+
+                </div>
+                {modoEdicao ? (
+                    <button className="btn btn-outline-danger btn-sm" onClick={handleFinalizarTreino}>
+                        Finalizar Treino
+                    </button>
+                ) : (
+                    <button className="btn btn-outline-success btn-sm" onClick={handleNovoTreino}>
+                        Iniciar Novo Treino
+                    </button>
+                )}
+
+            </div>
             <div className="row">
                 {exercicios.map((exercicio) => {
                     const series = formData[exercicio.exercicio_id] || exercicio.series || [];
@@ -138,7 +228,7 @@ function Exercicios_index() {
                                                 <strong className="me-2">{serie.numero_serie}ª:</strong>
 
                                                 {/* CARGA */}
-                                                {editingField?.exercicioId === exercicio.exercicio_id && editingField?.numero_serie === serie.numero_serie && editingField?.campo === 'carga' ? (
+                                                {modoEdicao && editingField?.exercicioId === exercicio.exercicio_id && editingField?.numero_serie === serie.numero_serie && editingField?.campo === 'carga' ? (
                                                     <input
                                                         type="number"
                                                         className="form-control form-control-sm me-2"
@@ -167,7 +257,7 @@ function Exercicios_index() {
                                                 <span className="me-1">×</span>
 
                                                 {/* REPETIÇÕES */}
-                                                {editingField?.exercicioId === exercicio.exercicio_id && editingField?.numero_serie === serie.numero_serie && editingField?.campo === 'repeticoes' ? (
+                                                {modoEdicao && editingField?.exercicioId === exercicio.exercicio_id && editingField?.numero_serie === serie.numero_serie && editingField?.campo === 'repeticoes' ? (
                                                     <input
                                                         type="number"
                                                         className="form-control form-control-sm me-2"
@@ -194,26 +284,33 @@ function Exercicios_index() {
                                             </div>
 
                                             {/* Botão de Remover */}
-                                            <button
-                                                className="btn p-0 m-0"
-                                                style={{ color: 'red', fontSize: '1.4rem', lineHeight: '1', border: 'none', background: 'none' }}
-                                                onClick={() => handleRemoverSerie(serie.numero_serie, exercicio.exercicio_id)}
-                                                title="Remover série"
-                                            >
-                                                &minus;
-                                            </button>
+                                            {/* Botão de Remover */}
+                                            {modoEdicao && (
+                                                <button
+                                                    className="btn p-0 m-0"
+                                                    style={{ color: 'red', fontSize: '1.4rem', lineHeight: '1', border: 'none', background: 'none' }}
+                                                    onClick={() => handleRemoverSerie(serie.numero_serie, exercicio.exercicio_id)}
+                                                    title="Remover série"
+                                                >
+                                                    &minus;
+                                                </button>
+                                            )}
+
 
                                         </div>
                                     ))}
 
 
-                                    <button
-                                        className="btn btn-outline-primary btn-sm mt-2"
-                                        onClick={() => handleAddSerie(exercicio.exercicio_id)}
-                                        type="button"
-                                    >
-                                        + Adicionar Série
-                                    </button>
+                                    {modoEdicao && (
+                                        <button
+                                            className="btn btn-outline-primary btn-sm mt-2"
+                                            onClick={() => handleAddSerie(exercicio.exercicio_id)}
+                                            type="button"
+                                        >
+                                            + Adicionar Série
+                                        </button>
+                                    )}
+
                                 </div>
                             </div>
                         </div>

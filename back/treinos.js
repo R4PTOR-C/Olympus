@@ -233,7 +233,7 @@ router.delete('/treinos/:treinoId/exercicios/:exercicioId', async (req, res) => 
 
 router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/series', async (req, res) => {
     const { usuarioId, treinoId, exercicioId } = req.params;
-    const { series } = req.body;
+    const { series, modo } = req.body;
 
     if (!Array.isArray(series)) {
         return res.status(400).json({ error: 'É necessário fornecer uma lista de séries.' });
@@ -242,18 +242,23 @@ router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/seri
     try {
         await db.query('BEGIN');
 
-        // Sempre apagamos as séries antigas
-        await db.query(
-            `DELETE FROM series_usuario WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3`,
-            [usuarioId, treinoId, exercicioId]
-        );
+        let dataTreino = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-        // Só insere se houver séries
+        if (modo !== 'novo_treino') {
+            // Edição: apagar os registros do dia atual
+            await db.query(
+                `DELETE FROM series_usuario
+                 WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3 AND data_treino = $4`,
+                [usuarioId, treinoId, exercicioId, dataTreino]
+            );
+        }
+
         for (const s of series) {
             await db.query(
-                `INSERT INTO series_usuario (usuario_id, treino_id, exercicio_id, numero_serie, carga, repeticoes)
-                 VALUES ($1, $2, $3, $4, $5, $6)`,
-                [usuarioId, treinoId, exercicioId, s.numero_serie, s.carga, s.repeticoes]
+                `INSERT INTO series_usuario
+                 (usuario_id, treino_id, exercicio_id, numero_serie, carga, repeticoes, data_treino)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                [usuarioId, treinoId, exercicioId, s.numero_serie, s.carga, s.repeticoes, dataTreino]
             );
         }
 
@@ -271,17 +276,37 @@ router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/seri
 
 
 
+
+
 router.get('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/series', async (req, res) => {
     const { usuarioId, treinoId, exercicioId } = req.params;
+    const { data } = req.query;
 
     try {
-        const result = await db.query(
-            `SELECT numero_serie, carga, repeticoes
+        let result;
+        if (data) {
+            result = await db.query(
+                `SELECT numero_serie, carga, repeticoes, data_treino
+             FROM series_usuario
+             WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3 AND data_treino = $4
+             ORDER BY numero_serie`,
+                [usuarioId, treinoId, exercicioId, data]
+            );
+        } else {
+            // Busca a data mais recente
+            result = await db.query(
+                `SELECT numero_serie, carga, repeticoes, data_treino
              FROM series_usuario
              WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3
+             AND data_treino = (
+                SELECT MAX(data_treino)
+                FROM series_usuario
+                WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3
+             )
              ORDER BY numero_serie`,
-            [usuarioId, treinoId, exercicioId]
-        );
+                [usuarioId, treinoId, exercicioId]
+            );
+        }
 
         res.json(result.rows);
     } catch (error) {
@@ -290,6 +315,79 @@ router.get('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/serie
     }
 });
 
+router.post('/usuarios/:usuarioId/treinos/:treinoId/iniciar', async (req, res) => {
+    const { usuarioId, treinoId } = req.params;
+    const dataHoje = new Date().toISOString().split('T')[0];
+
+    try {
+        // Verifica se já existe um treino em andamento
+        const { rows } = await db.query(
+            `SELECT * FROM treinos_realizados 
+             WHERE usuario_id = $1 AND treino_id = $2 AND data = $3 AND finalizado_em IS NULL`,
+            [usuarioId, treinoId, dataHoje]
+        );
+
+        if (rows.length > 0) {
+            return res.status(200).json({ treinoRealizado: rows[0], existente: true });
+        }
+
+        // Cria novo treino
+        const insert = await db.query(
+            `INSERT INTO treinos_realizados (usuario_id, treino_id, data)
+             VALUES ($1, $2, $3)
+             RETURNING *`,
+            [usuarioId, treinoId, dataHoje]
+        );
+
+        res.status(201).json({ treinoRealizado: insert.rows[0], existente: false });
+    } catch (error) {
+        console.error('Erro ao iniciar treino:', error);
+        res.status(500).json({ error: 'Erro ao iniciar treino.' });
+    }
+});
+
+router.post('/treinos_realizados/:id/finalizar', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        await db.query(
+            `UPDATE treinos_realizados
+             SET finalizado_em = NOW()
+             WHERE id = $1`,
+            [id]
+        );
+
+        res.status(200).json({ message: 'Treino finalizado com sucesso.' });
+    } catch (error) {
+        console.error('Erro ao finalizar treino:', error);
+        res.status(500).json({ error: 'Erro ao finalizar treino.' });
+    }
+});
+
+router.get('/usuarios/:usuarioId/treinos/:treinoId/ativo', async (req, res) => {
+    const { usuarioId, treinoId } = req.params;
+    const dataHoje = new Date().toISOString().split('T')[0];
+
+    try {
+        const { rows } = await db.query(
+            `SELECT * FROM treinos_realizados
+             WHERE usuario_id = $1 AND treino_id = $2 AND data = $3 AND finalizado_em IS NULL
+             LIMIT 1`,
+            [usuarioId, treinoId, dataHoje]
+        );
+
+        if (rows.length > 0) {
+            // Há um treino ativo
+            return res.status(200).json({ ativo: true, treinoRealizadoId: rows[0].id });
+        } else {
+            // Nenhum treino ativo encontrado
+            return res.status(200).json({ ativo: false });
+        }
+    } catch (error) {
+        console.error('Erro ao verificar treino ativo:', error);
+        res.status(500).json({ error: 'Erro ao verificar treino ativo.' });
+    }
+});
 
 
 
