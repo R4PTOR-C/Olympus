@@ -90,6 +90,7 @@ router.delete('/:id', async (req, res) => {
 
 // Rota para atualizar o usuário e o avatar
 router.put('/:id', upload.single('avatar'), async (req, res) => {
+    console.log('Arquivo recebido:', req.file); // ✅ Verifique se chega aqui
     const { id } = req.params;
     const { nome, email, genero, idade, senha, funcao } = req.body;
     const avatar = req.file ? req.file.path : null; // ✅ URL do Cloudinary

@@ -56,12 +56,20 @@ export const AuthProvider = ({ children }) => {
         setUser({ loggedIn: false, userName: '', userId: null, avatar: null });
     };
 
+    // ✅ NOVO: função para atualizar os dados do usuário dinamicamente
+    const updateUser = (updates) => {
+        setUser(prev => ({
+            ...prev,
+            ...updates
+        }));
+    };
+
     if (loading) {
         return <div className="loading-indicator">Carregando...</div>;
     }
 
     return (
-        <AuthContext.Provider value={{ ...user, login, logout, loading }}>
+        <AuthContext.Provider value={{ ...user, login, logout, updateUser, loading }}>
             {!loading ? children : <div>Carregando...</div>}
         </AuthContext.Provider>
 

@@ -6,9 +6,18 @@ import { Link, useNavigate } from 'react-router-dom';
 function Navbar() {
     const user = useContext(AuthContext);
     const navigate = useNavigate();
+    const {
+        userId,
+        userName,
+        avatar,
+        funcao,
+        loggedIn,
+        logout,
+    } = useContext(AuthContext);
+
 
     // Construir a URL do avatar, assumindo que está sendo servido a partir de "/uploads"
-    const avatarUrl = user.avatar ? `${process.env.REACT_APP_API_BASE_URL}/uploads/${user.avatar}` : null;
+    const avatarUrl = avatar ? avatar : null; // Já vem completo do Cloudinary
 
     // Função de logout
     const handleLogout = () => {

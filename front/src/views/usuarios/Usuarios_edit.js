@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import CropAvatar from "../components/CropAvatar";
+import { AuthContext } from '../../AuthContext';
+
 
 const UsuariosEdit = () => {
     const { id } = useParams();
@@ -14,6 +17,14 @@ const UsuariosEdit = () => {
     const [avatar, setAvatar] = useState(null); // Estado para o novo avatar
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showCropper, setShowCropper] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const previewUrl = avatar ? URL.createObjectURL(avatar) : null;
+    const { updateUser, userId } = useContext(AuthContext);
+
+
+
+
 
     useEffect(() => {
         if (!id) return; // 👈 CORRETO: só continua quando o id estiver definido
@@ -52,14 +63,26 @@ const UsuariosEdit = () => {
         setUsuario({ ...usuario, [name]: value });
     };
 
-    const handleFileChange = (event) => {
-        setAvatar(event.target.files[0]); // Armazena o arquivo de imagem selecionado
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setSelectedFile(file);
+        setShowCropper(true);
     };
+
+    const handleCropped = async (croppedBlob) => {
+        console.log("🎯 Recebido no onCropped:", croppedBlob);
+        const file = new File([croppedBlob], 'avatar.jpeg', { type: 'image/jpeg' });
+        setAvatar(file);
+        setShowCropper(false);
+    };
+
+
+
+
 
     const handleSubmit = (event) => {
         event.preventDefault();
 
-        // Usar FormData para enviar dados do formulário junto com a imagem
         const formData = new FormData();
         formData.append('nome', usuario.nome);
         formData.append('email', usuario.email);
@@ -67,16 +90,24 @@ const UsuariosEdit = () => {
         formData.append('idade', usuario.idade);
         formData.append('funcao', usuario.funcao);
         if (avatar) {
-            formData.append('avatar', avatar); // Adiciona o avatar ao FormData se houver um novo arquivo
+            formData.append('avatar', avatar);
         }
+
+        console.log("➡️ Submetendo formulário");
+        console.log('🧪 Avatar a ser enviado:', avatar);
+        console.log('É um File?', avatar instanceof File);
 
         fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`, {
             method: 'PUT',
             body: formData,
         })
-            .then(response => {
+            .then(async response => {
                 if (!response.ok) {
                     throw new Error('Erro ao atualizar o usuário');
+                }
+                const updated = await response.json();
+                if (updated.usuario && updated.usuario.avatar && Number(id) === userId) {
+                    updateUser({ avatar: updated.usuario.avatar }); // ✅ atualiza avatar no contexto
                 }
                 navigate('/usuarios');
             })
@@ -85,6 +116,7 @@ const UsuariosEdit = () => {
                 setError(error.toString());
             });
     };
+
 
     if (loading) return <div>Carregando...</div>;
     if (error) return <div className="alert alert-danger">Erro: {error}</div>;
@@ -114,7 +146,23 @@ const UsuariosEdit = () => {
                         className="form-control"
                         accept="image/*"
                     />
+                    {showCropper && selectedFile && (
+                        <CropAvatar file={selectedFile} onCropped={handleCropped} onClose={() => setShowCropper(false)} />
+                    )}
+                    {previewUrl && (
+                        <div className="mt-3">
+                            <label className="form-label">Prévia do novo avatar</label>
+                            <img
+                                src={previewUrl}
+                                alt="Prévia do novo avatar"
+                                className="img-thumbnail"
+                                style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+                            />
+                        </div>
+                    )}
+
                 </div>
+
                 <div className="mb-3">
                     <label className="form-label">Nome</label>
                     <input
