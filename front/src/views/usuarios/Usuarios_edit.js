@@ -1,35 +1,28 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import CropAvatar from "../components/CropAvatar";
 import { AuthContext } from '../../AuthContext';
-
+import CropAvatar from "../components/CropAvatar";
 
 const UsuariosEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { updateUser } = useContext(AuthContext);
+
     const [usuario, setUsuario] = useState({
         nome: '',
         email: '',
         genero: '',
         idade: '',
-        funcao: '',
     });
-    const [avatar, setAvatar] = useState(null); // Estado para o novo avatar
+    const [avatar, setAvatar] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showCropper, setShowCropper] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const previewUrl = avatar ? URL.createObjectURL(avatar) : null;
-    const { updateUser, userId } = useContext(AuthContext);
-
-
-
-
 
     useEffect(() => {
-        if (!id) return; // 👈 CORRETO: só continua quando o id estiver definido
-
-        console.log("ID recebido pelo useParams:", id);
+        if (!id) return;
 
         fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`)
             .then(async response => {
@@ -44,8 +37,10 @@ const UsuariosEdit = () => {
                 return response.json();
             })
             .then(data => {
-                setUsuario(data);
-                setAvatar(null); // Reseta avatar novo após carregar o existente
+                // Remover campo função antes de setar no state
+                const { funcao, ...dadosUsuario } = data;
+                setUsuario(dadosUsuario);
+                setAvatar(null);
                 setLoading(false);
             })
             .catch(error => {
@@ -54,9 +49,6 @@ const UsuariosEdit = () => {
                 setLoading(false);
             });
     }, [id]);
-
-
-
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
@@ -70,15 +62,10 @@ const UsuariosEdit = () => {
     };
 
     const handleCropped = async (croppedBlob) => {
-        console.log("🎯 Recebido no onCropped:", croppedBlob);
         const file = new File([croppedBlob], 'avatar.jpeg', { type: 'image/jpeg' });
         setAvatar(file);
         setShowCropper(false);
     };
-
-
-
-
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -88,28 +75,21 @@ const UsuariosEdit = () => {
         formData.append('email', usuario.email);
         formData.append('genero', usuario.genero);
         formData.append('idade', usuario.idade);
-        formData.append('funcao', usuario.funcao);
         if (avatar) {
             formData.append('avatar', avatar);
         }
-
-        console.log("➡️ Submetendo formulário");
-        console.log('🧪 Avatar a ser enviado:', avatar);
-        console.log('É um File?', avatar instanceof File);
 
         fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`, {
             method: 'PUT',
             body: formData,
         })
-            .then(async response => {
-                if (!response.ok) {
-                    throw new Error('Erro ao atualizar o usuário');
-                }
-                const updated = await response.json();
-                if (updated.usuario && updated.usuario.avatar && Number(id) === userId) {
-                    updateUser({ avatar: updated.usuario.avatar }); // ✅ atualiza avatar no contexto
-                }
-                navigate('/usuarios');
+            .then(response => {
+                if (!response.ok) throw new Error('Erro ao atualizar o usuário');
+                return response.json();
+            })
+            .then((res) => {
+                updateUser && updateUser(res.usuario);
+                navigate(`/home/${res.usuario.id}`);
             })
             .catch(error => {
                 console.error("Erro ao atualizar o usuário:", error);
@@ -117,26 +97,24 @@ const UsuariosEdit = () => {
             });
     };
 
-
     if (loading) return <div>Carregando...</div>;
     if (error) return <div className="alert alert-danger">Erro: {error}</div>;
 
-    // URL da imagem de avatar atual
-    const avatarUrl = usuario.avatar || null; // A URL já vem pronta do Cloudinary
+    const avatarUrl = usuario.avatar || null;
 
     return (
-        <div className="container mt-5">
-            <h1 className="mb-4">Editar Usuário</h1>
+        <div className="container mt-4 mb-5">
+            <h2 className="text-center mb-4">Editar Perfil</h2>
             <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label className="form-label">Avatar Atual</label>
-                    {avatarUrl ? (
-                        <img src={avatarUrl} alt="Avatar do usuário" className="img-thumbnail mb-3"
-                             style={{width: '150px', height: '150px', objectFit: 'cover'}}/>
-                    ) : (
-                        <p>Nenhum avatar definido</p>
+                <div className="text-center mb-4">
+                    {avatarUrl && !previewUrl && (
+                        <img src={avatarUrl} alt="Avatar atual" className="rounded-circle" style={{ width: 120, height: 120, objectFit: 'cover' }} />
+                    )}
+                    {previewUrl && (
+                        <img src={previewUrl} alt="Novo avatar" className="rounded-circle" style={{ width: 120, height: 120, objectFit: 'cover' }} />
                     )}
                 </div>
+
                 <div className="mb-3">
                     <label className="form-label">Alterar Avatar</label>
                     <input
@@ -149,76 +127,31 @@ const UsuariosEdit = () => {
                     {showCropper && selectedFile && (
                         <CropAvatar file={selectedFile} onCropped={handleCropped} onClose={() => setShowCropper(false)} />
                     )}
-                    {previewUrl && (
-                        <div className="mt-3">
-                            <label className="form-label">Prévia do novo avatar</label>
-                            <img
-                                src={previewUrl}
-                                alt="Prévia do novo avatar"
-                                className="img-thumbnail"
-                                style={{ width: '150px', height: '150px', objectFit: 'cover' }}
-                            />
-                        </div>
-                    )}
-
                 </div>
 
-                <div className="mb-3">
-                    <label className="form-label">Nome</label>
-                    <input
-                        type="text"
-                        name="nome"
-                        value={usuario.nome}
-                        onChange={handleInputChange}
-                        className="form-control"
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={usuario.email}
-                        onChange={handleInputChange}
-                        className="form-control"
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Gênero</label>
-                    <input
-                        type="text"
-                        name="genero"
-                        value={usuario.genero}
-                        onChange={handleInputChange}
-                        className="form-control"
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Idade</label>
-                    <input
-                        type="number"
-                        name="idade"
-                        value={usuario.idade}
-                        onChange={handleInputChange}
-                        className="form-control"
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Função</label>
-                    <input
-                        type="text"
-                        name="funcao"
-                        value={usuario.funcao}
-                        onChange={handleInputChange}
-                        className="form-control"
-                    />
-                </div>
+                {['nome', 'email', 'genero', 'idade'].map((campo) => (
+                    <div className="form-floating mb-3" key={campo}>
+                        <input
+                            type={campo === 'idade' ? 'number' : 'text'}
+                            className="form-control"
+                            id={campo}
+                            name={campo}
+                            value={usuario[campo]}
+                            onChange={handleInputChange}
+                            placeholder={`Digite o ${campo}`}
+                        />
+                        <label htmlFor={campo}>{campo.charAt(0).toUpperCase() + campo.slice(1)}</label>
+                    </div>
+                ))}
 
-
-                <button type="submit" className="btn btn-primary">Salvar</button>
+                <div className="d-grid mt-4">
+                    <button type="submit" className="btn btn-primary btn-lg">
+                        Salvar
+                    </button>
+                </div>
             </form>
         </div>
     );
-}
+};
 
 export default UsuariosEdit;
