@@ -29,9 +29,12 @@ import './styles/Usuarios.css'; // Certifique-se de criar um arquivo CSS para os
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }) {
-    const { loggedIn } = useContext(AuthContext); // Acessa o contexto aqui dentro
+    const { loggedIn, loading } = useContext(AuthContext);
+    console.log('[Route] loggedIn:', loggedIn, '| loading:', loading);
+    if (loading) return <div>Verificando rota...</div>;
     return loggedIn ? children : <Navigate to="/" />;
 }
+
 
 function App() {
     return (
@@ -46,14 +49,20 @@ function App() {
 // Separar AppContent para usar useLocation dentro do Router
 function AppContent() {
     const location = useLocation();
-    const { loggedIn } = useContext(AuthContext);
+    const { loggedIn, loading, userId } = useContext(AuthContext); // ⬅️ adicionei userId aqui
+
+    if (loading) {
+        return <div className="loading-indicator">Verificando sessão...</div>;
+    }
 
     return (
         <>
             {/* Renderiza a Navbar apenas se o usuário estiver logado e não estiver na página de login */}
             {loggedIn && !['/', '/sign-in'].includes(location.pathname) && <Navbar />}
             <Routes>
-                <Route path="/" element={<Login />} />
+                <Route path="/" element={
+                    loggedIn ? <Navigate to={`/home/${userId}`} /> : <Login />
+                } />
                 <Route path="/sign-in" element={<Usuarios_new />} />
                 <Route path="/professor_new" element={<Professor_new />} />
                 <Route path="/home/:id" element={<ProtectedRoute><Home /></ProtectedRoute>} />
