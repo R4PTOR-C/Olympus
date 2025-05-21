@@ -5,13 +5,20 @@ const db = require('./db');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-
-
-
-
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('./config/cloudinary');
 const router = express.Router();
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'olympus_usuarios',
+        allowed_formats: ['jpg', 'jpeg', 'png'],
+        resource_type: 'image',
+    },
+});
+const upload = multer({ storage });
+
 
 // Rota para listar todos os usuários
 router.get('/', async (req, res) => {
@@ -42,27 +49,10 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Define o caminho absoluto para a pasta 'uploads'
-const uploadDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir); // Define a pasta de armazenamento como um caminho absoluto
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname)); // Define o nome do arquivo com sufixo único
-    }
-});
-
-const upload = multer({ storage: storage });
 // Rota para criar um novo usuário com upload de avatar
 router.post('/', upload.single('avatar'), async (req, res) => {
     const { nome, email, genero, idade, senha, funcao } = req.body;
-    const avatar = req.file ? req.file.filename : null; // Salva o nome do arquivo de imagem, se existir
+    const avatar = req.file ? req.file.path : null; // Cloudinary URL
 
     try {
         const normalizedEmail = email.toLowerCase();
@@ -102,7 +92,7 @@ router.delete('/:id', async (req, res) => {
 router.put('/:id', upload.single('avatar'), async (req, res) => {
     const { id } = req.params;
     const { nome, email, genero, idade, senha, funcao } = req.body;
-    const avatar = req.file ? req.file.filename : null; // Novo avatar se enviado
+    const avatar = req.file ? req.file.path : null; // ✅ URL do Cloudinary
 
     try {
         let query = 'UPDATE usuarios SET nome = $1, email = $2, genero = $3, idade = $4, funcao = $5';

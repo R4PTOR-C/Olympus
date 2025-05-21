@@ -129,6 +129,8 @@ function Home() {
                                     </div>
                                 </div>
 
+
+
                                 {/* Exercícios abaixo */}
                                 <div className="mt-3">
                                     <h6>Exercícios:</h6>
@@ -140,6 +142,7 @@ function Home() {
                                         ))}
                                     </ul>
                                 </div>
+
                             </div>
 
 
@@ -147,6 +150,7 @@ function Home() {
                             <p>Não há treino para hoje.</p>
                         )}
                     </div>
+
 
                     {/* Próximos Treinos à direita */}
                     <div className="col-md-6">
@@ -190,9 +194,33 @@ function Home() {
                         )}
                     </div>
                 </div>
+
+
             ) : (
                 <p>Você não está logado.</p>
             )}
+
+            {/* Menu de rodapé para mobile */}
+            <nav className="navbar fixed-bottom d-md-none bg-dark justify-content-around py-2">
+                <button className="btn btn-dark">
+                    <i className="bi bi-house fs-4 text-white"></i> {/* ícone de home */}
+                </button>
+                <button className="btn btn-dark">
+                    <i className="bi bi-clock-history fs-4 text-white"></i>
+                </button>
+                <button className="btn btn-dark">
+                    <i className="bi bi-bar-chart-line fs-4 text-white"></i>
+                </button>
+                <button className="btn btn-dark">
+                    <i className="bi bi-pencil fs-4 text-white"></i>
+                </button>
+                <button className="btn btn-dark">
+                    <i className="bi bi-person fs-4 text-white"></i>
+                </button>
+            </nav>
+
+
+
         </div>
     );
 }

@@ -34,6 +34,7 @@ const UsuariosEdit = () => {
             })
             .then(data => {
                 setUsuario(data);
+                setAvatar(null); // Reseta avatar novo após carregar o existente
                 setLoading(false);
             })
             .catch(error => {
@@ -89,7 +90,7 @@ const UsuariosEdit = () => {
     if (error) return <div className="alert alert-danger">Erro: {error}</div>;
 
     // URL da imagem de avatar atual
-    const avatarUrl = usuario.avatar ? `${process.env.REACT_APP_API_BASE_URL}/uploads/${usuario.avatar}` : null;
+    const avatarUrl = usuario.avatar || null; // A URL já vem pronta do Cloudinary
 
     return (
         <div className="container mt-5">
