@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import ModalHistorico from '../components/ModalHistorico';
+import debounce from 'lodash/debounce';
+
 
 
 function Exercicios_index() {
@@ -222,29 +224,32 @@ function Exercicios_index() {
         }
     };
 
-
-
-
-    const handleBlurSalvar = async (exercicioId) => {
-        const series = formData[exercicioId] || [];
+    const salvarSerieDebounced = debounce(async (exercicioId, series) => {
         try {
             await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicioId}/series`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ series,    treino_realizado_id: treinoRealizadoId
+                body: JSON.stringify({
+                    series: series.map(s => ({
+                        ...s,
+                        carga: s.carga === '' ? null : Number(s.carga),
+                        repeticoes: s.repeticoes === '' ? null : Number(s.repeticoes)
+                    })),
+                    treino_realizado_id: treinoRealizadoId
                 }),
             });
 
-            setExercicios(prev =>
-                prev.map(ex => ex.exercicio_id === exercicioId ? { ...ex, series } : ex)
-            );
-        } catch (error) {
-            console.error('Erro ao salvar:', error);
-        } finally {
-            setEditingField(null);
+            console.log('💾 Séries salvas com sucesso');
+        } catch (err) {
+            console.error('Erro ao salvar séries com debounce:', err);
         }
-    };
+    }, 500); // espera 500ms após o último caractere digitado
+
+
+    
+
+
 
     if (loading) return <div>Carregando...</div>;
     if (error) return <div>Erro: {error}</div>;
@@ -319,8 +324,9 @@ function Exercicios_index() {
                                                                 s.numero_serie === serie.numero_serie ? { ...s, carga: e.target.value } : s
                                                             );
                                                             setFormData(prev => ({ ...prev, [exercicio.exercicio_id]: novaLista }));
+                                                            salvarSerieDebounced(exercicio.exercicio_id, novaLista);
                                                         }}
-                                                        onBlur={() => handleBlurSalvar(exercicio.exercicio_id)}
+
                                                         autoFocus
                                                     />
                                                 ) : (
@@ -348,8 +354,9 @@ function Exercicios_index() {
                                                                 s.numero_serie === serie.numero_serie ? { ...s, repeticoes: e.target.value } : s
                                                             );
                                                             setFormData(prev => ({ ...prev, [exercicio.exercicio_id]: novaLista }));
+                                                            salvarSerieDebounced(exercicio.exercicio_id, novaLista);
                                                         }}
-                                                        onBlur={() => handleBlurSalvar(exercicio.exercicio_id)}
+
                                                         autoFocus
                                                     />
                                                 ) : (
