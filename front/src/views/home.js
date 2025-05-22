@@ -88,7 +88,7 @@ function Home() {
     if (error) return <div>Erro: {error}</div>;
 
     return (
-        <div className="container mt-4">
+        <div className="container mt-4 ">
             {user.loggedIn ? (
                 <div className="row">
                     {/* Treino do Dia à esquerda */}
@@ -199,28 +199,6 @@ function Home() {
             ) : (
                 <p>Você não está logado.</p>
             )}
-
-            {/* Menu de rodapé para mobile */}
-            <nav className="navbar fixed-bottom d-md-none bg-dark justify-content-around py-2">
-                <button className="btn btn-dark">
-                    <i className="bi bi-house fs-4 text-white"></i> {/* ícone de home */}
-                </button>
-                <button className="btn btn-dark">
-                    <i className="bi bi-clock-history fs-4 text-white"></i>
-                </button>
-                <button className="btn btn-dark">
-                    <i className="bi bi-bar-chart-line fs-4 text-white"></i>
-                </button>
-                <button className="btn btn-dark">
-                    <i className="bi bi-pencil fs-4 text-white"></i>
-                </button>
-                <button className="btn btn-dark">
-                    <i className="bi bi-person fs-4 text-white"></i>
-                </button>
-            </nav>
-
-
-
         </div>
     );
 }
