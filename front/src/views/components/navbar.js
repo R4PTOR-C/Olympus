@@ -31,119 +31,74 @@ function Navbar() {
             : `/home/${user.userId}`; // ✅ inclui o ID do aluno
     return (
         <nav className="navbar navbar-expand-lg custom-navbar-bg">
-            <div className="container-fluid">
-                {/* Link "OLYMPUS" redirecionando condicionalmente */}
+            <div className="container-fluid d-flex justify-content-between align-items-center">
+
+                {/* Logo Olympus */}
                 <Link className="navbar-brand" style={{ fontFamily: 'delirium' }} to={homeLink}>
                     OLYMPUS
                 </Link>
 
-                <button
-                    className="navbar-toggler navbar-toggler-custom"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
-                >
-                    <span className="navbar-toggler-icon"></span>
-                </button>
-
-                <div className="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul className="navbar-nav ms-auto mb-2 mb-lg-0 user-links align-items-center">
-                        {/* Links de navegação */}
-                        {user.funcao === 'Professor' ? (
-                            <>
-                                <li className="nav-item">
-                                    <Link className="nav-link" to="/usuarios">Alunos</Link>
-                                </li>
-                                {/* Dropdown para Exercícios */}
-                                <li className="nav-item dropdown">
-                                    <a
-                                        className="nav-link dropdown-toggle"
-                                        href="#"
-                                        id="exerciciosDropdown"
-                                        role="button"
-                                        data-bs-toggle="dropdown"
-                                        aria-expanded="false"
-                                    >
-                                        Exercícios
-                                    </a>
-                                    <ul className="dropdown-menu" aria-labelledby="exerciciosDropdown">
-                                        <li>
-                                            <Link className="dropdown-item" to="/exercicios_new">Novo Exercício</Link>
-                                        </li>
-                                        <li>
-                                            <Link className="dropdown-item" to="/exercicios">Tabela de Exercícios</Link>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </>
-                        ) : (
-                            <>
-                                <img
-                                    src="/dumbbell2.png"
-                                    alt="Repetições"
-                                    style={{ width: '20px', height: '20px' }}
-                                />
-                                <li className="nav-item">
-                                    <Link className="nav-link" to={`/home/${user.userId}`}>Treinos</Link> {/* ✅ Atualizado */}
-                                </li>
-                                <button
-                                    className="btn btn-outline-light ms-2"
-                                    onClick={() => navigate(`/usuarios/view/${user.userId}`)}
-                                >
-                                    Meus Treinos
-                                </button>
-
-
-
-                            </>
-                        )}
-
-                        {/* Dropdown do usuário */}
-                        {user.loggedIn && (
-                            <li className="nav-item dropdown ms-3">
-                                <a
-                                    className="nav-link dropdown-toggle d-flex align-items-center"
-                                    href="#"
-                                    id="userDropdown"
-                                    role="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    <span>Olá, {user.userName}!</span>
-                                    {avatarUrl ? (
-                                        <img
-                                            src={avatarUrl}
-                                            alt="Avatar do usuário"
-                                            className="rounded-circle ms-2"
-                                            style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-                                        />
-                                    ) : (
-                                        <span className="ms-2"></span>
-                                    )}
+                {/* Links do centro — visíveis apenas em telas médias pra cima */}
+                <div className="d-none d-md-flex align-items-center gap-3">
+                    {user.funcao === 'Professor' ? (
+                        <>
+                            <Link className="nav-link" to="/usuarios">Alunos</Link>
+                            <div className="nav-item dropdown">
+                                <a className="nav-link dropdown-toggle" href="#" id="exerciciosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Exercícios
                                 </a>
-                                <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li>
-                                        <Link className="dropdown-item" to={`/usuarios/edit/${user.userId}`}>
-                                            Perfil
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <hr className="dropdown-divider" />
-                                    </li>
-                                    <li>
-                                        <button className="dropdown-item" onClick={handleLogout}>
-                                            Logout
-                                        </button>
-                                    </li>
+                                <ul className="dropdown-menu" aria-labelledby="exerciciosDropdown">
+                                    <li><Link className="dropdown-item" to="/exercicios_new">Novo Exercício</Link></li>
+                                    <li><Link className="dropdown-item" to="/exercicios">Tabela de Exercícios</Link></li>
                                 </ul>
-                            </li>
-                        )}
-                    </ul>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <img src="/dumbbell2.png" alt="Repetições" style={{ width: '20px', height: '20px' }} />
+                            <Link className="nav-link" to={`/home/${user.userId}`}>Treinos</Link>
+                            <button
+                                className="btn btn-outline-light"
+                                onClick={() => navigate(`/usuarios/view/${user.userId}`)}
+                            >
+                                Meus Treinos
+                            </button>
+                        </>
+                    )}
                 </div>
+
+                {/* Avatar e nome sempre visível no canto direito */}
+                {user.loggedIn && (
+                    <div className="dropdown d-flex align-items-center">
+                        <a
+                            className="nav-link dropdown-toggle d-flex align-items-center"
+                            href="#"
+                            id="userDropdown"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
+                            <span className="d-none d-md-inline">Olá, {user.userName}!</span>
+                            <span className="d-inline d-md-none me-2">{user.userName}</span>
+                            {avatarUrl && (
+                                <img
+                                    src={avatarUrl}
+                                    alt="Avatar do usuário"
+                                    className="rounded-circle ms-2"
+                                    style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                />
+                            )}
+                        </a>
+                        <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><Link className="dropdown-item" to={`/usuarios/edit/${user.userId}`}>Perfil</Link></li>
+                            <li><hr className="dropdown-divider" /></li>
+                            <li><button className="dropdown-item" onClick={handleLogout}>Logout</button></li>
+                        </ul>
+                    </div>
+                )}
             </div>
+
+
         </nav>
     );
 }

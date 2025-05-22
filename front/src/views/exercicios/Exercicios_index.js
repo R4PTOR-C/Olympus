@@ -247,7 +247,7 @@ function Exercicios_index() {
     }, 500); // espera 500ms após o último caractere digitado
 
 
-    
+
 
 
 
@@ -292,12 +292,11 @@ function Exercicios_index() {
 
 
             </div>
-            <div className="row">
+            <div className="d-flex flex-wrap justify-content-center gap-3">
                 {exercicios.map((exercicio) => {
                     const series = formData[exercicio.exercicio_id] || exercicio.series || [];
                     return (
-                        <div className="col-md-4 mb-4" key={exercicio.exercicio_id}>
-                            <div className="card h-100 p-3">
+                        <div className="card shadow-sm p-2" style={{ width: '100%', maxWidth: '400px' }} key={exercicio.exercicio_id}>
                                 <img
                                     src={exercicio.gif_url}
                                     alt={`GIF do exercício ${exercicio.nome_exercicio}`}
@@ -317,7 +316,8 @@ function Exercicios_index() {
                                                     <input
                                                         type="number"
                                                         className="form-control form-control-sm me-2"
-                                                        style={{ width: '80px' }}
+                                                        style={{ width: '70px', fontSize: '0.9rem' }}
+
                                                         value={serie.carga || ''}
                                                         onChange={(e) => {
                                                             const novaLista = series.map(s =>
@@ -347,7 +347,8 @@ function Exercicios_index() {
                                                     <input
                                                         type="number"
                                                         className="form-control form-control-sm me-2"
-                                                        style={{ width: '80px' }}
+                                                        style={{ width: '70px', fontSize: '0.9rem' }}
+
                                                         value={serie.repeticoes || ''}
                                                         onChange={(e) => {
                                                             const novaLista = series.map(s =>
@@ -399,7 +400,7 @@ function Exercicios_index() {
                                     )}
 
                                 </div>
-                            </div>
+
                         </div>
                     );
                 })}

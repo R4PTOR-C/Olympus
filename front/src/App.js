@@ -25,6 +25,7 @@ import { AuthProvider, AuthContext } from './AuthContext';
 import './App.css';
 import './styles/Navbar.css'
 import './styles/Usuarios.css'; // Certifique-se de criar um arquivo CSS para os estilos
+import NavbarInferior from "./views/components/NavbarInferior";
 
 
 // Componente para rotas protegidas
@@ -83,6 +84,8 @@ function AppContent() {
                 <Route path="/avaliacoes/:id" element={<ProtectedRoute><Avaliacoes_view /></ProtectedRoute>} />
                 <Route path="/avaliacoes/:id/new" element={<ProtectedRoute><Avaliacoes_new /></ProtectedRoute>} />
             </Routes>
+            {loggedIn && !['/', '/sign-in'].includes(location.pathname) && <NavbarInferior />}
+
         </>
     );
 }
