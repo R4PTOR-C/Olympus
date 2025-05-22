@@ -21,6 +21,59 @@ function Exercicios_index() {
     const [mostrarModalHistorico, setMostrarModalHistorico] = useState(false);
 
 
+    const fetchExercicios = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, { credentials: 'include' });
+            if (!response.ok) throw new Error('Erro ao buscar os exercícios');
+
+            const data = await response.json();
+
+            const exerciciosComSeries = await Promise.all(
+                data.map(async (exercicio) => {
+                    try {
+                        const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicio.exercicio_id}/series`, { credentials: 'include' });
+                        let series = res.ok ? await res.json() : [];
+                        const countExistente = series.length;
+
+                        // Se existirem menos de 3 séries, completa com vazias
+                        if (countExistente < 3) {
+                            const faltantes = Array.from({ length: 3 - countExistente }, (_, i) => ({
+                                numero_serie: countExistente + i + 1,
+                                carga: '',
+                                repeticoes: ''
+                            }));
+                            series = [...series, ...faltantes];
+                        }
+
+                        return { ...exercicio, series };
+
+                    } catch (err) {
+                        console.error(`Erro ao buscar séries do exercício ${exercicio.exercicio_id}:`, err);
+                        return { ...exercicio, series: [] };
+                    }
+                })
+            );
+
+            setExercicios(exerciciosComSeries);
+
+            const dataMaisRecente = exerciciosComSeries
+                .flatMap(ex => ex.series)
+                .reduce((maisRecente, serie) => {
+                    if (!maisRecente || new Date(serie.data_treino) > new Date(maisRecente)) {
+                        return serie.data_treino;
+                    }
+                    return maisRecente;
+                }, null);
+
+            if (dataMaisRecente) {
+                setDataUltimoTreino(dataMaisRecente);
+            }
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
     useEffect(() => {
@@ -42,41 +95,7 @@ function Exercicios_index() {
             }
         };
 
-        const fetchExercicios = async () => {
-            try {
-                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, { credentials: 'include' });
-                if (!response.ok) throw new Error('Erro ao buscar os exercícios');
 
-                const data = await response.json();
-
-                const exerciciosComSeries = await Promise.all(
-                    data.map(async (exercicio) => {
-                        try {
-                            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicio.exercicio_id}/series`, { credentials: 'include' });
-                            if (res.ok) {
-                                const series = await res.json();
-
-                                // Pega a data da primeira série válida encontrada
-                                if (!dataUltimoTreino && series.length > 0 && series[0].data_treino) {
-                                    setDataUltimoTreino(series[0].data_treino);
-                                }
-
-                                return { ...exercicio, series };
-                            }
-                        } catch (err) {
-                            console.error(`Erro ao buscar séries do exercício ${exercicio.exercicio_id}:`, err);
-                        }
-                        return { ...exercicio, series: [] };
-                    })
-                );
-
-                setExercicios(exerciciosComSeries);
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
 
         const fetchTreinoInfo = async () => {
             try {
@@ -134,7 +153,8 @@ function Exercicios_index() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ series: reorganizado }),
+                body: JSON.stringify({ series: reorganizado,     treino_realizado_id: treinoRealizadoId
+                }),
             });
         } catch (err) {
             console.error('Erro ao salvar exclusão de série:', err);
@@ -152,10 +172,21 @@ function Exercicios_index() {
 
             setModoEdicao(true);
             setTreinoRealizadoId(data.treinoRealizado.id); // 👈 salva o novo ID
-            setFormData({});
-            setExercicios(prev =>
-                prev.map(ex => ({ ...ex, series: [] }))
-            );
+            // Cria 3 séries por padrão para cada exercício
+            const novoFormData = {};
+            const exerciciosComSeriesVazias = exercicios.map(ex => {
+                const seriesIniciais = Array.from({ length: 3 }, (_, i) => ({
+                    numero_serie: i + 1,
+                    carga: '',
+                    repeticoes: ''
+                }));
+                novoFormData[ex.exercicio_id] = seriesIniciais;
+                return { ...ex, series: seriesIniciais };
+            });
+
+            setFormData(novoFormData);
+            setExercicios(exerciciosComSeriesVazias);
+
         } catch (err) {
             console.error('Erro ao iniciar novo treino:', err);
             alert('Não foi possível iniciar o treino.');
@@ -174,32 +205,15 @@ function Exercicios_index() {
 
             setModoEdicao(false);
             setTreinoRealizadoId(null);
-            const dataHoje = new Date().toISOString().split('T')[0];
-            setDataUltimoTreino(dataHoje);
+
+
 
 
             // Atualiza os dados do treino como antes
-            setLoading(true);
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios`, {
-                credentials: 'include'
-            });
-            const exerciciosAtualizados = await response.json();
 
-            const exerciciosComSeries = await Promise.all(
-                exerciciosAtualizados.map(async (exercicio) => {
-                    const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicio.exercicio_id}/series`, {
-                        credentials: 'include'
-                    });
-                    const series = res.ok ? await res.json() : [];
-                    return { ...exercicio, series };
-                })
-            );
-
-            setExercicios(exerciciosComSeries);
+            await fetchExercicios(); // ✅ reaproveita a lógica já existente
             setFormData({});
-            if (exerciciosComSeries.length && exerciciosComSeries[0].series.length) {
-                setDataUltimoTreino(exerciciosComSeries[0].series[0].data_treino);
-            }
+
 
         } catch (err) {
             console.error('Erro ao finalizar treino:', err);
@@ -218,7 +232,8 @@ function Exercicios_index() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ series }),
+                body: JSON.stringify({ series,    treino_realizado_id: treinoRealizadoId
+                }),
             });
 
             setExercicios(prev =>

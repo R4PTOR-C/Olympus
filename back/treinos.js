@@ -233,7 +233,7 @@ router.delete('/treinos/:treinoId/exercicios/:exercicioId', async (req, res) => 
 
 router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/series', async (req, res) => {
     const { usuarioId, treinoId, exercicioId } = req.params;
-    const { series, modo } = req.body;
+    const { series, modo, treino_realizado_id } = req.body; // ✅ adiciona treino_realizado_id
 
     if (!Array.isArray(series)) {
         return res.status(400).json({ error: 'É necessário fornecer uma lista de séries.' });
@@ -256,10 +256,11 @@ router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/seri
         for (const s of series) {
             await db.query(
                 `INSERT INTO series_usuario
-                 (usuario_id, treino_id, exercicio_id, numero_serie, carga, repeticoes, data_treino)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-                [usuarioId, treinoId, exercicioId, s.numero_serie, s.carga, s.repeticoes, dataTreino]
+                 (usuario_id, treino_id, exercicio_id, numero_serie, carga, repeticoes, data_treino, treino_realizado_id)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+                [usuarioId, treinoId, exercicioId, s.numero_serie, s.carga, s.repeticoes, dataTreino, treino_realizado_id]
             );
+
         }
 
         await db.query('COMMIT');
