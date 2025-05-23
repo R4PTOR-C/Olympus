@@ -142,7 +142,7 @@ router.get('/treinos/:treinoId/exercicios', async (req, res) => {
 
         // Recuperar todos os exercícios do treino
         const result = await db.query(
-            `SELECT te.exercicio_id, e.nome_exercicio,  e.gif_url
+            `SELECT te.exercicio_id, e.nome_exercicio,e.grupo_muscular,  e.gif_url
              FROM treinos_exercicios te
              JOIN exercicios e ON te.exercicio_id = e.id
              WHERE te.treino_id = $1`,

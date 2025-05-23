@@ -175,20 +175,44 @@ const TreinosEdit = () => {
 
 
     return (
-        <div className="container mt-5">
-            <h2>Editar Treino</h2>
+        <div className="container mt-5 mb-5">
+            <h2 className="text-center mb-4">Editar Treino</h2>
+
             <form onSubmit={(e) => { e.preventDefault(); handleSaveChanges(); }}>
-                <div className="form-group">
-                    <label>Nome do Treino</label>
-                    <input type="text" className="form-control" value={nomeTreino} onChange={(e) => setNomeTreino(e.target.value)} required />
+                <div className="form-floating mb-3">
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="nomeTreino"
+                        placeholder="Nome do Treino"
+                        value={nomeTreino}
+                        onChange={(e) => setNomeTreino(e.target.value)}
+                        required
+                    />
+                    <label htmlFor="nomeTreino">Nome do Treino</label>
                 </div>
-                <div className="form-group">
-                    <label>Descrição</label>
-                    <textarea className="form-control" value={descricao} onChange={(e) => setDescricao(e.target.value)} required />
+
+                <div className="form-floating mb-3">
+                <textarea
+                    className="form-control"
+                    id="descricaoTreino"
+                    placeholder="Descrição"
+                    value={descricao}
+                    onChange={(e) => setDescricao(e.target.value)}
+                    style={{ height: '100px' }}
+                    required
+                />
+                    <label htmlFor="descricaoTreino">Descrição</label>
                 </div>
-                <div className="form-group">
-                    <label>Dia da Semana</label>
-                    <select className="form-control" value={diaSemana} onChange={(e) => setDiaSemana(e.target.value)} required>
+
+                <div className="form-floating mb-4">
+                    <select
+                        className="form-select"
+                        id="diaSemana"
+                        value={diaSemana}
+                        onChange={(e) => setDiaSemana(e.target.value)}
+                        required
+                    >
                         <option value="">Selecione o Dia</option>
                         <option value="Segunda-feira">Segunda-feira</option>
                         <option value="Terça-feira">Terça-feira</option>
@@ -198,77 +222,84 @@ const TreinosEdit = () => {
                         <option value="Sábado">Sábado</option>
                         <option value="Domingo">Domingo</option>
                     </select>
+                    <label htmlFor="diaSemana">Dia da Semana</label>
                 </div>
 
-                <h3 className="mt-4">Exercícios Salvos</h3>
-                <table className="table">
-                    <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Grupo Muscular</th>
-                        <th>Nível</th>
-                        <th>Ações</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {exerciciosSalvos.map((ex) => (
-                        <tr key={ex.exercicio_id}>
-                            <td>{ex.nome_exercicio}</td>
-                            <td>{ex.grupo_muscular}</td>
-                            <td>{ex.nivel}</td>
-                            <td>
-                                <button
-                                    type="button"
-                                    className="btn btn-danger btn-sm"
-                                    onClick={() => handleRemoveExercicio(ex.exercicio_id)}
-                                >
-                                    Remover
-                                </button>
-                            </td>
+                <h4 className="mt-4">Exercícios Salvos</h4>
+                <div className="table-responsive">
+                    <table className="table table-bordered align-middle">
+                        <thead className="table-dark">
+                        <tr>
+                            <th>Nome</th>
+                            <th>Grupo Muscular</th>
+                            <th>Ações</th>
                         </tr>
-                    ))}
-                    </tbody>
-                </table>
-
-                <h3 className="mt-4">Adicionar Exercícios</h3>
-                <input type="text" className="form-control mb-3" placeholder="Buscar por nome ou grupo muscular..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-
-                <table className="table table-hover">
-                    <thead>
-                    <tr>
-                        <th>Selecionar</th>
-                        <th>Nome</th>
-                        <th>Grupo Muscular</th>
-                        <th>Nível</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {currentItems.map((ex) => {
-                        const jaAdicionado = exerciciosSalvos.some((s) => s.exercicio_id === ex.id);
-
-                        return (
-                            <tr
-                                key={ex.id}
-                                className={jaAdicionado ? 'table-secondary' : ''}
-                            >
-                                <td>
-                                    <input
-                                        type="checkbox"
-                                        disabled={jaAdicionado}
-                                        checked={exerciciosSelecionados.includes(ex.id)}
-                                        onChange={() => handleExercicioChange(ex.id)}
-                                    />
-                                </td>
+                        </thead>
+                        <tbody>
+                        {exerciciosSalvos.map((ex) => (
+                            <tr key={ex.exercicio_id}>
                                 <td>{ex.nome_exercicio}</td>
-                                <td>{ex.grupo_muscular}</td>
-                                <td>{ex.nivel}</td>
+                                <td>{ex.grupo_muscular || ex.exercicio?.grupo_muscular || '—'}</td>
+                                <td>
+                                    <button
+                                        type="button"
+                                        className="btn btn-danger btn-sm"
+                                        onClick={() => handleRemoveExercicio(ex.exercicio_id)}
+                                    >
+                                        Remover
+                                    </button>
+                                </td>
                             </tr>
-                        );
-                    })}
+                        ))}
+                        </tbody>
+                    </table>
 
+                </div>
 
-                    </tbody>
-                </table>
+                <h4 className="mt-5">Adicionar Exercícios</h4>
+                <input
+                    type="text"
+                    className="form-control mb-3"
+                    placeholder="Buscar por nome ou grupo muscular..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+
+                <div className="table-responsive">
+                    <table className="table table-hover align-middle">
+                        <thead className="table-light">
+                        <tr>
+                            <th>Selecionar</th>
+                            <th>Nome</th>
+                            <th>Grupo Muscular</th>
+                            <th>Nível</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {currentItems.map((ex) => {
+                            const jaAdicionado = exerciciosSalvos.some((s) => s.exercicio_id === ex.id);
+                            return (
+                                <tr
+                                    key={ex.id}
+                                    className={jaAdicionado ? 'table-secondary' : ''}
+                                >
+                                    <td>
+                                        <input
+                                            type="checkbox"
+                                            disabled={jaAdicionado}
+                                            checked={exerciciosSelecionados.includes(ex.id)}
+                                            onChange={() => handleExercicioChange(ex.id)}
+                                        />
+                                    </td>
+                                    <td>{ex.nome_exercicio}</td>
+                                    <td>{ex.grupo_muscular}</td>
+                                    <td>{ex.nivel}</td>
+                                </tr>
+                            );
+                        })}
+                        </tbody>
+                    </table>
+                </div>
 
                 <nav className="mt-3">
                     <ul className="pagination justify-content-center">
@@ -277,7 +308,11 @@ const TreinosEdit = () => {
                                 key={index}
                                 className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
                             >
-                                <button className="page-link" onClick={() => paginate(index + 1)}>
+                                <button
+                                    type="button"
+                                    className="page-link"
+                                    onClick={() => paginate(index + 1)}
+                                >
                                     {index + 1}
                                 </button>
                             </li>
@@ -285,13 +320,12 @@ const TreinosEdit = () => {
                     </ul>
                 </nav>
 
-                <div className="d-flex gap-2 mt-3">
-                    <button type="submit" className="btn btn-dark btn-sm">Salvar Alterações</button>
-                    <button type="button" className="btn btn-success btn-sm" onClick={handleAddExercicios}>
+                <div className="d-flex flex-column flex-md-row justify-content-center gap-3 mt-4">
+                    <button type="submit" className="btn btn-primary btn-lg w-100 w-md-auto">Salvar Alterações</button>
+                    <button type="button" className="btn btn-success btn-lg w-100 w-md-auto" onClick={handleAddExercicios}>
                         Adicionar Exercícios
                     </button>
                 </div>
-
             </form>
         </div>
     );

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 
-const Usuarios_view = () => {
+const UsuariosView = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [usuario, setUsuario] = useState(null);
@@ -11,13 +11,11 @@ const Usuarios_view = () => {
     const [error, setError] = useState(null);
     const { userId, funcao } = useContext(AuthContext);
 
-
     useEffect(() => {
         const carregarDados = async () => {
-            // Impede usuários comuns de acessar a view de outro usuário
             if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
                 navigate(`/usuarios/view/${userId}`);
-                return; // evita continuar carregando dados indevidamente
+                return;
             }
 
             try {
@@ -26,18 +24,16 @@ const Usuarios_view = () => {
                     fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`)
                 ]);
 
-                if (!usuarioRes.ok) throw new Error('Erro ao buscar os dados do usuário');
-                if (!treinosRes.ok) throw new Error('Erro ao buscar os treinos do usuário');
+                if (!usuarioRes.ok || !treinosRes.ok) throw new Error('Erro ao carregar dados');
 
                 const usuarioData = await usuarioRes.json();
                 const treinosData = await treinosRes.json();
 
-                // Carregar exercícios de cada treino
                 const treinosComExercicios = await Promise.all(
                     treinosData.map(async (treino) => {
-                        const exerciciosRes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treino.id}/exercicios`);
-                        const exerciciosData = await exerciciosRes.json();
-                        return { ...treino, exercicios: exerciciosData || [] };
+                        const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treino.id}/exercicios`);
+                        const dados = await res.json();
+                        return { ...treino, exercicios: dados || [] };
                     })
                 );
 
@@ -45,7 +41,6 @@ const Usuarios_view = () => {
                 setTreinos(treinosComExercicios);
                 setLoading(false);
             } catch (err) {
-                console.error('Erro ao carregar dados:', err);
                 setError(err.message);
                 setLoading(false);
             }
@@ -54,107 +49,94 @@ const Usuarios_view = () => {
         carregarDados();
     }, [id, userId, funcao, navigate]);
 
-
     const handleDeleteTreino = async (treinoId) => {
-        const confirmDelete = window.confirm("Tem certeza que deseja excluir este treino?");
-        if (!confirmDelete) return;
+        if (!window.confirm("Tem certeza que deseja excluir este treino?")) return;
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
                 method: 'DELETE',
             });
 
-            if (response.ok) {
-                setTreinos(treinos.filter(treino => treino.id !== treinoId));
-                alert("Treino excluído com sucesso.");
-            } else {
-                alert("Erro ao excluir o treino.");
-            }
-        } catch (error) {
-            console.error('Erro ao excluir treino:', error);
-            alert("Erro ao excluir o treino.");
+            if (!res.ok) throw new Error();
+            setTreinos(treinos.filter(t => t.id !== treinoId));
+            alert("Treino excluído com sucesso.");
+        } catch {
+            alert("Erro ao excluir treino.");
         }
     };
 
-    if (loading) return <div>Carregando...</div>;
-    if (error) return <div>Erro: {error}</div>;
+    if (loading) return <div className="text-center mt-5">Carregando...</div>;
+    if (error) return <div className="alert alert-danger text-center mt-5">Erro: {error}</div>;
+    if (!usuario) return <div className="text-center mt-5">Usuário não encontrado.</div>;
 
-    // Construir a URL da imagem do avatar se existir
-    const avatarUrl = usuario && usuario.avatar ? `${process.env.REACT_APP_API_BASE_URL}/uploads/${usuario.avatar}` : null;
+    const avatarUrl = usuario.avatar || null;
+
 
     return (
-        <div className="container mt-5">
-            <h2>Detalhes do Aluno</h2>
-            {usuario ? (
-                <div>
-                    <div className="d-flex align-items-start mb-4">
-                        {/* Imagem do avatar */}
-                        {avatarUrl && (
-                            <img
-                                src={avatarUrl}
-                                alt="Avatar do usuário"
-                                className="img-thumbnail me-4"
-                                style={{ width: '200px', height: '200px', objectFit: 'cover', backgroundColor: '#E8E8E9' }}
-                            />
-                        )}
+        <div className="container mt-5 mb-5">
+            <h2 className="text-center mb-4">Perfil do Aluno</h2>
 
-                        {/* Informações do usuário */}
-                        <div>
-                            <p><strong>Nome:</strong> {usuario.nome}</p>
-                            <p><strong>Email:</strong> {usuario.email}</p>
-                            <p><strong>Gênero:</strong> {usuario.genero}</p>
-                            <p><strong>Idade:</strong> {usuario.idade}</p>
-                        </div>
-                    </div>
+            <div className="d-flex flex-column align-items-center mb-4">
+                {avatarUrl && (
+                    <img
+                        src={avatarUrl}
+                        alt="Avatar"
+                        className="rounded-circle mb-3"
+                        style={{ width: 140, height: 140, objectFit: 'cover' }}
+                    />
+                )}
+                <h4 className="mb-1">{usuario.nome}</h4>
+                <p className="text-muted mb-0">{usuario.email}</p>
+                <p className="text-muted">Idade: {usuario.idade} | Gênero: {usuario.genero}</p>
+            </div>
 
-                    <h3>Treinos</h3>
-                    <div className="row">
-                        {treinos.length > 0 ? (
-                            treinos.map(treino => (
-                                <div className="col-md-4" key={treino.id}>
-                                    <div className="card mb-3">
-                                        <div className="card-body">
-                                            <h5 className="card-title">{treino.nome_treino}</h5>
-                                            <p className="card-text"><strong>Descrição:</strong> {treino.descricao}</p>
-                                            <p className="card-text"><strong>Dia da Semana:</strong> {treino.dia_semana}</p>
-                                            <h6>Exercícios:</h6>
-                                            {Array.isArray(treino.exercicios) && treino.exercicios.length > 0 ? (
-                                                <ul>
-                                                    {treino.exercicios.map(exercicio => (
-                                                        <li key={exercicio.id}>{exercicio.nome_exercicio}</li>
-                                                    ))}
-                                                </ul>
-                                            ) : (
-                                                <p>Sem exercícios cadastrados.</p>
-                                            )}
-                                            <div className="d-flex justify-content-between">
-                                                <button
-                                                    className="btn btn-danger"
-                                                    onClick={() => handleDeleteTreino(treino.id)}
-                                                >
-                                                    Excluir
-                                                </button>
-                                                <button
-                                                    className="btn btn-primary"
-                                                    onClick={() => navigate(`/treinos/edit/${id}/${treino.id}`)}
-                                                >
-                                                    Editar
-                                                </button>
-                                            </div>
-                                        </div>
+            <h3 className="mb-3">Treinos</h3>
+            <div className="row">
+                {treinos.length > 0 ? (
+                    treinos.map(treino => (
+                        <div className="col-md-6 col-lg-4 mb-4" key={treino.id}>
+                            <div className="card h-100 shadow-sm">
+                                <div className="card-body d-flex flex-column">
+                                    <h5 className="card-title">{treino.nome_treino}</h5>
+                                    <p className="mb-1"><strong>Descrição:</strong> {treino.descricao}</p>
+                                    <p><strong>Dia da Semana:</strong> {treino.dia_semana}</p>
+                                    <h6>Exercícios:</h6>
+                                    {treino.exercicios.length > 0 ? (
+                                        <ul className="mb-3">
+                                            {treino.exercicios.map((e, i) => (
+                                                <li key={e.exercicio_id || e.id || `${treino.id}-ex-${i}`}>
+                                                    {e.nome_exercicio}
+                                                </li>
+                                            ))}
+
+                                        </ul>
+                                    ) : (
+                                        <p className="text-muted">Sem exercícios cadastrados.</p>
+                                    )}
+                                    <div className="mt-auto d-flex justify-content-between">
+                                        <button
+                                            className="btn btn-sm btn-danger"
+                                            onClick={() => handleDeleteTreino(treino.id)}
+                                        >
+                                            Excluir
+                                        </button>
+                                        <button
+                                            className="btn btn-sm btn-primary"
+                                            onClick={() => navigate(`/treinos/edit/${id}/${treino.id}`)}
+                                        >
+                                            Editar
+                                        </button>
                                     </div>
                                 </div>
-                            ))
-                        ) : (
-                            <p>Esse usuário não tem treinos cadastrados.</p>
-                        )}
-                    </div>
-                </div>
-            ) : (
-                <p>Usuário não encontrado</p>
-            )}
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-muted">Este aluno ainda não possui treinos.</p>
+                )}
+            </div>
         </div>
     );
 };
 
-export default Usuarios_view;
+export default UsuariosView;
