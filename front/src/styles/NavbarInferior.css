@@ -1,0 +1,7 @@
+/* NavbarInferior.css */
+
+.navbar-inferior {
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid #444;
+    background-color: #000;
+}

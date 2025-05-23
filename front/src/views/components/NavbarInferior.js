@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
+import '../../styles/NavbarInferior.css'
 
 function NavbarInferior() {
     const location = useLocation();
@@ -16,22 +17,23 @@ function NavbarInferior() {
     ];
 
     return (
-        <nav className="navbar fixed-bottom d-md-none bg-dark justify-content-around py-2">
+        <nav className="navbar-inferior fixed-bottom d-md-none bg-dark d-flex justify-content-around">
             {navItems.map((item, index) => {
                 const isActive = location.pathname.startsWith(item.path);
                 return (
                     <button
                         key={index}
-                        className={`btn btn-dark d-flex flex-column align-items-center ${isActive ? 'text-warning' : 'text-white'}`}
+                        className={`btn d-flex flex-column align-items-center flex-grow-1 border-0 bg-dark ${isActive ? 'text-warning' : 'text-white'}`}
                         onClick={() => navigate(item.path)}
+                        style={{ padding: '0.5rem 0' }}
                     >
                         <i className={`bi ${item.icon} fs-4`}></i>
                         <div style={{ fontSize: '0.75rem' }}>{item.label}</div>
-                        {isActive && <div style={{ height: '2px', width: '100%', backgroundColor: 'orange', marginTop: '2px' }} />}
                     </button>
                 );
             })}
         </nav>
+
     );
 }
 
