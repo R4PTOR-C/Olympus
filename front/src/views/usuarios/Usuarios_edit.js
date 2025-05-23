@@ -131,18 +131,38 @@ const UsuariosEdit = () => {
 
                 {['nome', 'email', 'genero', 'idade'].map((campo) => (
                     <div className="form-floating mb-3" key={campo}>
-                        <input
-                            type={campo === 'idade' ? 'number' : 'text'}
-                            className="form-control"
-                            id={campo}
-                            name={campo}
-                            value={usuario[campo]}
-                            onChange={handleInputChange}
-                            placeholder={`Digite o ${campo}`}
-                        />
-                        <label htmlFor={campo}>{campo.charAt(0).toUpperCase() + campo.slice(1)}</label>
+                        {campo === 'genero' ? (
+                            <>
+                                <select
+                                    className="form-select w-100"
+                                    id={campo}
+                                    name={campo}
+                                    value={usuario[campo]}
+                                    onChange={handleInputChange}
+                                >
+                                    <option value="">Selecione o gênero</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Feminino">Feminino</option>
+                                </select>
+                                <label htmlFor={campo}>Gênero</label>
+                            </>
+                        ) : (
+                            <>
+                                <input
+                                    type={campo === 'idade' ? 'number' : 'text'}
+                                    className="form-control"
+                                    id={campo}
+                                    name={campo}
+                                    value={usuario[campo]}
+                                    onChange={handleInputChange}
+                                    placeholder={`Digite o ${campo}`}
+                                />
+                                <label htmlFor={campo}>{campo.charAt(0).toUpperCase() + campo.slice(1)}</label>
+                            </>
+                        )}
                     </div>
                 ))}
+
 
                 <div className="d-grid mt-4">
                     <button type="submit" className="btn btn-primary btn-lg">
