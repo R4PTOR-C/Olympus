@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import ModalHistorico from '../components/ModalHistorico';
 import debounce from 'lodash/debounce';
+import ModalSucesso from "../components/ModalSucesso";
 
 
 
@@ -21,6 +22,8 @@ function Exercicios_index() {
     const [modoEdicao, setModoEdicao] = useState(false);
     const [treinoRealizadoId, setTreinoRealizadoId] = useState(null);
     const [mostrarModalHistorico, setMostrarModalHistorico] = useState(false);
+    const [modalFinalizado, setModalFinalizado] = useState(false);
+
 
 
     const fetchExercicios = async () => {
@@ -203,7 +206,6 @@ function Exercicios_index() {
     const verificarTreinoFinalizadoHoje = async (userId, treinoId) => {
         try {
             const hoje = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-            console.log('[DEBUG] Hoje é:', hoje);
 
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/finalizados`, {
                 credentials: 'include'
@@ -212,10 +214,8 @@ function Exercicios_index() {
             if (!res.ok) throw new Error('Erro ao buscar treinos finalizados');
 
             const treinos = await res.json();
-            console.log('[DEBUG] Treinos finalizados retornados:', treinos);
 
             const treinoHoje = treinos.find(t => t.data?.split('T')[0] === hoje);
-            console.log('[DEBUG] Treino finalizado hoje encontrado:', treinoHoje);
 
             if (treinoHoje) {
                 setTreinoRealizadoId(treinoHoje.id);
@@ -248,6 +248,9 @@ function Exercicios_index() {
                 verificarTreinoFinalizadoHoje(userId, treinoId)
             ]);
             setFormData({});
+            setModalFinalizado(true);
+            setTimeout(() => setModalFinalizado(false), 3000); // fecha após 3s
+
 
         } catch (err) {
             console.error('Erro ao finalizar treino:', err);
@@ -272,7 +275,10 @@ function Exercicios_index() {
                 }),
             });
 
-            console.log('💾 Séries salvas com sucesso');
+            console.log(`💾 Séries salvas para exercício ${exercicioId}:`);
+            series.forEach((s, i) => {
+                console.log(`  Série ${s.numero_serie}: ${s.carga || '-'} kg × ${s.repeticoes || '-'} reps`);
+            });
         } catch (err) {
             console.error('Erro ao salvar séries com debounce:', err);
         }
@@ -302,17 +308,13 @@ function Exercicios_index() {
 
                 </div>
                 <div className="d-flex align-items-center gap-2">
-                    {console.log('[DEBUG render] modoEdicao:', modoEdicao)}
-                    {console.log('[DEBUG render] treinoRealizadoId:', treinoRealizadoId)}
-                    {console.log('[DEBUG render] dataUltimoTreino:', dataUltimoTreino)}
-                    {console.log('[DEBUG render] hoje:', new Date().toISOString().split('T')[0])}
                     {modoEdicao ? (
                         <button className="btn btn-outline-danger btn-sm" onClick={handleFinalizarTreino}>
                             Finalizar Treino
                         </button>
                     ) : treinoRealizadoId && dataUltimoTreino?.split('T')[0] === new Date().toISOString().split('T')[0] ? (
                         <button
-                            className="btn btn-outline-warning btn-sm"
+                            className="btn btn-outline-success btn-sm"
                             onClick={() => {
                                 setModoEdicao(true);
                             }}
@@ -458,6 +460,11 @@ function Exercicios_index() {
                     onClose={() => setMostrarModalHistorico(false)}
                 />
             )}
+            <ModalSucesso show={modalFinalizado} mensagem="Treino finalizado com sucesso!" />
+
+
+
+
 
         </div>
     );
