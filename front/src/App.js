@@ -26,6 +26,8 @@ import './App.css';
 import './styles/Navbar.css'
 import './styles/Usuarios.css'; // Certifique-se de criar um arquivo CSS para os estilos
 import NavbarInferior from "./views/components/NavbarInferior";
+import HistoricoExercicios from './views/exercicios/HistoricoExercicios';
+
 
 
 // Componente para rotas protegidas
@@ -78,6 +80,7 @@ function AppContent() {
                 <Route path="/academias_login" element={<Academias_login />} />
                 <Route path="/exercicios_new" element={<ProtectedRoute><Exercicios_new /></ProtectedRoute>} />
                 <Route path="/exercicios" element={<ProtectedRoute><Exercicios_tabela /></ProtectedRoute>} />
+                <Route path="/historico-exercicios" element={<ProtectedRoute><HistoricoExercicios /></ProtectedRoute>} />
                 <Route path="/treinos/:treinoId/exercicios" element={<ProtectedRoute><Exercicios_index /></ProtectedRoute>} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/nova_senha/:token" element={<ResetPassword />} />

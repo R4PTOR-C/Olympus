@@ -444,6 +444,56 @@ router.get('/treinos_realizados', async (req, res) => {
     }
 });
 
+// GET /usuarios/:usuarioId/exercicios_realizados
+router.get('/usuarios/:usuarioId/exercicios_realizados', async (req, res) => {
+    const { usuarioId } = req.params;
+
+    try {
+        const result = await db.query(`
+      SELECT DISTINCT
+        e.id AS exercicio_id,
+        e.nome_exercicio,
+        e.grupo_muscular,
+        e.gif_url
+      FROM series_usuario su
+      JOIN exercicios e ON e.id = su.exercicio_id
+      WHERE su.usuario_id = $1
+      ORDER BY e.nome_exercicio;
+    `, [usuarioId]);
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Erro ao buscar exercícios realizados:', error);
+        res.status(500).json({ error: 'Erro ao buscar exercícios realizados.' });
+    }
+});
+
+// GET /usuarios/:usuarioId/exercicios/:exercicioId/historico
+router.get('/usuarios/:usuarioId/exercicios/:exercicioId/historico', async (req, res) => {
+    const { usuarioId, exercicioId } = req.params;
+
+    try {
+        const result = await db.query(`
+      SELECT
+        s.data_treino,
+        s.numero_serie,
+        s.carga,
+        s.repeticoes,
+        t.nome_treino
+      FROM series_usuario s
+      JOIN treinos t ON t.id = s.treino_id
+      WHERE s.usuario_id = $1 AND s.exercicio_id = $2
+      ORDER BY s.data_treino DESC, s.numero_serie;
+    `, [usuarioId, exercicioId]);
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Erro ao buscar histórico do exercício:', error);
+        res.status(500).json({ error: 'Erro ao buscar histórico do exercício.' });
+    }
+});
+
+
 
 
 module.exports = router;

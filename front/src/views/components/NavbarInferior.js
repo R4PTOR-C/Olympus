@@ -10,7 +10,7 @@ function NavbarInferior() {
 
     const navItems = [
         { icon: 'bi-house', path: `/home/${userId}`, label: 'Home' },
-        { icon: 'bi-clock-history', path: '/historico', label: 'Histórico' },
+        { icon: 'bi-clock-history', path: '/historico-exercicios', label: 'Histórico' },
         { icon: 'bi-bar-chart-line', path: '/progresso', label: 'Progresso' },
         { icon: 'bi-pencil', path: `/usuarios/view/${userId}`, label: 'Editar Treinos' },
         { icon: 'bi-person', path: `/usuarios/edit/${userId}`, label: 'Perfil' },

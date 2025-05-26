@@ -19,6 +19,15 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
+function toTitleCase(str) {
+    return str
+        .toLowerCase()
+        .split(' ')
+        .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+        .join(' ');
+}
+
+
 // Listar exercícios
 router.get('/', async (req, res) => {
     try {
@@ -32,7 +41,8 @@ router.get('/', async (req, res) => {
 
 // Criar exercício (com upload opcional de gif)
 router.post('/', upload.single('gif'), async (req, res) => {
-    const { nome_exercicio, grupo_muscular, nivel } = req.body;
+    let { nome_exercicio, grupo_muscular, nivel } = req.body;
+    nome_exercicio = toTitleCase(nome_exercicio);
     const gifUrl = req.file?.path || null; // URL pública do Cloudinary
 
     try {
@@ -70,7 +80,8 @@ router.get('/exercicios/:id', async (req, res) => {
 // Atualizar exercício (com gif opcional)
 router.put('/:id', upload.single('gif'), async (req, res) => {
     const { id } = req.params;
-    const { nome_exercicio, grupo_muscular, nivel } = req.body;
+    let { nome_exercicio, grupo_muscular, nivel } = req.body;
+    nome_exercicio = toTitleCase(nome_exercicio);
     const gifUrl = req.file?.path || null;
 
     try {
