@@ -99,6 +99,10 @@ function Exercicios_index() {
 
 
 
+
+
+
+
         const fetchTreinoInfo = async () => {
             try {
                 const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`);
@@ -112,6 +116,7 @@ function Exercicios_index() {
         };
 
         verificarTreinoAtivo();
+        verificarTreinoFinalizadoHoje(userId, treinoId); // 👈 chamada aqui
         fetchTreinoInfo();
         fetchExercicios();
     }, [treinoId, userId]);
@@ -195,6 +200,31 @@ function Exercicios_index() {
         }
     };
 
+    const verificarTreinoFinalizadoHoje = async (userId, treinoId) => {
+        try {
+            const hoje = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            console.log('[DEBUG] Hoje é:', hoje);
+
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/finalizados`, {
+                credentials: 'include'
+            });
+
+            if (!res.ok) throw new Error('Erro ao buscar treinos finalizados');
+
+            const treinos = await res.json();
+            console.log('[DEBUG] Treinos finalizados retornados:', treinos);
+
+            const treinoHoje = treinos.find(t => t.data?.split('T')[0] === hoje);
+            console.log('[DEBUG] Treino finalizado hoje encontrado:', treinoHoje);
+
+            if (treinoHoje) {
+                setTreinoRealizadoId(treinoHoje.id);
+                setDataUltimoTreino(treinoHoje.data); // 💡 atualiza corretamente a data usada na renderização do botão
+            }
+        } catch (err) {
+            console.error('Erro ao verificar treino finalizado hoje:', err);
+        }
+    };
 
     const handleFinalizarTreino = async () => {
         if (!treinoRealizadoId) return;
@@ -213,9 +243,11 @@ function Exercicios_index() {
 
             // Atualiza os dados do treino como antes
 
-            await fetchExercicios(); // ✅ reaproveita a lógica já existente
+            await Promise.all([
+                fetchExercicios(),
+                verificarTreinoFinalizadoHoje(userId, treinoId)
+            ]);
             setFormData({});
-
 
         } catch (err) {
             console.error('Erro ao finalizar treino:', err);
@@ -270,15 +302,29 @@ function Exercicios_index() {
 
                 </div>
                 <div className="d-flex align-items-center gap-2">
+                    {console.log('[DEBUG render] modoEdicao:', modoEdicao)}
+                    {console.log('[DEBUG render] treinoRealizadoId:', treinoRealizadoId)}
+                    {console.log('[DEBUG render] dataUltimoTreino:', dataUltimoTreino)}
+                    {console.log('[DEBUG render] hoje:', new Date().toISOString().split('T')[0])}
                     {modoEdicao ? (
                         <button className="btn btn-outline-danger btn-sm" onClick={handleFinalizarTreino}>
                             Finalizar Treino
+                        </button>
+                    ) : treinoRealizadoId && dataUltimoTreino?.split('T')[0] === new Date().toISOString().split('T')[0] ? (
+                        <button
+                            className="btn btn-outline-warning btn-sm"
+                            onClick={() => {
+                                setModoEdicao(true);
+                            }}
+                        >
+                            Editar treino de hoje
                         </button>
                     ) : (
                         <button className="btn btn-outline-success btn-sm" onClick={handleNovoTreino}>
                             Iniciar Novo Treino
                         </button>
                     )}
+
 
                     {/* Botão com ícone de histórico */}
                     <button

@@ -393,6 +393,33 @@ router.get('/usuarios/:usuarioId/treinos/:treinoId/ativo', async (req, res) => {
     }
 });
 
+// Rota para verificar se existe treino finalizado hoje
+router.get('/usuarios/:usuarioId/treinos/:treinoId/finalizados', async (req, res) => {
+    const { usuarioId, treinoId } = req.params;
+    const dataHoje = new Date().toISOString().split('T')[0];
+
+    try {
+        const result = await db.query(
+            `SELECT id, data
+             FROM treinos_realizados
+             WHERE usuario_id = $1 AND treino_id = $2
+               AND data = $3 AND finalizado_em IS NOT NULL
+             LIMIT 1`,
+            [usuarioId, treinoId, dataHoje]
+        );
+
+        if (result.rows.length > 0) {
+            res.status(200).json(result.rows);
+        } else {
+            res.status(200).json([]); // Nenhum treino finalizado hoje
+        }
+    } catch (error) {
+        console.error('Erro ao verificar treino finalizado:', error);
+        res.status(500).json({ error: 'Erro ao verificar treino finalizado.' });
+    }
+});
+
+
 // Rota para listar todos os treinos realizados por um usuário em um treino específico
 router.get('/treinos_realizados', async (req, res) => {
     const { usuario_id, treino_id } = req.query;
