@@ -76,7 +76,7 @@ function ModalHistorico({ usuarioId, treinoId, onClose }) {
                                                 {dataSelecionada === t.data && (
                                                     <i className="bi bi-clock-history me-1"></i> // <-- ícone de relógio
                                                 )}
-                                                {new Date(t.data).toLocaleDateString('pt-BR')}
+                                                {new Date(t.data.split('T')[0] + 'T12:00:00').toLocaleDateString('pt-BR')}
                                             </button>
                                         ))}
 
@@ -85,7 +85,8 @@ function ModalHistorico({ usuarioId, treinoId, onClose }) {
 
                                 {dataSelecionada && exerciciosPorData[dataSelecionada] && (
                                     <div>
-                                        <h6>Treino de {new Date(dataSelecionada).toLocaleDateString('pt-BR')}</h6>
+                                        <h6>Treino
+                                            de {new Date(dataSelecionada.split('T')[0] + 'T12:00:00').toLocaleDateString('pt-BR')}</h6>
                                         {exerciciosPorData[dataSelecionada].map((ex) => (
                                             <div key={ex.exercicio_id} className="mb-3">
                                                 <strong>{ex.nome_exercicio}</strong>

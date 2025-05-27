@@ -37,7 +37,7 @@ function Login() {
                     navigate(`/home/${data.userId}`); // Exemplo de rota para alunos
                 } else {
                     // Se a função do usuário não for especificada, redireciona para uma rota padrão
-                    navigate('/home');
+                    navigate(`/home/${data.userId}`);
                 }
             } else {
                 alert(data.error || 'Erro ao fazer login. Tente novamente.');
