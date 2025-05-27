@@ -119,7 +119,7 @@ function Exercicios_index() {
         };
 
         verificarTreinoAtivo();
-        verificarTreinoFinalizadoHoje(userId, treinoId); // 👈 chamada aqui
+        buscarUltimoTreinoFinalizado(userId, treinoId); // ⬅ substitui o anterior
         fetchTreinoInfo();
         fetchExercicios();
     }, [treinoId, userId]);
@@ -238,10 +238,7 @@ function Exercicios_index() {
             setModoEdicao(false);
             setTreinoRealizadoId(null);
 
-
-
-
-            // Atualiza os dados do treino como antes
+          // Atualiza os dados do treino como antes
 
             await Promise.all([
                 fetchExercicios(),
@@ -285,6 +282,26 @@ function Exercicios_index() {
     }, 500); // espera 500ms após o último caractere digitado
 
 
+    const buscarUltimoTreinoFinalizado = async (userId, treinoId) => {
+        try {
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/finalizados`, {
+                credentials: 'include'
+            });
+
+            if (!res.ok) throw new Error('Erro ao buscar treinos finalizados');
+            const treinos = await res.json();
+
+            if (treinos.length > 0) {
+                const ultimo = treinos.reduce((maisRecente, t) =>
+                    new Date(t.data) > new Date(maisRecente.data) ? t : maisRecente
+                );
+                setDataUltimoTreino(ultimo.data);
+                setTreinoRealizadoId(ultimo.id);
+            }
+        } catch (err) {
+            console.error('Erro ao buscar último treino finalizado:', err);
+        }
+    };
 
 
 
