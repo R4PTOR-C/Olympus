@@ -251,7 +251,7 @@ function Exercicios_index() {
         }
     };
 
-    const salvarSerieDebounced = debounce(async (exercicioId, series) => {
+    const salvarSerie = async (exercicioId, series) => {
         try {
             await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicioId}/series`, {
                 method: 'POST',
@@ -267,14 +267,12 @@ function Exercicios_index() {
                 }),
             });
 
-            console.log(`💾 Séries salvas para exercício ${exercicioId}:`);
-            series.forEach((s, i) => {
-                console.log(`  Série ${s.numero_serie}: ${s.carga || '-'} kg × ${s.repeticoes || '-'} reps`);
-            });
+            console.log(`💾 Séries salvas para exercício ${exercicioId}`);
         } catch (err) {
-            console.error('Erro ao salvar séries com debounce:', err);
+            console.error('Erro ao salvar série:', err);
         }
-    }, 500); // espera 500ms após o último caractere digitado
+    };
+
 
 
     const buscarUltimoTreinoFinalizado = async (userId, treinoId) => {
@@ -387,11 +385,14 @@ function Exercicios_index() {
                                                                 s.numero_serie === serie.numero_serie ? { ...s, carga: e.target.value } : s
                                                             );
                                                             setFormData(prev => ({ ...prev, [exercicio.exercicio_id]: novaLista }));
-                                                            salvarSerieDebounced(exercicio.exercicio_id, novaLista);
                                                         }}
-                                                        onBlur={() => setEditingField(null)} // ✅ aqui
+                                                        onBlur={() => {
+                                                            salvarSerie(exercicio.exercicio_id, formData[exercicio.exercicio_id]);
+                                                            setEditingField(null);
+                                                        }}
                                                         autoFocus
                                                     />
+
 
                                                 ) : (
                                                     <span
@@ -418,9 +419,12 @@ function Exercicios_index() {
                                                                 s.numero_serie === serie.numero_serie ? { ...s, repeticoes: e.target.value } : s
                                                             );
                                                             setFormData(prev => ({ ...prev, [exercicio.exercicio_id]: novaLista }));
-                                                            salvarSerieDebounced(exercicio.exercicio_id, novaLista);
                                                         }}
-                                                        onBlur={() => setEditingField(null)} // ✅ aqui também
+                                                        onBlur={() => {
+                                                            salvarSerie(exercicio.exercicio_id, formData[exercicio.exercicio_id]);
+                                                            setEditingField(null);
+                                                        }}
+
                                                         autoFocus
                                                     />
 

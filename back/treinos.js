@@ -233,7 +233,7 @@ router.delete('/treinos/:treinoId/exercicios/:exercicioId', async (req, res) => 
 
 router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/series', async (req, res) => {
     const { usuarioId, treinoId, exercicioId } = req.params;
-    const { series, modo, treino_realizado_id } = req.body; // ✅ adiciona treino_realizado_id
+    const { series, modo, treino_realizado_id } = req.body;
 
     if (!Array.isArray(series)) {
         return res.status(400).json({ error: 'É necessário fornecer uma lista de séries.' });
@@ -242,38 +242,45 @@ router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/seri
     try {
         await db.query('BEGIN');
 
-        let dataTreino = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-
-        if (modo !== 'novo_treino') {
-            // Edição: apagar os registros do dia atual
-            await db.query(
-                `DELETE FROM series_usuario
-                 WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3 AND data_treino = $4`,
-                [usuarioId, treinoId, exercicioId, dataTreino]
-            );
-        }
-
         for (const s of series) {
             const carga = s.carga === '' ? null : Number(s.carga);
             const repeticoes = s.repeticoes === '' ? null : Number(s.repeticoes);
+            const numeroSerie = s.numero_serie;
+            const dataTreino = new Date().toISOString().split('T')[0];
 
-            await db.query(
-                `INSERT INTO series_usuario
-                 (usuario_id, treino_id, exercicio_id, numero_serie, carga, repeticoes, data_treino, treino_realizado_id)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-                [usuarioId, treinoId, exercicioId, s.numero_serie, carga, repeticoes, dataTreino, treino_realizado_id]
-            );
+            // Verifica se a série já existe
+            const { rows } = await db.query(`
+                SELECT id FROM series_usuario
+                WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3
+                  AND numero_serie = $4 AND treino_realizado_id = $5
+            `, [usuarioId, treinoId, exercicioId, numeroSerie, treino_realizado_id]);
+
+            if (rows.length > 0) {
+                // Se existe, faz UPDATE
+                await db.query(`
+                    UPDATE series_usuario
+                    SET carga = $1, repeticoes = $2
+                    WHERE id = $3
+                `, [carga, repeticoes, rows[0].id]);
+            } else {
+                // Se não existe, faz INSERT
+                await db.query(`
+                    INSERT INTO series_usuario
+                    (usuario_id, treino_id, exercicio_id, numero_serie, carga, repeticoes, data_treino, treino_realizado_id)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                `, [usuarioId, treinoId, exercicioId, numeroSerie, carga, repeticoes, dataTreino, treino_realizado_id]);
+            }
         }
 
-
         await db.query('COMMIT');
-        res.status(201).json({ message: 'Séries registradas com sucesso.' });
+        res.status(201).json({ message: 'Séries registradas ou atualizadas com sucesso.' });
     } catch (error) {
         await db.query('ROLLBACK');
         console.error('Erro ao registrar séries:', error);
         res.status(500).json({ error: 'Erro ao registrar séries.' });
     }
 });
+
 
 
 
