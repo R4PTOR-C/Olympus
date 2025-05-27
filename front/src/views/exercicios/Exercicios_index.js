@@ -23,6 +23,13 @@ function Exercicios_index() {
     const [treinoRealizadoId, setTreinoRealizadoId] = useState(null);
     const [mostrarModalHistorico, setMostrarModalHistorico] = useState(false);
     const [modalFinalizado, setModalFinalizado] = useState(false);
+    const dataFormatada = (() => {
+        if (!dataUltimoTreino) return '';
+        const [data] = dataUltimoTreino.split('T');
+        return new Date(`${data}T00:00:00`).toLocaleDateString('pt-BR');
+    })();
+
+
 
 
 
@@ -61,18 +68,6 @@ function Exercicios_index() {
 
             setExercicios(exerciciosComSeries);
 
-            const dataMaisRecente = exerciciosComSeries
-                .flatMap(ex => ex.series)
-                .reduce((maisRecente, serie) => {
-                    if (!maisRecente || new Date(serie.data_treino) > new Date(maisRecente)) {
-                        return serie.data_treino;
-                    }
-                    return maisRecente;
-                }, null);
-
-            if (dataMaisRecente) {
-                setDataUltimoTreino(dataMaisRecente);
-            }
         } catch (err) {
             setError(err.message);
         } finally {
@@ -314,16 +309,16 @@ function Exercicios_index() {
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h4 className="mb-0">Treino: {nomeTreino}</h4>
-                    <small className="text-muted">Dia da semana: {diaSemana}</small>
-                    {dataUltimoTreino && (
-                        <div>
-                            <small className="text-muted">
-                                Treino realizado em: {new Date(dataUltimoTreino).toLocaleDateString('pt-BR')}
-                            </small>
+                    <div className="text-muted">
+                        <small>Dia da semana: {diaSemana}</small>
+                    </div>
+                    {dataFormatada && (
+                        <div className="text-muted">
+                            <small>Treino realizado em: {dataFormatada}</small>
                         </div>
                     )}
-
                 </div>
+
                 <div className="d-flex align-items-center gap-2">
                     {modoEdicao ? (
                         <button className="btn btn-outline-danger btn-sm" onClick={handleFinalizarTreino}>
