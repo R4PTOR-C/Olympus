@@ -381,7 +381,6 @@ function Exercicios_index() {
                                                         type="number"
                                                         className="form-control form-control-sm me-2"
                                                         style={{ width: '70px', fontSize: '0.9rem' }}
-
                                                         value={serie.carga || ''}
                                                         onChange={(e) => {
                                                             const novaLista = series.map(s =>
@@ -390,9 +389,10 @@ function Exercicios_index() {
                                                             setFormData(prev => ({ ...prev, [exercicio.exercicio_id]: novaLista }));
                                                             salvarSerieDebounced(exercicio.exercicio_id, novaLista);
                                                         }}
-
+                                                        onBlur={() => setEditingField(null)} // ✅ aqui
                                                         autoFocus
                                                     />
+
                                                 ) : (
                                                     <span
                                                         className="me-2"
@@ -412,7 +412,6 @@ function Exercicios_index() {
                                                         type="number"
                                                         className="form-control form-control-sm me-2"
                                                         style={{ width: '70px', fontSize: '0.9rem' }}
-
                                                         value={serie.repeticoes || ''}
                                                         onChange={(e) => {
                                                             const novaLista = series.map(s =>
@@ -421,9 +420,10 @@ function Exercicios_index() {
                                                             setFormData(prev => ({ ...prev, [exercicio.exercicio_id]: novaLista }));
                                                             salvarSerieDebounced(exercicio.exercicio_id, novaLista);
                                                         }}
-
+                                                        onBlur={() => setEditingField(null)} // ✅ aqui também
                                                         autoFocus
                                                     />
+
                                                 ) : (
                                                     <span
                                                         onClick={() => setEditingField({ exercicioId: exercicio.exercicio_id, numero_serie: serie.numero_serie, campo: 'repeticoes' })}
