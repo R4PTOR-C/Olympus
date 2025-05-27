@@ -21,7 +21,7 @@ const Exercicios_tabela = () => {
             })
             .then(data => {
                 setExercicios(data);
-                setFilteredExercicios(data); // Inicia a lista filtrada com todos os exercícios
+                setFilteredExercicios(data);
                 setLoading(false);
             })
             .catch(error => {
@@ -61,10 +61,9 @@ const Exercicios_tabela = () => {
             );
             setFilteredExercicios(filtered);
         } else {
-            setFilteredExercicios(exercicios); // Mostra todos se o termo de busca estiver vazio
+            setFilteredExercicios(exercicios);
         }
     };
-
 
     if (loading) return <div>Carregando...</div>;
     if (error) return <div className="text-danger">Erro: {error}</div>;
@@ -89,33 +88,34 @@ const Exercicios_tabela = () => {
                 <table className="table table-hover">
                     <thead className="bg-gray-200">
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Nome</th>
-                        <th scope="col">Grupo Muscular</th>
-                        <th scope="col">Nível</th>
-                        <th scope="col">gif</th>
-                        <th scope="col">Ações</th>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Grupo Muscular</th>
+                        <th>Nível</th>
+                        <th>GIF</th>
+                        <th>Ações</th>
                     </tr>
                     </thead>
                     <tbody>
                     {filteredExercicios.map(exercicio => (
                         <tr key={exercicio.id}>
-                            <th scope="row">{exercicio.id}</th>
+                            <td>{exercicio.id}</td>
                             <td>{exercicio.nome_exercicio}</td>
                             <td>{exercicio.grupo_muscular}</td>
                             <td>{exercicio.nivel}</td>
-                            <td>{exercicio.gif_url}</td>
-
                             <td>
-                                <Link to={`/exercicios/edit/${exercicio.id}`}
-                                      className="btn btn-warning me-2">Editar</Link>
-                                <Link to={`/exercicios/view/${exercicio.id}`} className="btn btn-info me-2">Ver</Link>
-                                <button
-                                    className="btn btn-danger"
-                                    onClick={() => handleDelete(exercicio.id)}
-                                >
-                                    Deletar
-                                </button>
+                                {exercicio.gif_url ? (
+                                    <a href={exercicio.gif_url} target="_blank" rel="noopener noreferrer">
+                                        Ver GIF
+                                    </a>
+                                ) : (
+                                    'Sem GIF'
+                                )}
+                            </td>
+                            <td>
+                                <Link to={`/exercicios/edit/${exercicio.id}`} className="btn btn-warning btn-sm me-2">Editar</Link>
+                                <Link to={`/exercicios/view/${exercicio.id}`} className="btn btn-info btn-sm me-2">Ver</Link>
+                                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(exercicio.id)}>Deletar</button>
                             </td>
                         </tr>
                     ))}
@@ -129,18 +129,23 @@ const Exercicios_tabela = () => {
                     <div key={exercicio.id} className="card mb-3">
                         <div className="card-body">
                             <h5 className="card-title">{exercicio.nome_exercicio}</h5>
-                            <p className="card-text"><strong>ID:</strong> {exercicio.id}</p>
-                            <p className="card-text"><strong>Grupo Muscular:</strong> {exercicio.grupo_muscular}</p>
-                            <p className="card-text"><strong>Nível:</strong> {exercicio.nivel}</p>
-                            <div className="card-actions">
-                                <Link to={`/exercicios/edit/${exercicio.id}`} className="btn btn-warning me-2">Editar</Link>
-                                <Link to={`/exercicios/view/${exercicio.id}`} className="btn btn-info me-2">Ver</Link>
-                                <button
-                                    className="btn btn-danger"
-                                    onClick={() => handleDelete(exercicio.id)}
-                                >
-                                    Deletar
-                                </button>
+                            <p><strong>ID:</strong> {exercicio.id}</p>
+                            <p><strong>Grupo Muscular:</strong> {exercicio.grupo_muscular}</p>
+                            <p><strong>Nível:</strong> {exercicio.nivel}</p>
+                            <p>
+                                <strong>GIF:</strong>{" "}
+                                {exercicio.gif_url ? (
+                                    <a href={exercicio.gif_url} target="_blank" rel="noopener noreferrer">
+                                        Ver GIF
+                                    </a>
+                                ) : (
+                                    'Sem GIF'
+                                )}
+                            </p>
+                            <div className="mt-2">
+                                <Link to={`/exercicios/edit/${exercicio.id}`} className="btn btn-warning btn-sm me-2">Editar</Link>
+                                <Link to={`/exercicios/view/${exercicio.id}`} className="btn btn-info btn-sm me-2">Ver</Link>
+                                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(exercicio.id)}>Deletar</button>
                             </div>
                         </div>
                     </div>

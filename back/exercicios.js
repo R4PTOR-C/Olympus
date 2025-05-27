@@ -108,4 +108,23 @@ router.put('/:id', upload.single('gif'), async (req, res) => {
     }
 });
 
+// Deletar exercício por ID
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await db.query('DELETE FROM exercicios WHERE id = $1 RETURNING *', [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Exercício não encontrado.' });
+        }
+
+        res.status(200).json({ message: 'Exercício deletado com sucesso.' });
+    } catch (err) {
+        console.error('Erro ao deletar exercício:', err);
+        res.status(500).json({ error: 'Erro ao deletar exercício.' });
+    }
+});
+
+
 module.exports = router;

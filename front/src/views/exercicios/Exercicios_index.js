@@ -319,7 +319,8 @@ function Exercicios_index() {
                     )}
                 </div>
 
-                <div className="d-flex align-items-center gap-2">
+                <div className="d-flex flex-column flex-lg-row align-items-end justify-content-end gap-2">
+                    {/* Botão principal */}
                     {modoEdicao ? (
                         <button className="btn btn-outline-danger btn-sm" onClick={handleFinalizarTreino}>
                             Finalizar Treino
@@ -339,8 +340,7 @@ function Exercicios_index() {
                         </button>
                     )}
 
-
-                    {/* Botão com ícone de histórico */}
+                    {/* Botão histórico */}
                     <button
                         className="btn btn-outline-secondary btn-sm"
                         onClick={() => setMostrarModalHistorico(true)}
@@ -349,6 +349,10 @@ function Exercicios_index() {
                         <i className="bi bi-clock-history"></i>
                     </button>
                 </div>
+
+
+
+
 
 
             </div>

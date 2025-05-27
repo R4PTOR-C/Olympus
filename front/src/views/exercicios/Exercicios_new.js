@@ -17,18 +17,19 @@ function Exercicios_new() {
         "Panturrilha"
     ];
 
-
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const exercicio = { nome_exercicio, grupo_muscular, nivel };
+
+        const formData = new FormData();
+        formData.append('nome_exercicio', nome_exercicio);
+        formData.append('grupo_muscular', grupo_muscular);
+        formData.append('nivel', nivel);
+        formData.append('gif', gif);
 
         try {
-            const response = await fetch(`http://localhost:5000/exercicios`, {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(exercicio),
+                body: formData,
             });
 
             if (response.ok) {
@@ -37,6 +38,7 @@ function Exercicios_new() {
                 setNome_exercicio('');
                 setGrupo_muscular('');
                 setNivel('');
+                setGif(null);
             } else {
                 alert('Falha ao adicionar exercício.');
             }
@@ -44,17 +46,6 @@ function Exercicios_new() {
             console.error('Erro:', error);
             alert('Erro ao conectar ao servidor.');
         }
-
-        const formData = new FormData();
-        formData.append('nome_exercicio', nome_exercicio);
-        formData.append('grupo_muscular', grupo_muscular);
-        formData.append('nivel', nivel);
-        formData.append('gif', gif);
-
-        await fetch('http://localhost:5000/exercicios', {
-            method: 'POST',
-            body: formData,
-        });
     };
 
     return (
@@ -99,14 +90,21 @@ function Exercicios_new() {
                         <option value="Avançado">Avançado</option>
                     </select>
                 </div>
-
-                <input
-                    type="file"
-                    className="form-control"
-                    accept=".gif"
-                    onChange={(e) => setGif(e.target.files[0])}
-                    required
-                />
+                <div className="form-group mt-3">
+                    <label>GIF do Exercício</label>
+                    <input
+                        type="file"
+                        className="form-control"
+                        accept=".gif"
+                        onChange={(e) => setGif(e.target.files[0])}
+                        required
+                    />
+                    {gif && (
+                        <small className="form-text text-muted">
+                            Arquivo selecionado: {gif.name}
+                        </small>
+                    )}
+                </div>
                 <button type="submit" className="btn btn-primary mt-3">Adicionar</button>
             </form>
         </div>
