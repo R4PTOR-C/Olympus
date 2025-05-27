@@ -4,6 +4,7 @@ import { AuthContext } from '../../AuthContext';
 import ModalHistorico from '../components/ModalHistorico';
 import debounce from 'lodash/debounce';
 import ModalSucesso from "../components/ModalSucesso";
+import PageStateHandler from "../components/PageStateHandler";
 
 
 
@@ -299,10 +300,8 @@ function Exercicios_index() {
 
 
 
-    if (loading) return <div>Carregando...</div>;
-    if (error) return <div>Erro: {error}</div>;
-
     return (
+        <PageStateHandler   loading={loading} error={error}>
         <div className="container mt-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
@@ -487,6 +486,7 @@ function Exercicios_index() {
 
 
         </div>
+        </PageStateHandler>
     );
 }
 
