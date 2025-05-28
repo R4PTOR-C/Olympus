@@ -52,10 +52,20 @@ router.get('/:id', async (req, res) => {
 // Rota para criar um novo usuário com upload de avatar
 router.post('/', upload.single('avatar'), async (req, res) => {
     const { nome, email, genero, idade, senha, funcao } = req.body;
-    const avatar = req.file ? req.file.path : null; // Cloudinary URL
+    const avatar = req.file ? req.file.path : null;
+    const normalizedEmail = email.toLowerCase();
 
     try {
-        const normalizedEmail = email.toLowerCase();
+        // Verifica se o email já existe
+        const existingUser = await db.query(
+            'SELECT * FROM usuarios WHERE email = $1',
+            [normalizedEmail]
+        );
+
+        if (existingUser.rows.length > 0) {
+            return res.status(400).json({ error: 'Email já cadastrado.' });
+        }
+
         const hashedPassword = await bcrypt.hash(senha, 10);
 
         const resultado = await db.query(
@@ -69,6 +79,7 @@ router.post('/', upload.single('avatar'), async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 // Rota para deletar um usuário
 router.delete('/:id', async (req, res) => {
