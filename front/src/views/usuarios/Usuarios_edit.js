@@ -106,28 +106,36 @@ const UsuariosEdit = () => {
         <div className="container mt-4 mb-5">
             <h2 className="text-center mb-4">Editar Perfil</h2>
             <form onSubmit={handleSubmit}>
-                <div className="text-center mb-4">
-                    {avatarUrl && !previewUrl && (
-                        <img src={avatarUrl} alt="Avatar atual" className="rounded-circle" style={{ width: 120, height: 120, objectFit: 'cover' }} />
-                    )}
-                    {previewUrl && (
-                        <img src={previewUrl} alt="Novo avatar" className="rounded-circle" style={{ width: 120, height: 120, objectFit: 'cover' }} />
-                    )}
+                <div className="d-flex justify-content-center mb-4">
+                    <div className="position-relative">
+                        <img
+                            src={previewUrl || avatarUrl}
+                            alt="Avatar"
+                            className="rounded-circle shadow"
+                            style={{ width: 120, height: 120, objectFit: 'cover' }}
+                        />
+
+                        <button
+                            type="button"
+                            className="btn btn-light border position-absolute bottom-0 start-50 translate-middle-x"
+                            style={{ borderRadius: '50%', padding: '0.3rem 0.5rem', fontSize: '0.8rem' }}
+                            onClick={() => document.getElementById('avatar-input').click()}
+                            title="Editar avatar"
+                        >
+                            <i className="bi bi-pencil"></i>
+                        </button>
+
+                        <input
+                            type="file"
+                            id="avatar-input"
+                            onChange={handleFileChange}
+                            className="d-none"
+                            accept="image/*"
+                        />
+                    </div>
                 </div>
 
-                <div className="mb-3">
-                    <label className="form-label">Alterar Avatar</label>
-                    <input
-                        type="file"
-                        name="avatar"
-                        onChange={handleFileChange}
-                        className="form-control"
-                        accept="image/*"
-                    />
-                    {showCropper && selectedFile && (
-                        <CropAvatar file={selectedFile} onCropped={handleCropped} onClose={() => setShowCropper(false)} />
-                    )}
-                </div>
+
 
                 {['nome', 'email', 'genero', 'idade'].map((campo) => (
                     <div className="form-floating mb-3" key={campo}>

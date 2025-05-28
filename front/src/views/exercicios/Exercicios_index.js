@@ -238,8 +238,9 @@ function Exercicios_index() {
 
             await Promise.all([
                 fetchExercicios(),
-                verificarTreinoFinalizadoHoje(userId, treinoId)
+                buscarUltimoTreinoFinalizado(userId, treinoId)
             ]);
+
             setFormData({});
             setModalFinalizado(true);
             setTimeout(() => setModalFinalizado(false), 3000); // fecha após 3s
@@ -284,18 +285,24 @@ function Exercicios_index() {
 
             if (!res.ok) throw new Error('Erro ao buscar treinos finalizados');
             const treinos = await res.json();
+            console.log('Treinos finalizados recebidos:', treinos);
 
             if (treinos.length > 0) {
-                const ultimo = treinos.reduce((maisRecente, t) =>
+                const hoje = new Date().toISOString().split('T')[0];
+                const treinoHoje = treinos.find(t => t.data?.split('T')[0] === hoje);
+
+                const treinoParaUsar = treinoHoje || treinos.reduce((maisRecente, t) =>
                     new Date(t.data) > new Date(maisRecente.data) ? t : maisRecente
                 );
-                setDataUltimoTreino(ultimo.data);
-                setTreinoRealizadoId(ultimo.id);
+
+                setDataUltimoTreino(treinoParaUsar.data);
+                setTreinoRealizadoId(treinoParaUsar.id);
             }
         } catch (err) {
             console.error('Erro ao buscar último treino finalizado:', err);
         }
     };
+
 
 
 

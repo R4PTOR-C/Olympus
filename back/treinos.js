@@ -403,26 +403,21 @@ router.get('/usuarios/:usuarioId/treinos/:treinoId/ativo', async (req, res) => {
 // Rota para verificar se existe treino finalizado hoje
 router.get('/usuarios/:usuarioId/treinos/:treinoId/finalizados', async (req, res) => {
     const { usuarioId, treinoId } = req.params;
-    const dataHoje = new Date().toISOString().split('T')[0];
 
     try {
         const result = await db.query(
             `SELECT id, data
              FROM treinos_realizados
              WHERE usuario_id = $1 AND treino_id = $2
-               AND data = $3 AND finalizado_em IS NOT NULL
-             LIMIT 1`,
-            [usuarioId, treinoId, dataHoje]
+               AND finalizado_em IS NOT NULL
+             ORDER BY data DESC`,
+            [usuarioId, treinoId]
         );
 
-        if (result.rows.length > 0) {
-            res.status(200).json(result.rows);
-        } else {
-            res.status(200).json([]); // Nenhum treino finalizado hoje
-        }
+        res.status(200).json(result.rows);
     } catch (error) {
-        console.error('Erro ao verificar treino finalizado:', error);
-        res.status(500).json({ error: 'Erro ao verificar treino finalizado.' });
+        console.error('Erro ao buscar treinos finalizados:', error);
+        res.status(500).json({ error: 'Erro ao buscar treinos finalizados.' });
     }
 });
 
