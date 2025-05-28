@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+import '../../styles/CalendarioHistorico.css';
+import { ptBR } from 'date-fns/locale';
+
 
 function ModalHistorico({ usuarioId, treinoId, onClose }) {
     const [treinos, setTreinos] = useState([]);
     const [exerciciosPorData, setExerciciosPorData] = useState({});
     const [dataSelecionada, setDataSelecionada] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    const datasTreinadas = treinos.map(t => t.data.split('T')[0]);
 
     useEffect(() => {
         const fetchTreinosRealizados = async () => {
@@ -51,6 +58,25 @@ function ModalHistorico({ usuarioId, treinoId, onClose }) {
         }
     };
 
+    const tileClassName = ({ date, view }) => {
+        if (view === 'month') {
+            const dataStr = date.toISOString().split('T')[0];
+            if (datasTreinadas.includes(dataStr)) {
+                return 'treino-realizado';
+            }
+        }
+        return null;
+    };
+
+    const onSelectDate = (date) => {
+        const dataISO = date.toISOString().split('T')[0];
+        const treino = treinos.find(t => t.data.startsWith(dataISO));
+        if (treino) {
+            carregarSeriesPorData(treino.data);
+            setDataSelecionada(treino.data);
+        }
+    };
+
     return (
         <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <div className="modal-dialog modal-lg" role="document">
@@ -63,30 +89,17 @@ function ModalHistorico({ usuarioId, treinoId, onClose }) {
                         {loading ? (
                             <p>Carregando...</p>
                         ) : (
-                            <>
-                                <div className="mb-3">
-                                    <strong>Datas disponíveis:</strong>
-                                    <div className="d-flex flex-wrap gap-2 mt-2">
-                                        {treinos.map((t) => (
-                                            <button
-                                                key={t.id}
-                                                className={`btn btn-sm ${dataSelecionada === t.data ? 'btn-primary' : 'btnprimary'}`}
-                                                onClick={() => carregarSeriesPorData(t.data)}
-                                            >
-                                                {dataSelecionada === t.data && (
-                                                    <i className="bi bi-clock-history me-1"></i> // <-- ícone de relógio
-                                                )}
-                                                {new Date(t.data.split('T')[0] + 'T12:00:00').toLocaleDateString('pt-BR')}
-                                            </button>
-                                        ))}
+                            <div className="table-responsive">
 
-                                    </div>
-                                </div>
+                            <Calendar
+                                    onClickDay={onSelectDate}
+                                    tileClassName={tileClassName}
+                                    locale="pt-BR"
+                            />
 
                                 {dataSelecionada && exerciciosPorData[dataSelecionada] && (
-                                    <div>
-                                        <h6>Treino
-                                            de {new Date(dataSelecionada.split('T')[0] + 'T12:00:00').toLocaleDateString('pt-BR')}</h6>
+                                    <div className="mt-4">
+                                        <h6>Treino de {new Date(dataSelecionada.split('T')[0] + 'T12:00:00').toLocaleDateString('pt-BR')}</h6>
                                         {exerciciosPorData[dataSelecionada].map((ex) => (
                                             <div key={ex.exercicio_id} className="mb-3">
                                                 <strong>{ex.nome_exercicio}</strong>
@@ -106,7 +119,7 @@ function ModalHistorico({ usuarioId, treinoId, onClose }) {
                                         ))}
                                     </div>
                                 )}
-                            </>
+                            </div>
                         )}
                     </div>
                     <div className="modal-footer">

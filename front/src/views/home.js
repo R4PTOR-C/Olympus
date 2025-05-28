@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PageStateHandler from "./components/PageStateHandler";
 
 function Home() {
     const [user, setUser] = useState({ loggedIn: false, userName: '', userId: null });
@@ -88,6 +89,7 @@ function Home() {
     if (error) return <div>Erro: {error}</div>;
 
     return (
+        <PageStateHandler>
         <div className="container mt-4 ">
             {user.loggedIn ? (
                 <div className="row">
@@ -200,6 +202,7 @@ function Home() {
                 <p>Você não está logado.</p>
             )}
         </div>
+        </PageStateHandler>
     );
 }
 

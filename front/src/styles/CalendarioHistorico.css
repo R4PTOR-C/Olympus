@@ -1,0 +1,69 @@
+/* Estilo base */
+.react-calendar {
+    width: 100%;
+    max-width: 100%;
+    background: #E8E8E9;
+    border: none;
+    border-radius: 15px;
+    padding: 1rem;
+    font-family: 'Segoe UI', sans-serif;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Navegação do topo */
+.react-calendar__navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.react-calendar__navigation button {
+    background-color: transparent;
+    border: none;
+    color: #19222B;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.react-calendar__navigation button:disabled {
+    color: #999;
+}
+
+/* Células dos dias */
+.react-calendar__tile {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
+    color: #19222B;
+}
+
+.react-calendar__tile--now {
+    background: #ddd;
+    font-weight: bold;
+}
+
+.react-calendar__tile--active {
+    background: #19222B !important;
+    color: white !important;
+}
+
+/* Destaque para dias com treino */
+.treino-realizado {
+    background-color: #198754 !important; /* Bootstrap success */
+    color: white !important;
+}
+
+/* Hover */
+.react-calendar__tile:hover {
+    background-color: #cfcfcf;
+    cursor: pointer;
+}
+
+/* Responsividade */
+@media (max-width: 576px) {
+    .react-calendar__tile {
+        padding: 0.5rem 0.3rem;
+        font-size: 0.8rem;
+    }
+}
