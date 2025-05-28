@@ -400,26 +400,30 @@ router.get('/usuarios/:usuarioId/treinos/:treinoId/ativo', async (req, res) => {
     }
 });
 
-// Rota para verificar se existe treino finalizado hoje
+// Rota para buscar treinos finalizados com séries registradas
 router.get('/usuarios/:usuarioId/treinos/:treinoId/finalizados', async (req, res) => {
     const { usuarioId, treinoId } = req.params;
 
     try {
         const result = await db.query(
-            `SELECT id, data
-             FROM treinos_realizados
-             WHERE usuario_id = $1 AND treino_id = $2
-               AND finalizado_em IS NOT NULL
-             ORDER BY data DESC`,
+            `SELECT tr.id, tr.data
+             FROM treinos_realizados tr
+                      JOIN series_usuario su ON su.treino_realizado_id = tr.id
+             WHERE tr.usuario_id = $1
+               AND tr.treino_id = $2
+               AND tr.finalizado_em IS NOT NULL
+             GROUP BY tr.id
+             ORDER BY tr.data DESC`,
             [usuarioId, treinoId]
         );
 
         res.status(200).json(result.rows);
     } catch (error) {
-        console.error('Erro ao buscar treinos finalizados:', error);
-        res.status(500).json({ error: 'Erro ao buscar treinos finalizados.' });
+        console.error('Erro ao buscar treinos finalizados com séries:', error);
+        res.status(500).json({ error: 'Erro ao buscar treinos finalizados com séries.' });
     }
 });
+
 
 
 // Rota para listar todos os treinos realizados por um usuário em um treino específico
