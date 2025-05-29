@@ -91,6 +91,14 @@ const UsuariosView = () => {
             </div>
 
             <h3 className="mb-3">Treinos</h3>
+            <div className="mb-3 text-end">
+                <button
+                    className="btn btn-success"
+                    onClick={() => navigate(`/usuarios/${id}/treinos`)}
+                >
+                    + Criar Novo Treino
+                </button>
+            </div>
             <div className="row">
                 {treinos.length > 0 ? (
                     treinos.map(treino => (

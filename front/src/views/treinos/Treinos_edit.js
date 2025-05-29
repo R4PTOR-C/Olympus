@@ -42,6 +42,7 @@ const TreinosEdit = () => {
             setNomeTreino(data.nome_treino);
             setDescricao(data.descricao);
             setDiaSemana(data.dia_semana);
+            setGrupoMuscular(data.grupo_muscular);
         };
 
 
@@ -112,7 +113,7 @@ const TreinosEdit = () => {
             return;
         }
 
-        const treino = { nome_treino: nomeTreino, descricao, dia_semana: diaSemana };
+        const treino = { nome_treino: nomeTreino, descricao, dia_semana: diaSemana, grupo_muscular: grupoMuscular };
 
         const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
             method: 'PUT',
@@ -224,6 +225,29 @@ const TreinosEdit = () => {
                     </select>
                     <label htmlFor="diaSemana">Dia da Semana</label>
                 </div>
+
+                <div className="form-floating mb-4">
+                    <select
+                        className="form-select"
+                        id="grupoMuscular"
+                        value={grupoMuscular}
+                        onChange={(e) => setGrupoMuscular(e.target.value)}
+                        required
+                    >
+                        <option value="">Selecione o Grupo Muscular</option>
+                        <option value="Peitoral">Peitoral</option>
+                        <option value="Costas">Costas</option>
+                        <option value="Ombros">Ombros</option>
+                        <option value="Bíceps">Bíceps</option>
+                        <option value="Tríceps">Tríceps</option>
+                        <option value="Posterior">Posterior</option>
+                        <option value="Frontal">Frontal</option>
+                        <option value="Panturrilha">Panturrilha</option>
+                        <option value="Abdômen">Abdômen</option>
+                    </select>
+                    <label htmlFor="grupoMuscular">Grupo Muscular Principal</label>
+                </div>
+
 
                 <h4 className="mt-4">Exercícios Salvos</h4>
                 <div className="table-responsive">

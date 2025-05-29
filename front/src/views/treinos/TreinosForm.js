@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const TreinosForm = () => {
-    const { id } = useParams(); // ID do aluno
+    const { id } = useParams();
     const navigate = useNavigate();
     const [nomeTreino, setNomeTreino] = useState('');
     const [descricao, setDescricao] = useState('');
@@ -12,120 +12,102 @@ const TreinosForm = () => {
     const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredExercicios, setFilteredExercicios] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1); // Página atual
-    const [itemsPerPage] = useState(10); // Número de exercícios por página
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
     useEffect(() => {
-        const fetchExercicios = async () => {
-            try {
-                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`);
-                const data = await response.json();
+        fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`)
+            .then(res => res.json())
+            .then(data => {
                 setExercicios(data);
                 setFilteredExercicios(data);
-            } catch (error) {
-                console.error('Erro ao carregar exercícios:', error);
-            }
-        };
-
-        fetchExercicios();
+            });
     }, []);
 
     useEffect(() => {
-        const filtered = exercicios.filter(
-            (ex) =>
-                (ex.nome_exercicio && ex.nome_exercicio.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                (ex.grupo_muscular && ex.grupo_muscular.toLowerCase().includes(searchTerm.toLowerCase()))
+        const filtered = exercicios.filter(ex =>
+            (ex.nome_exercicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                ex.grupo_muscular?.toLowerCase().includes(searchTerm.toLowerCase()))
         );
         setFilteredExercicios(filtered);
-        setCurrentPage(1); // Voltar para a primeira página ao alterar a busca
+        setCurrentPage(1);
     }, [searchTerm, exercicios]);
 
-    const handleExercicioChange = (exercicioId) => {
-        if (exerciciosSelecionados.includes(exercicioId)) {
-            setExerciciosSelecionados(exerciciosSelecionados.filter((id) => id !== exercicioId));
-        } else {
-            setExerciciosSelecionados([...exerciciosSelecionados, exercicioId]);
-        }
+    const handleExercicioChange = (id) => {
+        setExerciciosSelecionados(prev =>
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
     };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-        if (exerciciosSelecionados.length === 0) {
-            alert('Selecione pelo menos um exercício!');
+        if (!nomeTreino || !descricao || !diaSemana || !grupoMuscular || exerciciosSelecionados.length === 0) {
+            alert('Preencha todos os campos e selecione ao menos um exercício.');
             return;
         }
 
-        const treino = {
-            nome_treino: nomeTreino,
-            descricao,
-            dia_semana: diaSemana,
-            grupo_muscular: grupoMuscular,
-        };
+        const treino = { nome_treino: nomeTreino, descricao, dia_semana: diaSemana, grupo_muscular: grupoMuscular };
 
-        try {
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(treino),
-            });
+        const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(treino)
+        });
 
-            if (response.ok) {
-                const novoTreino = await response.json();
+        if (!res.ok) return alert('Erro ao criar treino.');
 
-                await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${novoTreino.id}/exercicios`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ exercicios: exerciciosSelecionados }),
-                });
+        const novoTreino = await res.json();
 
-                alert('Treino e exercícios adicionados com sucesso!');
-                navigate(`/usuarios/view/${id}`);
-            } else {
-                alert('Erro ao criar o treino.');
-            }
-        } catch (error) {
-            console.error('Erro ao criar treino:', error);
-            alert('Erro ao conectar ao servidor.');
-        }
+        await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${novoTreino.id}/exercicios`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ exercicios: exerciciosSelecionados })
+        });
+
+        alert('Treino criado com sucesso!');
+        navigate(`/usuarios/view/${id}`);
     };
 
-    // Cálculo dos índices de paginação
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredExercicios.slice(indexOfFirstItem, indexOfLastItem);
-
     const totalPages = Math.ceil(filteredExercicios.length / itemsPerPage);
 
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
     return (
-        <div className="container mt-5">
-            <h2>Criar Treino para Aluno</h2>
+        <div className="container mt-5 mb-5">
+            <h2 className="text-center mb-4">Criar Novo Treino</h2>
             <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>Nome do Treino</label>
+                <div className="form-floating mb-3">
                     <input
                         type="text"
                         className="form-control"
+                        id="nomeTreino"
+                        placeholder="Nome do Treino"
                         value={nomeTreino}
                         onChange={(e) => setNomeTreino(e.target.value)}
                         required
                     />
+                    <label htmlFor="nomeTreino">Nome do Treino</label>
                 </div>
-                <div className="form-group">
-                    <label>Descrição</label>
+
+                <div className="form-floating mb-3">
                     <textarea
                         className="form-control"
+                        id="descricaoTreino"
+                        placeholder="Descrição"
+                        style={{ height: '100px' }}
                         value={descricao}
                         onChange={(e) => setDescricao(e.target.value)}
                         required
                     />
+                    <label htmlFor="descricaoTreino">Descrição</label>
                 </div>
-                <div className="form-group">
-                    <label>Dia da Semana</label>
+
+                <div className="form-floating mb-3">
                     <select
-                        className="form-control"
+                        className="form-select"
+                        id="diaSemana"
                         value={diaSemana}
                         onChange={(e) => setDiaSemana(e.target.value)}
                         required
@@ -139,16 +121,18 @@ const TreinosForm = () => {
                         <option value="Sábado">Sábado</option>
                         <option value="Domingo">Domingo</option>
                     </select>
+                    <label htmlFor="diaSemana">Dia da Semana</label>
                 </div>
-                <div className="form-group">
-                    <label>Grupo Muscular Principal</label>
+
+                <div className="form-floating mb-4">
                     <select
-                        className="form-control"
+                        className="form-select"
+                        id="grupoMuscular"
                         value={grupoMuscular}
                         onChange={(e) => setGrupoMuscular(e.target.value)}
                         required
                     >
-                        <option value="">Selecione o Grupo</option>
+                        <option value="">Selecione o Grupo Muscular</option>
                         <option value="Peitoral">Peitoral</option>
                         <option value="Costas">Costas</option>
                         <option value="Ombros">Ombros</option>
@@ -159,23 +143,20 @@ const TreinosForm = () => {
                         <option value="Panturrilha">Panturrilha</option>
                         <option value="Abdômen">Abdômen</option>
                     </select>
+                    <label htmlFor="grupoMuscular">Grupo Muscular Principal</label>
                 </div>
 
-                <div className="form-group mt-4">
-                    <label>Buscar Exercícios</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Buscar por nome ou grupo muscular..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
+                <input
+                    type="text"
+                    className="form-control mb-3"
+                    placeholder="Buscar por nome ou grupo muscular..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
 
-                <h3 className="mt-4">Exercícios Disponíveis</h3>
                 <div className="table-responsive">
-                    <table className="table table-hover">
-                        <thead>
+                    <table className="table table-hover align-middle">
+                        <thead className="table-light">
                         <tr>
                             <th>Selecionar</th>
                             <th>Nome</th>
@@ -184,25 +165,24 @@ const TreinosForm = () => {
                         </tr>
                         </thead>
                         <tbody>
-                        {currentItems.map((exercicio) => (
-                            <tr key={exercicio.id}>
+                        {currentItems.map((ex) => (
+                            <tr key={ex.id}>
                                 <td>
                                     <input
                                         type="checkbox"
-                                        checked={exerciciosSelecionados.includes(exercicio.id)}
-                                        onChange={() => handleExercicioChange(exercicio.id)}
+                                        checked={exerciciosSelecionados.includes(ex.id)}
+                                        onChange={() => handleExercicioChange(ex.id)}
                                     />
                                 </td>
-                                <td>{exercicio.nome_exercicio}</td>
-                                <td>{exercicio.grupo_muscular}</td>
-                                <td>{exercicio.nivel}</td>
+                                <td>{ex.nome_exercicio}</td>
+                                <td>{ex.grupo_muscular}</td>
+                                <td>{ex.nivel}</td>
                             </tr>
                         ))}
                         </tbody>
                     </table>
                 </div>
 
-                {/* Paginação */}
                 <nav className="mt-3">
                     <ul className="pagination justify-content-center">
                         {[...Array(totalPages)].map((_, index) => (
@@ -211,8 +191,9 @@ const TreinosForm = () => {
                                 className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
                             >
                                 <button
+                                    type="button"
                                     className="page-link"
-                                    onClick={() => paginate(index + 1)}
+                                    onClick={() => setCurrentPage(index + 1)}
                                 >
                                     {index + 1}
                                 </button>
@@ -221,9 +202,14 @@ const TreinosForm = () => {
                     </ul>
                 </nav>
 
-                <button type="submit" className="btn btn-primary mt-3">
-                    Adicionar Treino
-                </button>
+                <div className="d-flex flex-column flex-md-row justify-content-center gap-3 mt-4">
+                    <button type="submit" className="btn btn-primary btn-lg w-100 w-md-auto">
+                        Adicionar Treino
+                    </button>
+                    <button type="button" className="btn btn-secondary btn-lg w-100 w-md-auto" onClick={() => navigate(-1)}>
+                        Cancelar
+                    </button>
+                </div>
             </form>
         </div>
     );

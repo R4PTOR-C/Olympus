@@ -44,9 +44,10 @@ router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
         const imagemSelecionada = grupoParaImagem[grupo_muscular] || 'default.png';
 
         const result = await db.query(
-            'INSERT INTO treinos (usuario_id, nome_treino, descricao, dia_semana, imagem) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [usuarioId, nome_treino, descricao, dia_semana, imagemSelecionada]
+            'INSERT INTO treinos (usuario_id, nome_treino, descricao, dia_semana, grupo_muscular, imagem) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [usuarioId, nome_treino, descricao, dia_semana, grupo_muscular, imagemSelecionada]
         );
+
 
         res.status(201).json(result.rows[0]);
     } catch (error) {
@@ -57,15 +58,15 @@ router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
 
 router.put('/treinos/:treinoId', async (req, res) => {
     const { treinoId } = req.params;
-    const { nome_treino, descricao, dia_semana } = req.body; // Removido grupo_muscular
+    const { nome_treino, descricao, dia_semana, grupo_muscular } = req.body;
 
     try {
         const result = await db.query(
             `UPDATE treinos
-             SET nome_treino = $1, descricao = $2, dia_semana = $3
-             WHERE id = $4
-             RETURNING *`,
-            [nome_treino, descricao, dia_semana, treinoId]
+             SET nome_treino = $1, descricao = $2, dia_semana = $3, grupo_muscular = $4
+             WHERE id = $5
+                 RETURNING *`,
+            [nome_treino, descricao, dia_semana, grupo_muscular, treinoId]
         );
 
         if (result.rowCount === 0) {
