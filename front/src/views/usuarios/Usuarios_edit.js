@@ -37,7 +37,6 @@ const UsuariosEdit = () => {
                 return response.json();
             })
             .then(data => {
-                // Remover campo função antes de setar no state
                 const { funcao, ...dadosUsuario } = data;
                 setUsuario(dadosUsuario);
                 setAvatar(null);
@@ -57,6 +56,10 @@ const UsuariosEdit = () => {
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
+        if (file && file.size > 2 * 1024 * 1024) {
+            alert("A imagem deve ter no máximo 2MB.");
+            return;
+        }
         setSelectedFile(file);
         setShowCropper(true);
     };
@@ -114,7 +117,6 @@ const UsuariosEdit = () => {
                             className="rounded-circle shadow"
                             style={{ width: 120, height: 120, objectFit: 'cover' }}
                         />
-
                         <button
                             type="button"
                             className="btn btn-light border position-absolute bottom-0 start-50 translate-middle-x"
@@ -124,7 +126,6 @@ const UsuariosEdit = () => {
                         >
                             <i className="bi bi-pencil"></i>
                         </button>
-
                         <input
                             type="file"
                             id="avatar-input"
@@ -136,6 +137,9 @@ const UsuariosEdit = () => {
                 </div>
 
 
+                {showCropper && selectedFile && (
+                    <CropAvatar file={selectedFile} onCropped={handleCropped} onClose={() => setShowCropper(false)} />
+                )}
 
                 {['nome', 'email', 'genero', 'idade'].map((campo) => (
                     <div className="form-floating mb-3" key={campo}>
@@ -170,7 +174,6 @@ const UsuariosEdit = () => {
                         )}
                     </div>
                 ))}
-
 
                 <div className="d-grid mt-4">
                     <button type="submit" className="btn btn-primary btn-lg">
