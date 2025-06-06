@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import CropAvatar from "../components/CropAvatar";
+
 
 function Usuarios_new() {
     const [nome, setNome] = useState('');
@@ -10,14 +12,30 @@ function Usuarios_new() {
     const [previewUrl, setPreviewUrl] = useState(null);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
+    const [showCropper, setShowCropper] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+
 
     const funcao = 'Aluno';
 
-    const handleFileChange = (event) => {
-        const file = event.target.files[0];
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file && file.size > 5 * 1024 * 1024) {
+            alert("A imagem deve ter no máximo 5MB.");
+            return;
+        }
+        setSelectedFile(file);
+        setShowCropper(true);
+    };
+
+    const handleCropped = async (croppedBlob) => {
+        const file = new File([croppedBlob], 'avatar.jpeg', { type: 'image/jpeg' });
         setAvatar(file);
         setPreviewUrl(URL.createObjectURL(file));
+        setShowCropper(false);
     };
+
+
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -102,6 +120,11 @@ function Usuarios_new() {
                         />
                     </div>
                 </div>
+
+                {showCropper && selectedFile && (
+                    <CropAvatar file={selectedFile} onCropped={handleCropped} onClose={() => setShowCropper(false)} />
+                )}
+
 
                 {[
                     { label: 'Nome', type: 'text', value: nome, setter: setNome },

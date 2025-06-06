@@ -56,8 +56,8 @@ const UsuariosEdit = () => {
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (file && file.size > 2 * 1024 * 1024) {
-            alert("A imagem deve ter no máximo 2MB.");
+        if (file && file.size > 5 * 1024 * 1024) {
+            alert("A imagem deve ter no máximo 5MB.");
             return;
         }
         setSelectedFile(file);

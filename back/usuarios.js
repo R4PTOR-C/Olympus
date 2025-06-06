@@ -103,13 +103,13 @@ router.delete('/:id', async (req, res) => {
 router.put('/:id', upload.single('avatar'), async (req, res) => {
     console.log('Arquivo recebido:', req.file); // ✅ Verifique se chega aqui
     const { id } = req.params;
-    const { nome, email, genero, idade, senha, funcao } = req.body;
+    const { nome, email, genero, idade, senha } = req.body;
     const avatar = req.file ? req.file.path : null; // ✅ URL do Cloudinary
 
     try {
-        let query = 'UPDATE usuarios SET nome = $1, email = $2, genero = $3, idade = $4, funcao = $5';
-        const values = [nome, email, genero, idade, funcao];
-        let paramIndex = 6;
+        let query = 'UPDATE usuarios SET nome = $1, email = $2, genero = $3, idade = $4';
+        const values = [nome, email, genero, idade];
+        let paramIndex = 5;
 
         // Atualizar a senha se fornecida
         if (senha) {
