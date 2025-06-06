@@ -97,21 +97,58 @@
 .social-icons a:hover {
     color: #ff416c;
 }
+.welcome-mobile {
+    display: none;
+}
+
 
 /* Responsividade para tablets */
 @media (max-width: 768px) {
     .login-container {
-        flex-direction: column; /* Altera o layout para uma coluna em vez de linha */
-        width: 90%;
+        width: 95%;
+        flex-direction: column;
     }
 
     .welcome-container {
-        width: 100%; /* O container de boas-vindas vai ocupar 100% da largura */
-        padding: 20px;
+        width: 100%;
+        padding: 15px;
     }
 
     .login-form {
-        padding: 20px;
+        padding: 10px;
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .social-icons a {
+        font-size: 1.2rem;
+    }
+
+    .form-group {
+        margin-bottom: 10px;
+    }
+
+    .logo-image {
+        display: none;
+    }
+
+    .welcome-mobile {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .logo-mobile {
+        max-width:150px;
+        height: auto;
+    }
+
+    .login-form h3 {
+        text-align: center;
+        margin-top: 5px;
     }
 }
 

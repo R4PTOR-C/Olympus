@@ -54,8 +54,12 @@ function Login() {
     return (
         <div className="login-page-container">
             <div className="login-container d-flex">
+                <div className="welcome-mobile">
+                    <img src="/logo1.png" alt="Logo" className="logo-mobile" />
+                </div>
                 <div className="col-md-6 login-form">
-                    <h3 className="mb-4" style={{fontFamily: 'delirium'}}>OLYMPUS</h3>
+
+                    <h3 className="mb-4 text-center" style={{fontFamily: 'delirium'}}>OLYMPUS</h3>
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label htmlFor="email">Email</label>
@@ -104,7 +108,7 @@ function Login() {
                 </div>
                 <div className="col-md-6 welcome-container">
                     <img
-                        src="/logo.png"
+                        src="/logo1.png"
                         alt="Logo"
                         className="logo-image"
                         style={{maxWidth: '100%', height: 'auto', marginBottom: '20px'}}
