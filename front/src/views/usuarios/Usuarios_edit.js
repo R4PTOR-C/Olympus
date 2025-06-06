@@ -91,7 +91,10 @@ const UsuariosEdit = () => {
                 return response.json();
             })
             .then((res) => {
-                updateUser && updateUser(res.usuario);
+                updateUser && updateUser({
+                    userName: res.usuario.nome,
+                    avatar: res.usuario.avatar
+                });
                 navigate(`/home/${res.usuario.id}`);
             })
             .catch(error => {
