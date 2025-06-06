@@ -74,7 +74,6 @@ body {
   background-repeat: no-repeat; /* Impede a repetição da imagem */
   background-attachment: fixed; /* Faz o fundo permanecer fixo ao rolar a página */
   background-position: center; /* Centraliza a imagem no body */
-  padding-bottom: 70px;
 
 }
 
