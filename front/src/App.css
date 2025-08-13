@@ -53,6 +53,7 @@ select {
   border-radius: 15px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra */
   padding: 1rem;
+
 }
 
 h1{
@@ -74,6 +75,8 @@ body {
   background-repeat: no-repeat; /* Impede a repetição da imagem */
   background-attachment: fixed; /* Faz o fundo permanecer fixo ao rolar a página */
   background-position: center; /* Centraliza a imagem no body */
+  padding-top: 60px; /* altura da navbar */
+  padding-bottom: 60px; /* altura da navbar */
 
 }
 

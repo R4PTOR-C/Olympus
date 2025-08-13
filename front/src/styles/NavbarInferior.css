@@ -1,7 +1,12 @@
 /* NavbarInferior.css */
 
 .navbar-inferior {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     padding-bottom: env(safe-area-inset-bottom);
     border-top: 1px solid #444;
     background-color: #000;
+    z-index: 1000; /* Garante que ela fique no topo visualmente */
 }
