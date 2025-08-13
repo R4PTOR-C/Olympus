@@ -71,14 +71,15 @@ body, html {
 
 body {
   background-image: url('../public/academia fundo 35.png');
-  background-size: cover; /* Ajusta a imagem para cobrir todo o espaço do body */
-  background-repeat: no-repeat; /* Impede a repetição da imagem */
-  background-attachment: fixed; /* Faz o fundo permanecer fixo ao rolar a página */
-  background-position: center; /* Centraliza a imagem no body */
-  padding-top: 60px; /* altura da navbar */
-  padding-bottom: 60px; /* altura da navbar */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;
 
+  padding-top: 60px; /* altura da navbar superior */
+  padding-bottom: calc(60px + env(safe-area-inset-bottom)); /* espaço da navbar inferior + safe area */
 }
+
 
 
 .App {
