@@ -7,7 +7,7 @@ function agruparPorData(rows) {
     const byDate = new Map();
 
     for (const r of rows) {
-        const dia = r.data_treino; // já vem como 'YYYY-MM-DD'
+        const dia = r.data_treino.split('T')[0]; // garante formato YYYY-MM-DD
         const carga = r.carga == null ? 0 : Number(r.carga);
         const reps = r.repeticoes == null ? 0 : Number(r.repeticoes);
         const oneRM = carga > 0 && reps > 0 ? carga * (1 + reps / 30) : 0;
@@ -27,20 +27,22 @@ function agruparPorData(rows) {
         d.max1RM = Math.max(d.max1RM, oneRM);
     }
 
-    // ordena por data asc
     return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
 }
 
 export default function GraficoHistoricoExercicio({ userId, exercicioId }) {
     const [dados, setDados] = useState([]);
-    const [metric, setMetric] = useState('maxCarga'); // 'maxCarga' | 'totalVolume' | 'max1RM'
+    const [metric, setMetric] = useState('maxCarga');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         let cancel = false;
         async function load() {
             try {
-                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/exercicios/${exercicioId}/historico`, { credentials: 'include' });
+                const res = await fetch(
+                    `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/exercicios/${exercicioId}/historico`,
+                    { credentials: 'include' }
+                );
                 const rows = await res.json();
                 if (!cancel) setDados(agruparPorData(rows));
             } catch (e) {
@@ -92,9 +94,20 @@ export default function GraficoHistoricoExercicio({ userId, exercicioId }) {
                 <ResponsiveContainer>
                     <LineChart data={dados} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
+                        <XAxis
+                            dataKey="date"
+                            tickFormatter={(str) => {
+                                const d = new Date(str);
+                                return d.toLocaleDateString('pt-BR');
+                            }}
+                        />
                         <YAxis allowDecimals={false} />
-                        <Tooltip />
+                        <Tooltip
+                            labelFormatter={(str) => {
+                                const d = new Date(str);
+                                return d.toLocaleDateString('pt-BR');
+                            }}
+                        />
                         <Legend />
                         <Line
                             type="monotone"
@@ -102,7 +115,6 @@ export default function GraficoHistoricoExercicio({ userId, exercicioId }) {
                             name={metricLabel}
                             dot={{ r: 3 }}
                             strokeWidth={2}
-                            // (não fixo cor pra manter seu tema; Recharts define automático)
                         />
                     </LineChart>
                 </ResponsiveContainer>
