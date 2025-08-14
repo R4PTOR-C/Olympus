@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 function ResetPassword() {
     const { token } = useParams();
     const [password, setPassword] = useState('');
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState(null);
+    const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -21,34 +22,58 @@ function ResetPassword() {
             const data = await response.json();
 
             if (response.ok) {
-                setMessage('Senha redefinida com sucesso.');
+                setMessage({ text: 'Senha redefinida com sucesso.', type: 'success' });
             } else {
-                setMessage(data.error || 'Erro ao redefinir senha.');
+                setMessage({ text: data.error || 'Erro ao redefinir senha.', type: 'danger' });
             }
         } catch (error) {
             console.error('Erro:', error);
-            setMessage('Erro ao conectar ao servidor.');
+            setMessage({ text: 'Erro ao conectar ao servidor.', type: 'danger' });
         }
     };
 
     return (
-        <div className="reset-password-container">
-            <h3>Redefinir Senha</h3>
+        <div className="container mt-5">
+            <h2 className="text-center mb-4">Redefinir Senha</h2>
+
+            {message && (
+                <div className={`alert alert-${message.type}`} role="alert">
+                    {message.text}
+                </div>
+            )}
+
             <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>Nova Senha</label>
+                <div className="form-floating mb-3">
                     <input
                         type="password"
                         className="form-control"
+                        id="novaSenha"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Digite sua nova senha"
                         required
+                        minLength={6}
                     />
+                    <label htmlFor="novaSenha">Nova Senha</label>
                 </div>
-                <button type="submit" className="btn btn-primary">Redefinir Senha</button>
+
+                <div className="d-grid mt-4">
+                    <button type="submit" className="btn btn-primary btn-lg">
+                        Redefinir Senha
+                    </button>
+                </div>
             </form>
-            {message && <p className="mt-3">{message}</p>}
+
+            {/* Botão para voltar ao login */}
+            <div className="d-grid mt-3">
+                <button
+                    type="button"
+                    className="btn btn-secondary btn-lg"
+                    onClick={() => navigate('/')}
+                >
+                    Voltar para Login
+                </button>
+            </div>
         </div>
     );
 }
