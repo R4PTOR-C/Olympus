@@ -69,15 +69,32 @@ body, html {
   padding: 0;
 }
 
-body {
-  background-image: url('../public/academia fundo 35.png');
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-position: center;
-
-
+:root {
+    --topbar-h: 60px;
+    --bottombar-h: 60px;
 }
+
+body {
+    margin: 0;
+    padding: 0; /* padrão (login limpo) */
+    background-image: url('../public/academia fundo 35.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+}
+
+/* páginas com navbars (superior/inferior) */
+body.with-chrome {
+    padding-top: var(--topbar-h); /* ajuste se a navbar superior não for fixa */
+    padding-bottom: calc(var(--bottombar-h) + env(safe-area-inset-bottom));
+}
+
+/* login/sign-in sem padding */
+body.no-chrome {
+    padding: 0 !important;
+}
+
 
 
 

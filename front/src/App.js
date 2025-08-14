@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Usuarios_index from './views/usuarios/Usuarios_index';
 import Usuarios_new from "./views/usuarios/Usuarios_new";
@@ -51,7 +51,17 @@ function App() {
 // Separar AppContent para usar useLocation dentro do Router
 function AppContent() {
     const location = useLocation();
-    const { loggedIn, loading, userId } = useContext(AuthContext); // ⬅️ adicionei userId aqui
+    const { loggedIn, loading, userId } = useContext(AuthContext);
+
+    useEffect(() => {
+        const hasChrome = loggedIn && !['/', '/sign-in'].includes(location.pathname);
+        document.body.classList.toggle('with-chrome', hasChrome);
+        document.body.classList.toggle('no-chrome', !hasChrome);
+        return () => {
+            // opcional: limpar ao desmontar
+            document.body.classList.remove('with-chrome', 'no-chrome');
+        };
+    }, [loggedIn, location.pathname]);
 
     if (loading) {
         return <div className="loading-indicator">Verificando sessão...</div>;
