@@ -10,3 +10,8 @@
     background-color: #000;
     z-index: 1000; /* Garante que ela fique no topo visualmente */
 }
+
+body {
+    padding-top: 60px; /* altura da navbar superior */
+    padding-bottom: calc(60px + env(safe-area-inset-bottom)); /* espaço da navbar inferior + safe area */
+}
