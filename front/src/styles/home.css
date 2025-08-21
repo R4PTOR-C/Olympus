@@ -1,32 +1,53 @@
-
-
-
-.treino-dia-card {
-    background-color: #e0f7fa; /* Azul claro */
-    border: 2px solid #26a69a; /* Verde */
-    border-radius: 10px;
+/* ================= LIGHT MODE (padrão) ================= */
+.home-card-clickable {
+    background-color: #f8f9fa;
     padding: 20px;
     font-size: 1.2rem;
-    transition: transform 0.3s ease;
+    cursor: pointer;
+    color: #212529; /* texto escuro */
 }
 
-.treino-dia-card:hover {
-    transform: scale(1.05);
-}
-
-.treino-card-small {
-    min-width: 200px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
+.home-card-image-lg {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    margin-right: 20px;
     border-radius: 10px;
-    transition: transform 0.3s ease;
 }
 
-.treino-card-small:hover {
-    transform: scale(1.05);
-    background-color: #f1f1f1;
+.home-next-card {
+    cursor: pointer;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+    color: #212529;
 }
 
-.card-body{
-    margin-top: 20px;
+.home-next-img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    margin-right: 15px;
+    border-radius: 10px;
 }
+
+/* ================= DARK MODE ================= */
+body.dark-mode .home-card-clickable {
+    background-color: #2c2c2c; /* cinza escuro */
+    color: #f8f9fa; /* texto claro */
+}
+
+body.dark-mode .home-next-card {
+    background-color: #2c2c2c;
+    border: 1px solid #444; /* borda mais suave */
+    color: #f8f9fa;
+}
+.toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+

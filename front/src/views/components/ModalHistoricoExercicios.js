@@ -57,7 +57,7 @@ function ModalHistoricoExercicio({ exercicio, userId, onClose }) {
             style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}
             role="dialog" aria-modal="true"
         >
-            <div className="bg-white rounded shadow p-4"
+            <div className="modal-custom shadow"
                  style={{ width: '92%', maxWidth: 720, maxHeight: '90vh', overflowY: 'auto' }}>
                 {/* Header */}
                 <div className="d-flex justify-content-between align-items-start mb-2">

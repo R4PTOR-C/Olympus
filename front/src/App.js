@@ -1,3 +1,4 @@
+// App.js
 import React, { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Usuarios_index from './views/usuarios/Usuarios_index';
@@ -23,20 +24,16 @@ import Avaliacoes_view from "./views/avaliacoes/Avaliacoes_view";
 import { AuthProvider, AuthContext } from './AuthContext';
 import './App.css';
 import './styles/Navbar.css'
-import './styles/Usuarios.css'; // Certifique-se de criar um arquivo CSS para os estilos
+import './styles/Usuarios.css';
 import NavbarInferior from "./views/components/NavbarInferior";
 import HistoricoExercicios from './views/exercicios/HistoricoExercicios';
-
-
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }) {
     const { loggedIn, loading } = useContext(AuthContext);
-    console.log('[Route] loggedIn:', loggedIn, '| loading:', loading);
     if (loading) return <div>Verificando rota...</div>;
     return loggedIn ? children : <Navigate to="/" />;
 }
-
 
 function App() {
     return (
@@ -51,17 +48,26 @@ function App() {
 // Separar AppContent para usar useLocation dentro do Router
 function AppContent() {
     const location = useLocation();
-    const { loggedIn, loading, userId } = useContext(AuthContext);
+    const { loggedIn, loading, userId, darkMode } = useContext(AuthContext);
 
+    // aplica classes no body sempre que mudar rota ou tema
     useEffect(() => {
         const hasChrome = loggedIn && !['/', '/sign-in'].includes(location.pathname);
         document.body.classList.toggle('with-chrome', hasChrome);
         document.body.classList.toggle('no-chrome', !hasChrome);
+
+        if (darkMode) {
+            document.body.classList.add('dark-mode');
+            document.body.classList.remove('light-mode');
+        } else {
+            document.body.classList.add('light-mode');
+            document.body.classList.remove('dark-mode');
+        }
+
         return () => {
-            // opcional: limpar ao desmontar
             document.body.classList.remove('with-chrome', 'no-chrome');
         };
-    }, [loggedIn, location.pathname]);
+    }, [loggedIn, location.pathname, darkMode]);
 
     if (loading) {
         return <div className="loading-indicator">Verificando sessão...</div>;
@@ -69,8 +75,10 @@ function AppContent() {
 
     return (
         <>
-            {/* Renderiza a Navbar apenas se o usuário estiver logado e não estiver na página de login */}
-            {loggedIn && !['/', '/sign-in'].includes(location.pathname) && <Navbar />}
+            {loggedIn && !['/', '/sign-in'].includes(location.pathname) && (
+                <Navbar />
+            )}
+
             <Routes>
                 <Route path="/" element={
                     loggedIn ? <Navigate to={`/home/${userId}`} /> : <Login />
@@ -95,8 +103,8 @@ function AppContent() {
                 <Route path="/avaliacoes/:id" element={<ProtectedRoute><Avaliacoes_view /></ProtectedRoute>} />
                 <Route path="/avaliacoes/:id/new" element={<ProtectedRoute><Avaliacoes_new /></ProtectedRoute>} />
             </Routes>
-            {loggedIn && !['/', '/sign-in'].includes(location.pathname) && <NavbarInferior />}
 
+            {loggedIn && !['/', '/sign-in'].includes(location.pathname) && <NavbarInferior />}
         </>
     );
 }

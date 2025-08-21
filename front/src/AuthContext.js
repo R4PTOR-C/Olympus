@@ -4,10 +4,37 @@ import React, { createContext, useState, useEffect } from 'react';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState({ loggedIn: false, userName: '', userId: null, avatar: null });
+    const [user, setUser] = useState({
+        loggedIn: false,
+        userName: '',
+        userId: null,
+        avatar: null
+    });
     const [loading, setLoading] = useState(true);
 
-    // Função para carregar a sessão ao iniciar
+    // ✅ Estado de dark mode
+    const [darkMode, setDarkMode] = useState(false);
+
+    // 🔹 Carregar tema salvo no localStorage ao iniciar
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('darkMode');
+        if (savedTheme !== null) {
+            setDarkMode(savedTheme === 'true');
+        }
+    }, []);
+
+    // 🔹 Salvar tema e aplicar classe no body sempre que mudar
+    useEffect(() => {
+        localStorage.setItem('darkMode', darkMode);
+
+        if (darkMode) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+    }, [darkMode]);
+
+    // 🔹 Verificar sessão
     useEffect(() => {
         const checkSession = async () => {
             const token = localStorage.getItem('token');
@@ -30,6 +57,7 @@ export const AuthProvider = ({ children }) => {
                     }
                 } catch (err) {
                     console.error('Erro ao verificar sessão:', err);
+                    setUser({ loggedIn: false });
                 }
             } else {
                 setUser({ loggedIn: false });
@@ -39,7 +67,7 @@ export const AuthProvider = ({ children }) => {
         checkSession();
     }, []);
 
-    // Função para login que atualiza o estado e armazena o token
+    // 🔹 Função de login
     const login = (userData, token) => {
         localStorage.setItem('token', token);
         setUser({
@@ -51,12 +79,13 @@ export const AuthProvider = ({ children }) => {
         });
     };
 
+    // 🔹 Função de logout
     const logout = () => {
         localStorage.removeItem('token');
         setUser({ loggedIn: false, userName: '', userId: null, avatar: null });
     };
 
-    // ✅ NOVO: função para atualizar os dados do usuário dinamicamente
+    // 🔹 Atualizar dados do usuário
     const updateUser = (updates) => {
         setUser(prev => ({
             ...prev,
@@ -69,9 +98,18 @@ export const AuthProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ ...user, login, logout, updateUser, loading }}>
+        <AuthContext.Provider
+            value={{
+                ...user,
+                login,
+                logout,
+                updateUser,
+                loading,
+                darkMode,
+                setDarkMode
+            }}
+        >
             {!loading ? children : <div>Carregando...</div>}
         </AuthContext.Provider>
-
     );
 };

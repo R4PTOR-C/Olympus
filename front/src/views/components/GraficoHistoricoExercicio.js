@@ -113,9 +113,11 @@ export default function GraficoHistoricoExercicio({ userId, exercicioId }) {
                             type="monotone"
                             dataKey={metric}
                             name={metricLabel}
-                            dot={{ r: 3 }}
+                            dot={{ r: 4, stroke: "#19222B", fill: "#19222B" }}
+                            stroke="#19222B"
                             strokeWidth={2}
                         />
+
                     </LineChart>
                 </ResponsiveContainer>
             </div>
