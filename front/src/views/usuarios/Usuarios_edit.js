@@ -164,7 +164,7 @@ const UsuariosEdit = () => {
                         ) : (
                             <>
                                 <input
-                                    type={campo === 'idade' ? 'number' : 'text'}
+                                    type={campo === 'idade' ? 'number' : 'text'}z
                                     className="form-control"
                                     id={campo}
                                     name={campo}

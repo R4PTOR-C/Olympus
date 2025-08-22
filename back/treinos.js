@@ -80,6 +80,30 @@ router.put('/treinos/:treinoId', async (req, res) => {
     }
 });
 
+// atualizar so dia da semana
+router.patch('/:treinoId/dia', async (req, res) => {
+    const { treinoId } = req.params;
+    const { dia_semana } = req.body;
+
+    try {
+        const result = await db.query(
+            `UPDATE treinos
+       SET dia_semana = $1
+       WHERE id = $2
+       RETURNING *`,
+            [dia_semana, treinoId]
+        );
+
+        if (result.rowCount === 0) return res.status(404).json({ error: 'Treino não encontrado' });
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Erro ao atualizar dia_semana:', error);
+        res.status(500).json({ error: 'Erro ao atualizar dia_semana' });
+    }
+});
+
+
 
 
 
