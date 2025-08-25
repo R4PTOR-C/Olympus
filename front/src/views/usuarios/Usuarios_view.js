@@ -197,20 +197,21 @@ const UsuariosView = () => {
                                                         <div className="card-body p-2 d-flex flex-column">
                                                             <h6 className="card-title mb-1">{t.nome_treino}</h6>
                                                             <small className="text-muted mb-2">{t.descricao}</small>
-                                                            <div className="mt-auto d-flex justify-content-between">
+                                                            <div className="mt-auto d-flex justify-content-end gap-2">
                                                                 <button
-                                                                    className="btn btn-sm btn-danger"
-                                                                    onClick={() => handleDeleteTreino(t.id)}
-                                                                >
-                                                                    Excluir
-                                                                </button>
-                                                                <button
-                                                                    className="btn btn-sm btn-primary"
+                                                                    className="btn btn-primary"
                                                                     onClick={() => navigate(`/treinos/edit/${id}/${t.id}`)}
                                                                 >
                                                                     Editar
                                                                 </button>
+                                                                <button
+                                                                    className="btn btn-danger"
+                                                                    onClick={() => handleDeleteTreino(t.id)}
+                                                                >
+                                                                    Excluir
+                                                                </button>
                                                             </div>
+
                                                         </div>
                                                     </div>
                                                 )}

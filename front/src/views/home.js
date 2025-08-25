@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import PageStateHandler from "./components/PageStateHandler";
 import { AuthContext } from "../AuthContext"; // importa o contexto
 import '../styles/home.css';
+import ModalCarregando from './components/ModalCarregando'; // 👈 importa a modal de loading
 
 function Home() {
     const { darkMode } = useContext(AuthContext); // pega o darkMode global
@@ -93,42 +94,67 @@ function Home() {
     const treinoDoDia = treinos.find(treino => treino.dia_semana === today);
     const proximosTreinos = treinos.filter(treino => treino.dia_semana !== today);
 
-    if (loading) return <div>Carregando...</div>;
+    if (loading) return <ModalCarregando show={true} />; // 👈 agora usa o overlay padronizado
     if (error) return <div>Erro: {error}</div>;
 
     return (
         <PageStateHandler>
             <div className="container mt-4">
                 {user.loggedIn ? (
-                    <div className="row">
+                    <div
+                        className="d-flex flex-column flex-md-row gap-4"
+                        style={{ alignItems: "stretch" }}
+                    >
                         {/* Treino do Dia */}
-                        <div className="col-md-6">
-                            <h2>Treino do Dia</h2>
+                        <div className="flex-fill">
+                            <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Treino do Dia</h2>
                             {treinoDoDia ? (
                                 <div
-                                    className="card mb-4 home-card-clickable"
+                                    className="card mb-4 home-card-clickable shadow-sm"
                                     onClick={() => navigate(`/treinos/${treinoDoDia.id}/exercicios`)}
+                                    style={{
+                                        cursor: "pointer",
+                                        borderRadius: "12px",
+                                        overflow: "hidden"
+                                    }}
                                 >
-                                    <div className="d-flex align-items-center">
+                                    <div className="d-flex align-items-center flex-column flex-sm-row">
                                         <img
                                             src={treinoImagemUrl(treinoDoDia.imagem)}
                                             alt={`Imagem do treino ${treinoDoDia.nome_treino}`}
                                             className="home-card-image-lg"
+                                            style={{
+                                                marginRight: "1rem",
+                                                marginBottom: "1rem",
+                                                maxWidth: "200px",
+                                                objectFit: "contain"
+                                            }}
                                         />
-                                        <div>
-                                            <h5 className="card-title">{treinoDoDia.nome_treino}</h5>
-                                            <p><strong>Descrição:</strong> {treinoDoDia.descricao}</p>
-                                            <p><strong>Dia da Semana:</strong> {treinoDoDia.dia_semana}</p>
-                                        </div>
-                                    </div>
+                                        <div className="card-body p-0">
+                                            <h5 style={{ fontSize: "1.2rem", fontWeight: "600" }}>
+                                                {treinoDoDia.nome_treino}
+                                            </h5>
+                                            <p style={{ marginBottom: "0.5rem" }}>
+                                                <strong>Descrição:</strong> {treinoDoDia.descricao}
+                                            </p>
+                                            <p style={{ marginBottom: "0.5rem" }}>
+                                                <strong>Dia da Semana:</strong> {treinoDoDia.dia_semana}
+                                            </p>
 
-                                    <div className="mt-3">
-                                        <h6>Exercícios:</h6>
-                                        <ul>
-                                            {exerciciosTreinoDoDia.map(exercicio => (
-                                                <li key={exercicio.exercicio_id}>{exercicio.nome_exercicio}</li>
-                                            ))}
-                                        </ul>
+                                            <div className="mt-2">
+                                                <h6 style={{ fontSize: "1rem", fontWeight: "500" }}>Exercícios:</h6>
+                                                <ul style={{ paddingLeft: "1.2rem" }}>
+                                                    {exerciciosTreinoDoDia.map((exercicio) => (
+                                                        <li
+                                                            key={exercicio.exercicio_id}
+                                                            style={{ fontSize: "0.95rem" }}
+                                                        >
+                                                            {exercicio.nome_exercicio}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
@@ -137,24 +163,42 @@ function Home() {
                         </div>
 
                         {/* Próximos Treinos */}
-                        <div className="col-md-6">
-                            <h2>Próximos Treinos</h2>
+                        <div className="flex-fill">
+                            <h2 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Próximos Treinos</h2>
                             {proximosTreinos.length > 0 ? (
-                                proximosTreinos.map(treino => (
+                                proximosTreinos.map((treino) => (
                                     <div
-                                        className="d-flex align-items-center mb-3 home-next-card"
+                                        className="card mb-3 home-next-card shadow-sm"
                                         key={treino.id}
                                         onClick={() => navigate(`/treinos/${treino.id}/exercicios`)}
+                                        style={{
+                                            cursor: "pointer",
+                                            borderRadius: "12px",
+                                            overflow: "hidden"
+                                        }}
                                     >
-                                        <img
-                                            src={treinoImagemUrl(treino.imagem)}
-                                            alt={`Imagem do treino ${treino.nome_treino}`}
-                                            className="home-next-img"
-                                        />
-                                        <div>
-                                            <h5>{treino.nome_treino}</h5>
-                                            <p><strong>Dia:</strong> {treino.dia_semana}</p>
-                                            <p><strong>Descrição:</strong> {treino.descricao}</p>
+                                        <div className="d-flex align-items-center">
+                                            <img
+                                                src={treinoImagemUrl(treino.imagem)}
+                                                alt={`Imagem do treino ${treino.nome_treino}`}
+                                                className="home-next-img"
+                                                style={{
+                                                    marginRight: "1rem",
+                                                    maxWidth: "120px",
+                                                    objectFit: "contain"
+                                                }}
+                                            />
+                                            <div className="card-body p-0">
+                                                <h5 style={{ fontSize: "1.1rem", fontWeight: "600" }}>
+                                                    {treino.nome_treino}
+                                                </h5>
+                                                <p style={{ marginBottom: "0.4rem", fontSize: "0.95rem" }}>
+                                                    <strong>Dia:</strong> {treino.dia_semana}
+                                                </p>
+                                                <p style={{ marginBottom: "0.4rem", fontSize: "0.95rem" }}>
+                                                    <strong>Descrição:</strong> {treino.descricao}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 ))
@@ -169,6 +213,8 @@ function Home() {
             </div>
         </PageStateHandler>
     );
+
+
 }
 
 export default Home;
