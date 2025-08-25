@@ -27,6 +27,8 @@ import './styles/Navbar.css'
 import './styles/Usuarios.css';
 import NavbarInferior from "./views/components/NavbarInferior";
 import HistoricoExercicios from './views/exercicios/HistoricoExercicios';
+import './imgs/muscle.gif';
+
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }) {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../AuthContext';
 import ModalHistoricoExercicio from '../components/ModalHistoricoExercicios';
+import ModalCarregando from '../components/ModalCarregando'; // 👈 importa a modal de loading
 
 function HistoricoExercicios() {
     const { userId } = useContext(AuthContext);
@@ -12,9 +13,10 @@ function HistoricoExercicios() {
     useEffect(() => {
         const fetchExercicios = async () => {
             try {
-                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/exercicios_realizados`, {
-                    credentials: 'include'
-                });
+                const res = await fetch(
+                    `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/exercicios_realizados`,
+                    { credentials: 'include' }
+                );
                 const data = await res.json();
                 setExercicios(data);
             } catch (err) {
@@ -27,7 +29,7 @@ function HistoricoExercicios() {
         fetchExercicios();
     }, [userId]);
 
-    if (loading) return <div className="container mt-4">Carregando...</div>;
+    if (loading) return <ModalCarregando show={true} />; // 👈 agora usa o overlay padronizado
 
     return (
         <div className="container mt-4">

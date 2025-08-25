@@ -7,6 +7,8 @@ import {
     Draggable
 } from "@hello-pangea/dnd";
 import '../../styles/Board.css';
+import ModalCarregando from '../components/ModalCarregando'; // 👈 importa a modal de loading
+
 
 const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 const mapDiasBack = {
@@ -136,7 +138,7 @@ const UsuariosView = () => {
         }
     };
 
-    if (loading) return <div className="text-center mt-5">Carregando...</div>;
+    if (loading) return <ModalCarregando show={true} />; // 👈 agora usa o overlay padronizado
     if (error) return <div className="alert alert-danger text-center mt-5">Erro: {error}</div>;
     if (!usuario) return <div className="text-center mt-5">Usuário não encontrado.</div>;
 

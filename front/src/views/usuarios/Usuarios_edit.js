@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import CropAvatar from "../components/CropAvatar";
+import ModalCarregando from '../components/ModalCarregando'; // 👈 importa a modal de loading
 
 const UsuariosEdit = () => {
     const { id } = useParams();
@@ -103,7 +104,7 @@ const UsuariosEdit = () => {
             });
     };
 
-    if (loading) return <div>Carregando...</div>;
+    if (loading) return <ModalCarregando show={true} />; // 👈 agora usa o overlay padronizado
     if (error) return <div className="alert alert-danger">Erro: {error}</div>;
 
     const avatarUrl = usuario.avatar || null;
