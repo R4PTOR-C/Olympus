@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
-import dragula from 'dragula';
-import 'dragula/dist/dragula.css';
-import '../../styles/Board.css'; // CSS que citei acima
+import {
+    DragDropContext,
+    Droppable,
+    Draggable
+} from "@hello-pangea/dnd";
+import '../../styles/Board.css';
 
 const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 const mapDiasBack = {
@@ -15,11 +18,9 @@ const mapDiasBack = {
     'Sábado': 'Sábado',
     'Domingo': 'Domingo'
 };
-
 const mapDias = Object.fromEntries(
     Object.entries(mapDiasBack).map(([curto, longo]) => [longo, curto])
 );
-
 
 const UsuariosView = () => {
     const { id } = useParams();
@@ -29,7 +30,6 @@ const UsuariosView = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { userId, funcao } = useContext(AuthContext);
-    const containersRef = useRef([]);
 
     // 🔹 Carregar dados
     useEffect(() => {
@@ -62,59 +62,63 @@ const UsuariosView = () => {
         carregarDados();
     }, [id, userId, funcao, navigate]);
 
-    // 🔹 Inicializa Dragula
-    useEffect(() => {
-        const validContainers = containersRef.current.filter(Boolean);
+    // 🔹 Lida com arrastar e soltar
+    const handleDragEnd = async (result) => {
+        const { source, destination, draggableId } = result;
+        if (!destination) return;
 
-        if (validContainers.length === 0) {
-            console.log("⚠️ Nenhum container válido encontrado para dragula");
+        if (source.droppableId === destination.droppableId) return;
+
+        const treinoId = draggableId.replace("treino-", "");
+        const novoDiaCurto = destination.droppableId;
+        const novoDia = mapDiasBack[novoDiaCurto] || novoDiaCurto;
+
+        // 🚫 verifica se já existe treino nesse dia
+        const jaExiste = treinos.some(
+            (t) => mapDias[t.dia_semana] === novoDiaCurto
+        );
+        if (jaExiste) {
+            alert("⚠️ Já existe um treino neste dia. Só é permitido um treino por dia.");
             return;
         }
 
-        console.log("✅ Inicializando Dragula em:", validContainers);
+        // ⚡ update otimista → já atualiza a UI
+        setTreinos(prev =>
+            prev.map(t =>
+                t.id === parseInt(treinoId) ? { ...t, dia_semana: novoDia } : t
+            )
+        );
 
-        const drake = dragula(validContainers, {
-            direction: 'vertical',
-            mirrorContainer: document.body
-        });
+        try {
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/${treinoId}/dia`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dia_semana: novoDia })
+            });
 
-        drake.on('drop', async (el, target) => {
-            if (!target) return;
-
-            const treinoId = el.getAttribute('data-id');
-            const diaCurto = target.getAttribute('data-dia');
-            const novoDia = mapDiasBack[diaCurto] || diaCurto; // garante formato certo
-
-            console.log(`📌 Treino ${treinoId} solto em ${novoDia}`);
-
-            drake.cancel(true); // cancela manipulação do DOM, deixa React atualizar
-
-            try {
-                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/${treinoId}/dia`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ dia_semana: novoDia })
-                });
-
-                if (res.ok) {
-                    console.log(`✅ Treino ${treinoId} atualizado no banco para ${novoDia}`);
-                    setTreinos(prev =>
-                        prev.map(t =>
-                            t.id === parseInt(treinoId) ? { ...t, dia_semana: novoDia } : t
-                        )
-                    );
-                } else {
-                    console.error(`❌ Erro ao atualizar treino ${treinoId}`);
-                }
-            } catch (err) {
-                console.error("⚠️ Erro na requisição:", err);
+            if (!res.ok) {
+                console.error(`❌ Erro ao atualizar treino ${treinoId}`);
+                // rollback se deu erro no backend
+                setTreinos(prev =>
+                    prev.map(t =>
+                        t.id === parseInt(treinoId)
+                            ? { ...t, dia_semana: mapDiasBack[source.droppableId] }
+                            : t
+                    )
+                );
             }
-        });
-
-
-
-        return () => drake.destroy();
-    }, [treinos]);
+        } catch (err) {
+            console.error("⚠️ Erro na requisição:", err);
+            // rollback em caso de falha na requisição
+            setTreinos(prev =>
+                prev.map(t =>
+                    t.id === parseInt(treinoId)
+                        ? { ...t, dia_semana: mapDiasBack[source.droppableId] }
+                        : t
+                )
+            );
+        }
+    };
 
 
 
@@ -139,10 +143,7 @@ const UsuariosView = () => {
     const avatarUrl = usuario.avatar || null;
 
     return (
-
-
-
-    <div className="container mt-5 mb-5">
+        <div className="container mt-5 mb-5">
             <h2 className="text-center mb-4">Perfil do Aluno</h2>
 
             <div className="d-flex flex-column align-items-center mb-4">
@@ -163,49 +164,67 @@ const UsuariosView = () => {
                 </button>
             </div>
 
-            {/* 🔹 Board de treinos estilo Trello */}
-            <div className="board-scroll">
-                {diasSemana.map((dia, i) => (
-                    <div
-                        key={dia}
-                        ref={el => (containersRef.current[i] = el)}
-                        data-dia={dia}
-                        className="board-column border rounded p-2"
-                        style={{ background: '#f8f9fa' }}
-                    >
-                        <h5 className="text-center">{dia}</h5>
-                        {treinos
-                            .filter(t => mapDias[t.dia_semana] === dia)
-                            .map(t => (
+            {/* 🔹 Board vertical (dias empilhados) */}
+            <DragDropContext onDragEnd={handleDragEnd}>
+                <div className="d-flex flex-column gap-4">
+                    {diasSemana.map((dia) => (
+                        <Droppable key={dia} droppableId={dia}>
+                            {(provided) => (
                                 <div
-                                    key={t.id}
-                                    data-id={t.id}
-                                    className="card mb-2 shadow-sm"
-                                    style={{ cursor: 'grab' }}
+                                    ref={provided.innerRef}
+                                    {...provided.droppableProps}
+                                    className="border rounded p-3"
+                                    style={{ background: '#f8f9fa', minHeight: 100 }}
                                 >
-                                    <div className="card-body p-2 d-flex flex-column">
-                                        <h6 className="card-title mb-1">{t.nome_treino}</h6>
-                                        <small className="text-muted mb-2">{t.descricao}</small>
-                                        <div className="mt-auto d-flex justify-content-between">
-                                            <button
-                                                className="btn btn-sm btn-danger"
-                                                onClick={() => handleDeleteTreino(t.id)}
+                                    <h5 className="mb-3">{dia}</h5>
+                                    {treinos
+                                        .filter(t => mapDias[t.dia_semana] === dia)
+                                        .map((t, index) => (
+                                            <Draggable
+                                                key={t.id}
+                                                draggableId={`treino-${t.id}`}
+                                                index={index}
                                             >
-                                                Excluir
-                                            </button>
-                                            <button
-                                                className="btn btn-sm btn-primary"
-                                                onClick={() => navigate(`/treinos/edit/${id}/${t.id}`)}
-                                            >
-                                                Editar
-                                            </button>
-                                        </div>
-                                    </div>
+                                                {(provided) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        className="card mb-2 shadow-sm"
+                                                        style={{
+                                                            cursor: 'grab',
+                                                            ...provided.draggableProps.style
+                                                        }}
+                                                    >
+                                                        <div className="card-body p-2 d-flex flex-column">
+                                                            <h6 className="card-title mb-1">{t.nome_treino}</h6>
+                                                            <small className="text-muted mb-2">{t.descricao}</small>
+                                                            <div className="mt-auto d-flex justify-content-between">
+                                                                <button
+                                                                    className="btn btn-sm btn-danger"
+                                                                    onClick={() => handleDeleteTreino(t.id)}
+                                                                >
+                                                                    Excluir
+                                                                </button>
+                                                                <button
+                                                                    className="btn btn-sm btn-primary"
+                                                                    onClick={() => navigate(`/treinos/edit/${id}/${t.id}`)}
+                                                                >
+                                                                    Editar
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                    {provided.placeholder}
                                 </div>
-                            ))}
-                    </div>
-                ))}
-            </div>
+                            )}
+                        </Droppable>
+                    ))}
+                </div>
+            </DragDropContext>
         </div>
     );
 };
