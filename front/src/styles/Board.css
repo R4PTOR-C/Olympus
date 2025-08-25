@@ -57,3 +57,11 @@
 .gu-transit {
     opacity: 0.3;
 }
+
+/* efeito tilt quando arrasta */
+.card.dragging {
+    transform: rotate(3deg) scale(1.03);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: grabbing !important;
+}

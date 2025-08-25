@@ -180,17 +180,13 @@ const UsuariosView = () => {
                                     {treinos
                                         .filter(t => mapDias[t.dia_semana] === dia)
                                         .map((t, index) => (
-                                            <Draggable
-                                                key={t.id}
-                                                draggableId={`treino-${t.id}`}
-                                                index={index}
-                                            >
-                                                {(provided) => (
+                                            <Draggable key={t.id} draggableId={`treino-${t.id}`} index={index}>
+                                                {(provided, snapshot) => (
                                                     <div
                                                         ref={provided.innerRef}
                                                         {...provided.draggableProps}
                                                         {...provided.dragHandleProps}
-                                                        className="card mb-2 shadow-sm"
+                                                        className={`card mb-2 shadow-sm ${snapshot.isDragging ? "dragging" : ""}`}
                                                         style={{
                                                             cursor: 'grab',
                                                             ...provided.draggableProps.style
@@ -217,6 +213,7 @@ const UsuariosView = () => {
                                                     </div>
                                                 )}
                                             </Draggable>
+
                                         ))}
                                     {provided.placeholder}
                                 </div>
