@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import CropAvatar from "../components/CropAvatar";
 
-
 function Usuarios_new() {
     const [nome, setNome] = useState('');
     const [email, setEmail] = useState('');
     const [genero, setGenero] = useState('');
     const [idade, setIdade] = useState('');
+    const [dataNascimento, setDataNascimento] = useState('');
+    const [telefone, setTelefone] = useState('');
+    const [altura, setAltura] = useState('');
+    const [peso, setPeso] = useState('');
+    const [objetivo, setObjetivo] = useState('');
     const [senha, setSenha] = useState('');
     const [avatar, setAvatar] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
@@ -14,7 +18,6 @@ function Usuarios_new() {
     const [message, setMessage] = useState(null);
     const [showCropper, setShowCropper] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
-
 
     const funcao = 'Aluno';
 
@@ -35,8 +38,6 @@ function Usuarios_new() {
         setShowCropper(false);
     };
 
-
-
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
@@ -47,6 +48,11 @@ function Usuarios_new() {
         formData.append('email', email);
         formData.append('genero', genero);
         formData.append('idade', idade);
+        formData.append('data_nascimento', dataNascimento);
+        formData.append('telefone', telefone);
+        formData.append('altura', altura);
+        formData.append('peso', peso);
+        formData.append('objetivo', objetivo);
         formData.append('senha', senha);
         formData.append('funcao', funcao);
         if (avatar) {
@@ -65,6 +71,11 @@ function Usuarios_new() {
                 setEmail('');
                 setGenero('');
                 setIdade('');
+                setDataNascimento('');
+                setTelefone('');
+                setAltura('');
+                setPeso('');
+                setObjetivo('');
                 setSenha('');
                 setAvatar(null);
                 setPreviewUrl(null);
@@ -90,6 +101,7 @@ function Usuarios_new() {
             )}
 
             <form onSubmit={handleSubmit}>
+                {/* Avatar */}
                 <div className="d-flex justify-content-center mb-4">
                     <div className="position-relative">
                         {previewUrl && (
@@ -100,7 +112,6 @@ function Usuarios_new() {
                                 style={{ width: 120, height: 120, objectFit: 'cover' }}
                             />
                         )}
-
                         <button
                             type="button"
                             className="btn btn-light border position-absolute bottom-0 start-50 translate-middle-x"
@@ -110,7 +121,6 @@ function Usuarios_new() {
                         >
                             <i className="bi bi-camera"></i>
                         </button>
-
                         <input
                             type="file"
                             id="avatar-input"
@@ -125,18 +135,22 @@ function Usuarios_new() {
                     <CropAvatar file={selectedFile} onCropped={handleCropped} onClose={() => setShowCropper(false)} />
                 )}
 
-
+                {/* Campos principais */}
                 {[
                     { label: 'Nome', type: 'text', value: nome, setter: setNome },
                     { label: 'Email', type: 'email', value: email, setter: setEmail },
                     { label: 'Idade', type: 'number', value: idade, setter: setIdade, min: 1 },
+                    { label: 'Data de Nascimento', type: 'date', value: dataNascimento, setter: setDataNascimento },
+                    { label: 'Telefone', type: 'tel', value: telefone, setter: setTelefone },
+                    { label: 'Altura (cm)', type: 'number', value: altura, setter: setAltura },
+                    { label: 'Peso (kg)', type: 'number', value: peso, setter: setPeso },
                     { label: 'Senha', type: 'password', value: senha, setter: setSenha, minLength: 6 },
                 ].map((field, idx) => (
                     <div className="form-floating mb-3" key={idx}>
                         <input
                             type={field.type}
                             className="form-control"
-                            id={field.label.toLowerCase()}
+                            id={field.label.toLowerCase().replace(/\s/g, "_")}
                             value={field.value}
                             onChange={(e) => field.setter(e.target.value)}
                             placeholder={`Digite o ${field.label.toLowerCase()}`}
@@ -144,10 +158,11 @@ function Usuarios_new() {
                             {...(field.min && { min: field.min })}
                             {...(field.minLength && { minLength: field.minLength })}
                         />
-                        <label htmlFor={field.label.toLowerCase()}>{field.label}</label>
+                        <label htmlFor={field.label.toLowerCase().replace(/\s/g, "_")}>{field.label}</label>
                     </div>
                 ))}
 
+                {/* Gênero */}
                 <div className="form-floating mb-3">
                     <select
                         className="form-select"
@@ -159,8 +174,26 @@ function Usuarios_new() {
                         <option value="">Selecione o gênero</option>
                         <option value="Masculino">Masculino</option>
                         <option value="Feminino">Feminino</option>
+                        <option value="Outro">Outro</option>
                     </select>
                     <label htmlFor="genero">Gênero</label>
+                </div>
+
+                {/* Objetivo */}
+                <div className="form-floating mb-3">
+                    <select
+                        className="form-select"
+                        id="objetivo"
+                        value={objetivo}
+                        onChange={(e) => setObjetivo(e.target.value)}
+                        required
+                    >
+                        <option value="">Selecione o objetivo</option>
+                        <option value="Emagrecimento">Emagrecimento</option>
+                        <option value="Hipertrofia">Hipertrofia</option>
+                        <option value="Condicionamento físico">Condicionamento físico</option>
+                    </select>
+                    <label htmlFor="objetivo">Objetivo</label>
                 </div>
 
                 <div className="d-grid mt-4">

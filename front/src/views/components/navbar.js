@@ -84,7 +84,7 @@ function Navbar() {
                 <div className="d-flex align-items-center gap-3">
 
                     {/* Botão de DarkMode */}
-                    <DarkModeSwitch />
+                    {/*<DarkModeSwitch />*/}
 
                     {/* Avatar + Dropdown usuário */}
                     {loggedIn && (

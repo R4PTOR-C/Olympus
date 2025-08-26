@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import CropAvatar from "../components/CropAvatar";
-import ModalCarregando from '../components/ModalCarregando'; // 👈 importa a modal de loading
+import ModalCarregando from '../components/ModalCarregando';
 
 const UsuariosEdit = () => {
     const { id } = useParams();
@@ -14,6 +14,11 @@ const UsuariosEdit = () => {
         email: '',
         genero: '',
         idade: '',
+        data_nascimento: '',
+        telefone: '',
+        altura: '',
+        peso: '',
+        objetivo: ''
     });
     const [avatar, setAvatar] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -75,10 +80,9 @@ const UsuariosEdit = () => {
         event.preventDefault();
 
         const formData = new FormData();
-        formData.append('nome', usuario.nome);
-        formData.append('email', usuario.email);
-        formData.append('genero', usuario.genero);
-        formData.append('idade', usuario.idade);
+        Object.entries(usuario).forEach(([key, value]) => {
+            formData.append(key, value);
+        });
         if (avatar) {
             formData.append('avatar', avatar);
         }
@@ -113,6 +117,7 @@ const UsuariosEdit = () => {
         <div className="container mt-4 mb-5">
             <h2 className="text-center mb-4">Editar Perfil</h2>
             <form onSubmit={handleSubmit}>
+                {/* Avatar */}
                 <div className="d-flex justify-content-center mb-4">
                     <div className="position-relative">
                         <img
@@ -140,48 +145,96 @@ const UsuariosEdit = () => {
                     </div>
                 </div>
 
-
                 {showCropper && selectedFile && (
                     <CropAvatar file={selectedFile} onCropped={handleCropped} onClose={() => setShowCropper(false)} />
                 )}
 
-                {['nome', 'email', 'genero', 'idade'].map((campo) => (
-                    <div className="d-flex align-items-center gap-3 mb-3" key={campo}>
-                        <label
-                            htmlFor={campo}
-                            className="fw-bold"
-                            style={{ minWidth: "120px" }} // largura mínima p/ alinhar
-                        >
-                            {campo.charAt(0).toUpperCase() + campo.slice(1)}
-                        </label>
-
-                        {campo === 'genero' ? (
-                            <select
-                                className="form-select"
-                                id={campo}
-                                name={campo}
-                                value={usuario[campo]}
-                                onChange={handleInputChange}
-                            >
-                                <option value="">Selecione o gênero</option>
-                                <option value="Masculino">Masculino</option>
-                                <option value="Feminino">Feminino</option>
-                            </select>
-                        ) : (
-                            <input
-                                type={campo === 'idade' ? 'number' : 'text'}
-                                className="form-control"
-                                id={campo}
-                                name={campo}
-                                value={usuario[campo]}
-                                onChange={handleInputChange}
-                                placeholder={`Digite o ${campo}`}
-                            />
-                        )}
+                {/* Card Dados Pessoais */}
+                <div className="card mb-4 shadow-sm">
+                    <div className="card-header fw-bold">Dados Pessoais</div>
+                    <div className="card-body">
+                        {[
+                            { name: 'nome', label: 'Nome', type: 'text' },
+                            { name: 'email', label: 'Email', type: 'email' },
+                            { name: 'genero', label: 'Gênero', type: 'select', options: ['Masculino', 'Feminino', 'Outro'] },
+                            { name: 'idade', label: 'Idade', type: 'number' },
+                            { name: 'data_nascimento', label: 'Data de Nascimento', type: 'date' },
+                            { name: 'telefone', label: 'Telefone', type: 'tel' },
+                        ].map((campo) => (
+                            <div className="d-flex align-items-center gap-3 mb-3" key={campo.name}>
+                                <label htmlFor={campo.name} className="fw-bold" style={{ minWidth: "160px" }}>
+                                    {campo.label}
+                                </label>
+                                {campo.type === 'select' ? (
+                                    <select
+                                        className="form-select"
+                                        id={campo.name}
+                                        name={campo.name}
+                                        value={usuario[campo.name] || ''}
+                                        onChange={handleInputChange}
+                                    >
+                                        <option value="">Selecione</option>
+                                        {campo.options.map(opt => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input
+                                        type={campo.type}
+                                        className="form-control"
+                                        id={campo.name}
+                                        name={campo.name}
+                                        value={usuario[campo.name] || ''}
+                                        onChange={handleInputChange}
+                                    />
+                                )}
+                            </div>
+                        ))}
                     </div>
+                </div>
 
-                ))}
+                {/* Card Informações Corporais */}
+                <div className="card mb-4 shadow-sm">
+                    <div className="card-header fw-bold">Informações Corporais</div>
+                    <div className="card-body">
+                        {[
+                            { name: 'altura', label: 'Altura (cm)', type: 'number' },
+                            { name: 'peso', label: 'Peso (kg)', type: 'number' },
+                            { name: 'objetivo', label: 'Objetivo', type: 'select', options: ['Emagrecimento', 'Hipertrofia', 'Condicionamento físico'] },
+                        ].map((campo) => (
+                            <div className="d-flex align-items-center gap-3 mb-3" key={campo.name}>
+                                <label htmlFor={campo.name} className="fw-bold" style={{ minWidth: "160px" }}>
+                                    {campo.label}
+                                </label>
+                                {campo.type === 'select' ? (
+                                    <select
+                                        className="form-select"
+                                        id={campo.name}
+                                        name={campo.name}
+                                        value={usuario[campo.name] || ''}
+                                        onChange={handleInputChange}
+                                    >
+                                        <option value="">Selecione</option>
+                                        {campo.options.map(opt => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input
+                                        type={campo.type}
+                                        className="form-control"
+                                        id={campo.name}
+                                        name={campo.name}
+                                        value={usuario[campo.name] || ''}
+                                        onChange={handleInputChange}
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
+                {/* Botão Salvar */}
                 <div className="d-grid mt-4">
                     <button type="submit" className="btn btn-primary btn-lg">
                         Salvar
