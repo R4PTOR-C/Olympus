@@ -104,7 +104,7 @@ const UsuariosEdit = () => {
             });
     };
 
-    if (loading) return <ModalCarregando show={true} />; // 👈 agora usa o overlay padronizado
+    if (loading) return <ModalCarregando show={true} />;
     if (error) return <div className="alert alert-danger">Erro: {error}</div>;
 
     const avatarUrl = usuario.avatar || null;
@@ -146,37 +146,40 @@ const UsuariosEdit = () => {
                 )}
 
                 {['nome', 'email', 'genero', 'idade'].map((campo) => (
-                    <div className="form-floating mb-3" key={campo}>
+                    <div className="d-flex align-items-center gap-3 mb-3" key={campo}>
+                        <label
+                            htmlFor={campo}
+                            className="fw-bold"
+                            style={{ minWidth: "120px" }} // largura mínima p/ alinhar
+                        >
+                            {campo.charAt(0).toUpperCase() + campo.slice(1)}
+                        </label>
+
                         {campo === 'genero' ? (
-                            <>
-                                <select
-                                    className="form-select w-100"
-                                    id={campo}
-                                    name={campo}
-                                    value={usuario[campo]}
-                                    onChange={handleInputChange}
-                                >
-                                    <option value="">Selecione o gênero</option>
-                                    <option value="Masculino">Masculino</option>
-                                    <option value="Feminino">Feminino</option>
-                                </select>
-                                <label htmlFor={campo}>Gênero</label>
-                            </>
+                            <select
+                                className="form-select"
+                                id={campo}
+                                name={campo}
+                                value={usuario[campo]}
+                                onChange={handleInputChange}
+                            >
+                                <option value="">Selecione o gênero</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Feminino">Feminino</option>
+                            </select>
                         ) : (
-                            <>
-                                <input
-                                    type={campo === 'idade' ? 'number' : 'text'}z
-                                    className="form-control"
-                                    id={campo}
-                                    name={campo}
-                                    value={usuario[campo]}
-                                    onChange={handleInputChange}
-                                    placeholder={`Digite o ${campo}`}
-                                />
-                                <label htmlFor={campo}>{campo.charAt(0).toUpperCase() + campo.slice(1)}</label>
-                            </>
+                            <input
+                                type={campo === 'idade' ? 'number' : 'text'}
+                                className="form-control"
+                                id={campo}
+                                name={campo}
+                                value={usuario[campo]}
+                                onChange={handleInputChange}
+                                placeholder={`Digite o ${campo}`}
+                            />
                         )}
                     </div>
+
                 ))}
 
                 <div className="d-grid mt-4">

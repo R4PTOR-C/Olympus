@@ -175,10 +175,11 @@ const UsuariosView = () => {
                                 <div
                                     ref={provided.innerRef}
                                     {...provided.droppableProps}
-                                    className="border rounded p-3"
-                                    style={{ background: '#f8f9fa', minHeight: 100 }}
+                                    className="border rounded p-3 droppable-day"
+                                    style={{ minHeight: 100 }}
                                 >
-                                    <h5 className="mb-3">{dia}</h5>
+
+                                <h5 className="mb-3">{dia}</h5>
                                     {treinos
                                         .filter(t => mapDias[t.dia_semana] === dia)
                                         .map((t, index) => (

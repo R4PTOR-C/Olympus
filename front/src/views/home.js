@@ -158,7 +158,7 @@ function Home() {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="card align-items-center shadow-sm p-4 text-center" style={{ borderRadius: "12px" }}>
+                                <div className="card-body align-items-center shadow-sm p-4 text-center" style={{ borderRadius: "12px" }}>
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="120"
