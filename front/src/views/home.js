@@ -158,7 +158,41 @@ function Home() {
                                     </div>
                                 </div>
                             ) : (
-                                <p>Não há treino para hoje.</p>
+                                <div className="card align-items-center shadow-sm p-4 text-center" style={{ borderRadius: "12px" }}>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="120"
+                                        height="120"
+                                        viewBox="0 0 64 64"
+                                        fill="none"
+                                        style={{ marginBottom: "1rem" }}
+                                    >
+                                        {/* Barra */}
+                                        <rect x="12" y="28" width="40" height="8" rx="2" fill="#555" />
+                                        {/* Peso esquerdo */}
+                                        <rect x="6" y="20" width="6" height="24" rx="2" fill="#888" />
+                                        <rect x="2" y="22" width="4" height="20" rx="2" fill="#bbb" />
+                                        {/* Peso direito */}
+                                        <rect x="52" y="20" width="6" height="24" rx="2" fill="#888" />
+                                        <rect x="58" y="22" width="4" height="20" rx="2" fill="#bbb" />
+
+                                        {/* Zzz animados */}
+                                        <text x="20" y="25" fontSize="10" fontWeight="bold" fill="#666">Z
+                                            <animateTransform attributeName="transform" type="translate" from="0 0" to="0 -15" dur="2s" repeatCount="indefinite"/>
+                                            <animate attributeName="opacity" values="1;0" dur="2s" repeatCount="indefinite"/>
+                                        </text>
+                                        <text x="26" y="20" fontSize="8" fontWeight="bold" fill="#666">Z
+                                            <animateTransform attributeName="transform" type="translate" from="0 0" to="0 -15" begin="0.6s" dur="2s" repeatCount="indefinite"/>
+                                            <animate attributeName="opacity" values="1;0" dur="2s" begin="0.6s" repeatCount="indefinite"/>
+                                        </text>
+                                        <text x="32" y="15" fontSize="6" fontWeight="bold" fill="#666">Z
+                                            <animateTransform attributeName="transform" type="translate" from="0 0" to="0 -15" begin="1.2s" dur="2s" repeatCount="indefinite"/>
+                                            <animate attributeName="opacity" values="1;0" dur="2s" begin="1.2s" repeatCount="indefinite"/>
+                                        </text>
+                                    </svg>
+
+                                    <h5>Sem  treinos hoje</h5>
+                                </div>
                             )}
                         </div>
 
