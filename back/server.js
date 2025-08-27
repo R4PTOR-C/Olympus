@@ -1,3 +1,6 @@
+require("dotenv").config(); // <-- carrega variáveis do .env
+console.log("API KEY carregada?", process.env.OPENAI_API_KEY ? "✅ sim" : "❌ não");
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -8,6 +11,7 @@ const academiaRouter = require('./academias/academias');
 const exerciciosRouter = require('./exercicios');
 const treinosRouter = require('./treinos'); // Importa o módulo de treinos
 const avaliacoesRouter = require('./avaliacoes');
+const herculesRouter = require("./hercules");
 
 
 const app = express();
@@ -46,6 +50,7 @@ app.use('/academias', academiaRouter);
 app.use('/exercicios', exerciciosRouter);
 app.use('/treinos', treinosRouter);
 app.use('/avaliacoes', avaliacoesRouter);
+app.use('/hercules', herculesRouter);
 
 
 // Rotas protegidas

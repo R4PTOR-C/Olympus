@@ -28,7 +28,7 @@ import './styles/Usuarios.css';
 import NavbarInferior from "./views/components/NavbarInferior";
 import HistoricoExercicios from './views/exercicios/HistoricoExercicios';
 import './imgs/muscle.gif';
-
+import HerculesChat from "./views/hercules/HerculesChat";
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }) {
@@ -104,6 +104,7 @@ function AppContent() {
                 <Route path="/nova_senha/:token" element={<ResetPassword />} />
                 <Route path="/avaliacoes/:id" element={<ProtectedRoute><Avaliacoes_view /></ProtectedRoute>} />
                 <Route path="/avaliacoes/:id/new" element={<ProtectedRoute><Avaliacoes_new /></ProtectedRoute>} />
+                <Route path="/hercules" element={<HerculesChat />} />
             </Routes>
 
             {loggedIn && !['/', '/sign-in'].includes(location.pathname) && <NavbarInferior />}
