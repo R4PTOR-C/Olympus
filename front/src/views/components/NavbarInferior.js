@@ -11,7 +11,8 @@ function NavbarInferior() {
     const navItems = [
         { icon: 'bi-house', path: `/home/${userId}`, label: 'Home' },
         { icon: 'bi-clock-history', path: '/historico-exercicios', label: 'Histórico' },
-        { icon: 'bi-pencil', path: `/usuarios/view/${userId}`, label: 'Editar Treinos' },
+        { icon: '/hercules.png', path: `/hercules`, label: 'Hércules' },
+        { icon: 'bi-pencil', path: `/usuarios/view/${userId}`, label: 'Treinos' },
         { icon: 'bi-person', path: `/usuarios/edit/${userId}`, label: 'Perfil' },
     ];
 
@@ -19,6 +20,8 @@ function NavbarInferior() {
         <nav className="navbar-inferior fixed-bottom d-md-none bg-dark d-flex justify-content-around">
             {navItems.map((item, index) => {
                 const isActive = location.pathname.startsWith(item.path);
+                const isImage = item.icon.endsWith(".png"); // 👈 simples checagem
+
                 return (
                     <button
                         key={index}
@@ -26,11 +29,21 @@ function NavbarInferior() {
                         onClick={() => navigate(item.path)}
                         style={{ padding: '0.5rem 0' }}
                     >
-                        <i className={`bi ${item.icon} fs-4`}></i>
+                        {isImage ? (
+                            <img
+                                src={item.icon}
+                                alt={item.label}
+                                className="nav-icon"
+                            />
+                        ) : (
+                            <i className={`bi ${item.icon} nav-icon`}></i>
+                        )}
+
                         <div style={{ fontSize: '0.75rem' }}>{item.label}</div>
                     </button>
                 );
             })}
+
         </nav>
 
     );

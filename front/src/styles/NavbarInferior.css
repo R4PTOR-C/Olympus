@@ -10,3 +10,16 @@
     background-color: #000;
     z-index: 1000; /* Garante que ela fique no topo visualmente */
 }
+.navbar-inferior .btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-icon {
+    width: 28px;      /* 🔹 tamanho fixo para todos */
+    height: 28px;
+    object-fit: contain; /* garante que a imagem não deforme */
+    margin-bottom: 4px;
+}

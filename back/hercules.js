@@ -8,6 +8,7 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
 
+// Normalização de dias
 function normalizarDia(dia) {
     const diasSemana = [
         "domingo", "segunda-feira", "terça-feira",
@@ -23,10 +24,9 @@ function normalizarDia(dia) {
     return dia;
 }
 
-
 router.post("/chat", async (req, res) => {
     try {
-        const { mensagem, usuarioId, confirmado } = req.body;
+        const { mensagem, usuarioId } = req.body;
 
         // 🔹 Buscar nome do usuário logado
         const userRes = await pool.query("SELECT nome FROM usuarios WHERE id = $1", [usuarioId]);
@@ -41,130 +41,128 @@ router.post("/chat", async (req, res) => {
                     content: `
 Você é Hércules, treinador virtual do Olympus.
 O usuário se chama ${nomeUsuario}.
-Responda **sempre** com um único JSON válido, sem explicações, sem markdown, sem texto fora do JSON.
+Responda **sempre** com um único JSON válido.
 
 Formato obrigatório:
 {
   "acao": "criar_treino" | "consultar_treino" | "editar_treino" | "outro",
-  "tipo": "string ou null",
-  "dia": "string ou null",
+  "tipo": ["Peitoral", "Bíceps"] | [],
+  "dia": "string" | null,
   "texto": "string amigável"
 }
 
 📌 Regras principais:
-1. Consultas de treino  
-   - Perguntas como "tenho treino hoje?", "e amanhã?", "possuo treinos na quarta?" → "acao": "consultar_treino".  
-   - No Olympus, treinos são fixos por dia da semana. Nunca pergunte se é desta semana ou da próxima.  
-   - Normalize sempre o dia em minúsculo e com hífen, por exemplo: "segunda-feira", "terça-feira", "quarta-feira", "sábado".  
-
-2. Criação de treino  
-   - Pedidos como "monta um treino", "criar treino de perna amanhã", "preciso de treino de peito na segunda" → "acao": "criar_treino".  
-   - Se mencionar grupo muscular ou objetivo (peito, costas, perna, bíceps, hipertrofia, emagrecimento), retorne em "tipo".  
-   - Normalize o campo "dia" como no item 1.  
-
-3. Edição de treino  
-   - Pedidos como "editar treino de terça", "mudar meu treino de peito", "alterar treino da sexta" → "acao": "editar_treino".  
-
-4. Cumprimentos / conversas gerais  
-   - Saudações como "oi", "olá", "bom dia", "fala Hércules" → "acao": "outro", mas "texto" deve ser uma saudação amigável incluindo o nome do usuário.  
-   - Exemplos de resposta em "texto":  
-     - "Olá ${nomeUsuario}! Eu sou Hércules, seu treinador no Olympus. Como posso ajudar hoje? Criar, consultar ou editar um treino?"  
-
-5. Erros / ambiguidades  
-   - Se não entender o pedido, devolva exatamente:  
-     {"acao":"outro","tipo":null,"dia":null,"texto":"⚠️ Não entendi o pedido. Pode repetir?"}  
-
-📌 Observações:
-- Nunca use datas específicas (como 27/08/2025). Apenas dias da semana.  
-- Nunca retorne JSON vazio. Sempre preencha todos os campos.  
-- "tipo" e "dia" podem ser null quando não fizer sentido.  
-- "texto" deve ser sempre uma frase amigável, em português, natural e útil para o usuário.  
+- Nunca invente formatos fora do JSON.
+- Sempre feche chaves e colchetes.
+- "tipo" deve ser sempre array (mesmo 1 grupo).
+- "dia" pode ser null quando não fizer sentido.
+- "texto" sempre amigável em português.
 `
-                }
-
-
-
-
-                ,
+                },
                 { role: "user", content: mensagem }
             ],
-            response_format: { type: "json_object" }, // 👈 aqui força JSON
-            max_completion_tokens: 1000
+            response_format: { type: "json_object" }
         });
 
-
-        // 🔹 2. Parsear resposta (já vem em JSON puro)
-        // 🔹 2. Parsear resposta (já vem em JSON puro)
-        let dados;
         let raw = completion.choices[0].message.content;
-        console.log("Resposta bruta do GPT:", raw);
+        console.log("Mensagem usuario:", mensagem);
+        console.log("Resposta bruta GPT:", raw);
 
+        let dados;
         try {
-            raw = raw.trim(); // remove espaços e quebras
+            raw = raw.trim();
             dados = JSON.parse(raw);
-            console.log("JSON parseado:", dados);
+
+            // segurança: garantir que tipo é array
+            if (!Array.isArray(dados.tipo)) {
+                dados.tipo = dados.tipo ? [dados.tipo] : [];
+            }
         } catch (e) {
             console.error("Erro ao parsear JSON:", e.message, raw);
             return res.json({
                 acao: "outro",
+                tipo: [],
                 dia: null,
                 texto: "⚠️ Não entendi o pedido. Pode repetir?"
             });
         }
 
-
-
-
-        // 🔹 3. Tratar ações
+        // 🔹 2. Tratar ações
         if (dados.acao === "criar_treino") {
-            if (!confirmado) {
-                return res.json({
-                    ...dados,
-                    texto: `💪 ${nomeUsuario}, preparei um treino de ${dados.tipo} para ${dados.dia}. Aqui está a sugestão:\n\n${plano}\n\nDeseja confirmar a criação?`,
-                    plano,
-                    confirmado: false,
-                    exercicios_ids: exerciciosRes.rows.map(e => e.id)
-                });
-            } else {
-                const { plano, exercicios_ids } = req.body;
+            const grupos = dados.tipo.map(g => g.toLowerCase());
 
-                // Criar treino no banco
-                const result = await pool.query(
-                    `INSERT INTO treinos (usuario_id, nome_treino, descricao, dia_semana, grupo_muscular, imagem)
-                     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-                    [
-                        usuarioId,
-                        `${dados.tipo} - ${dados.dia}`,
-                        plano, // 👈 agora usa o plano já aprovado pelo usuário
-                        dados.dia,
-                        dados.tipo,
-                        "default.png"
-                    ]
+            let todosExercicios = [];
+            let exercicios_ids = [];
+
+            for (const grupo of grupos) {
+                const exerciciosRes = await pool.query(
+                    "SELECT id, nome_exercicio FROM exercicios WHERE LOWER(grupo_muscular) = LOWER($1) LIMIT 5",
+                    [grupo]
                 );
 
-                const treinoId = result.rows[0].id;
-
-                // Vincular exercícios sugeridos
-                for (const exId of exercicios_ids) {
-                    await pool.query(
-                        "INSERT INTO treinos_exercicios (treino_id, exercicio_id) VALUES ($1, $2)",
-                        [treinoId, exId]
-                    );
+                if (exerciciosRes.rows.length > 0) {
+                    todosExercicios.push({
+                        grupo,
+                        exercicios: exerciciosRes.rows.map(e => e.nome_exercicio)
+                    });
+                    exercicios_ids.push(...exerciciosRes.rows.map(e => e.id));
                 }
+            }
 
+            if (todosExercicios.length === 0) {
                 return res.json({
                     ...dados,
-                    texto: `✅ ${nomeUsuario}, treino de ${dados.tipo} criado para ${dados.dia} com os exercícios vinculados.`,
-                    confirmado: true
+                    texto: `⚠️ ${nomeUsuario}, não encontrei exercícios para os grupos informados.`
                 });
             }
+
+            // Montar lista formatada
+            const listaFormatada = todosExercicios.map(
+                g => `${g.grupo.toUpperCase()}: ${g.exercicios.join(", ")}`
+            ).join("\n");
+
+            // 🔹 2º GPT só para formatar treino
+            const completion2 = await openai.chat.completions.create({
+                model: "gpt-5-mini",
+                messages: [
+                    {
+                        role: "system",
+                        content: `
+Você é Hércules, treinador virtual do Olympus.
+Responda SEMPRE com JSON válido no formato:
+{
+  "acao": "criar_treino",
+  "tipo": ["Peitoral", "Ombros"],
+  "dia": null,
+  "texto": "string amigável"
+}
+`
+                    },
+                    {
+                        role: "user",
+                        content: `Monte um treino para ${nomeUsuario}, focado em ${dados.tipo.join(", ")}.
+Exercícios disponíveis:
+${listaFormatada}
+
+Monte o "texto" em formato de lista numerada, bem organizado, incluindo séries/reps se fizer sentido.
+Não inclua descrições longas.
+`
+                    }
+                ],
+                response_format: { type: "json_object" }
+            });
+
+            let respostaFinal = completion2.choices[0].message.content;
+            let dadosFinal = JSON.parse(respostaFinal);
+
+            return res.json({
+                ...dadosFinal,
+                exercicios_ids
+            });
         }
-
-
 
         if (dados.acao === "consultar_treino") {
             const diaNormalizado = normalizarDia(dados.dia);
-
             const { rows } = await pool.query(
                 "SELECT nome_treino, dia_semana FROM treinos WHERE usuario_id=$1 AND LOWER(dia_semana)=LOWER($2)",
                 [usuarioId, diaNormalizado]
@@ -183,9 +181,6 @@ Formato obrigatório:
             }
         }
 
-
-
-
         if (dados.acao === "editar_treino") {
             return res.json({
                 ...dados,
@@ -193,9 +188,10 @@ Formato obrigatório:
             });
         }
 
-        // 🔹 fallback
+        // fallback
         return res.json({
             acao: "outro",
+            tipo: [],
             dia: null,
             texto: dados.texto || `👍 Entendi, ${nomeUsuario}! Pode me dizer mais detalhes?`
         });

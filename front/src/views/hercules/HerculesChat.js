@@ -1,5 +1,6 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../../AuthContext";
+import "../../styles/HerculesChat.css"; // 👈 importa o CSS novo
 
 function HerculesChat() {
     const [msg, setMsg] = useState("");
@@ -7,7 +8,6 @@ function HerculesChat() {
     const [loading, setLoading] = useState(false);
     const { userId } = useContext(AuthContext);
 
-    // 🔹 Guardar última meta completa do Hércules (acao/dia/tipo/plano/exercicios_ids)
     const [ultimaMeta, setUltimaMeta] = useState(null);
 
     const enviar = async (extra = {}) => {
@@ -24,47 +24,52 @@ function HerculesChat() {
                 body: JSON.stringify({
                     mensagem: msg,
                     usuarioId: userId,
-                    ...ultimaMeta,   // 👈 reenvia meta original (inclui plano e exercicios_ids)
-                    ...extra
-                })
+                    ...ultimaMeta,
+                    ...extra,
+                }),
             });
 
             const data = await res.json();
-
-            // 🔹 Salvar última meta recebida do Hércules (vai incluir plano/exercicios_ids quando houver)
             setUltimaMeta(data);
 
-            setChat(prev => [...prev, { autor: "Hércules", texto: data.texto, meta: data }]);
+            setChat((prev) => [...prev, { autor: "Hércules", texto: data.texto, meta: data }]);
             setMsg("");
         } catch (err) {
             console.error(err);
-            setChat(prev => [...prev, { autor: "Hércules", texto: "⚠️ Erro ao falar com Hércules." }]);
+            setChat((prev) => [...prev, { autor: "Hércules", texto: "⚠️ Erro ao falar com Hércules." }]);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="container mt-5">
-            <h2 className="text-center mb-4">🤖 Hércules (Chat)</h2>
-
-            {/* Caixa de mensagens */}
-            <div className="border rounded p-3 mb-3" style={{ minHeight: "300px", background: "#f8f9fa" }}>
-                {chat.length === 0 && <p className="text-muted text-center">Converse com o Hércules digitando abaixo...</p>}
+        <div className="chat-container">
+            {/* Cabeçalho */}
+            <div className="chat-header">
+                <img src="/hercules2.png" alt="Hércules" className="header-icon"   style={{ width: "auto", height: "50px",marginRight: "10px" }}
+                />
+                HÉRCULES
+            </div>
+            {/* Área de mensagens */}
+            <div className="chat-body">
+                {chat.length === 0 && (
+                    <p className="text-muted text-center mt-3">
+                        Converse com o Hércules digitando abaixo...
+                    </p>
+                )}
                 {chat.map((c, i) => (
-                    <div key={i} className={`mb-3 ${c.autor === "Você" ? "text-end" : "text-start"}`}>
-                        <div
-                            className={`d-inline-block px-3 py-2 rounded shadow-sm ${c.autor === "Você" ? "bg-primary text-white" : "bg-light border"}`}
-                            style={{ maxWidth: "75%" }}
-                        >
+                    <div
+                        key={i}
+                        className={`chat-message ${c.autor === "Você" ? "me" : "hercules"}`}
+                    >
+                        <div className="bubble">
                             <strong>{c.autor}:</strong> {c.texto}
                         </div>
 
-                        {/* Se Hércules pediu confirmação, renderiza botões */}
                         {c.autor === "Hércules" && c.meta?.confirmado === false && (
-                            <div className="mt-2">
+                            <div className="mt-2 d-flex gap-2">
                                 <button
-                                    className="btn btn-success btn-sm me-2"
+                                    className="btn btn-success btn-sm"
                                     onClick={() => enviar({ confirmado: true })}
                                 >
                                     Confirmar
@@ -82,8 +87,8 @@ function HerculesChat() {
                 {loading && <p className="text-muted"><i>Hércules está pensando...</i></p>}
             </div>
 
-            {/* Campo de input + botão */}
-            <div className="input-group">
+            {/* Input fixo */}
+            <div className="chat-input">
                 <input
                     type="text"
                     className="form-control"
@@ -92,8 +97,12 @@ function HerculesChat() {
                     onChange={(e) => setMsg(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && enviar()}
                 />
-                <button className="btn btn-primary" type="button" onClick={() => enviar()} disabled={loading}>
-                    {loading ? "Enviando..." : "Enviar"}
+                <button
+                    className="btn btn-primary send-btn"
+                    onClick={() => enviar()}
+                    disabled={loading}
+                >
+                    ➤
                 </button>
             </div>
         </div>
