@@ -2,7 +2,7 @@
 .switch {
     position: relative;
     display: inline-block;
-    width: 44px;   /* largura do switch */
+    width: 40px;   /* largura do switch */
     height: 22px;  /* altura do switch */
     flex: 0 0 auto; /* impede de crescer na navbar */
 }

@@ -83,9 +83,8 @@ function Navbar() {
                 {/* Lado direito */}
                 <div className="d-flex align-items-center gap-3">
 
-                    {/* Botão de DarkMode */}
-                    {/*<DarkModeSwitch />*/}
 
+                    {/* Avatar + Dropdown usuário */}
                     {/* Avatar + Dropdown usuário */}
                     {loggedIn && (
                         <div className="dropdown d-flex align-items-center">
@@ -97,32 +96,49 @@ function Navbar() {
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false"
                             >
+
                                 <span className="d-none d-md-inline">Olá, {userName}!</span>
-                                <span className="d-inline d-md-none me-2">{userName}</span>
-                                {avatarUrl && (
-                                    <img
-                                        src={avatarUrl}
-                                        alt="Avatar do usuário"
-                                        className="rounded-circle ms-2"
-                                        style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-                                    />
-                                )}
+                                <span className="d-inline d-md-none">{userName}</span>
                             </a>
-                            <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+
+                            {/* Dropdown estilizado */}
+                            <ul
+                                className="dropdown-menu dropdown-menu-end animate-dropdown shadow-lg border-0 rounded-3"
+                                aria-labelledby="userDropdown"
+                            >
+
+
+                                {/* Switch Dark Mode dentro do menu */}
+                                <li className="dropdown-item d-flex justify-content-between align-items-center">
+                                    <span>Tema escuro</span>
+                                    <DarkModeSwitch />
+                                </li>
+
+                                <li><hr className="dropdown-divider" /></li>
+
                                 <li>
                                     <Link className="dropdown-item" to={`/usuarios/edit/${userId}`}>
                                         Perfil
                                     </Link>
                                 </li>
-                                <li><hr className="dropdown-divider" /></li>
                                 <li>
-                                    <button className="dropdown-item" onClick={handleLogout}>
+                                    <button className="dropdown-item text-danger" onClick={handleLogout}>
                                         Logout
                                     </button>
                                 </li>
+
                             </ul>
+                            {avatarUrl && (
+                                <img
+                                    src={avatarUrl}
+                                    alt="Avatar do usuário"
+                                    className="rounded-circle me-2"
+                                    style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                                />
+                            )}
                         </div>
                     )}
+
                 </div>
             </div>
         </nav>
