@@ -320,7 +320,7 @@ function Exercicios_index() {
 
     return (
         <PageStateHandler   loading={loading} error={error}>
-        <div className="container mt-4">
+        <div className="container mt-4 exercicios-container">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h4 className="mb-0">Treino: {nomeTreino}</h4>

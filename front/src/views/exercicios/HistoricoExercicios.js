@@ -32,7 +32,7 @@ function HistoricoExercicios() {
     if (loading) return <ModalCarregando show={true} />; // 👈 agora usa o overlay padronizado
 
     return (
-        <div className="container mt-4">
+        <div className="container mt-4 exercicios-container">
             <h4 className="mb-3">Histórico por Exercício</h4>
 
             <div className="d-flex flex-wrap justify-content-center gap-3">

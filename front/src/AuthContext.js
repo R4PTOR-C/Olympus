@@ -13,11 +13,15 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     // ✅ Estado de dark mode
-    const [darkMode, setDarkMode] = useState(false);
+    const [darkMode, setDarkMode] = useState(() => {
+        const savedTheme = localStorage.getItem("darkMode");
+        return savedTheme ? savedTheme === "true" : false;
+    });
 
     // 🔹 Carregar tema salvo no localStorage ao iniciar
     useEffect(() => {
         const savedTheme = localStorage.getItem('darkMode');
+        console.log("[AuthContext] useEffect init → savedTheme:", savedTheme);
         if (savedTheme !== null) {
             setDarkMode(savedTheme === 'true');
         }
@@ -25,11 +29,14 @@ export const AuthProvider = ({ children }) => {
 
     // 🔹 Salvar tema e aplicar classe no body sempre que mudar
     useEffect(() => {
+        console.log("[AuthContext] useEffect darkMode →", darkMode);
         localStorage.setItem('darkMode', darkMode);
 
         if (darkMode) {
+            console.log("[AuthContext] Aplicando classe 'dark-mode' no body");
             document.body.classList.add('dark-mode');
         } else {
+            console.log("[AuthContext] Removendo classe 'dark-mode' do body");
             document.body.classList.remove('dark-mode');
         }
     }, [darkMode]);
@@ -38,12 +45,14 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const checkSession = async () => {
             const token = localStorage.getItem('token');
+            console.log("[AuthContext] Verificando sessão... token:", token);
             if (token) {
                 try {
                     const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/session`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const data = await response.json();
+                    console.log("[AuthContext] Resposta da sessão:", data);
                     if (data.loggedIn) {
                         setUser({
                             loggedIn: true,
@@ -56,7 +65,7 @@ export const AuthProvider = ({ children }) => {
                         setUser({ loggedIn: false });
                     }
                 } catch (err) {
-                    console.error('Erro ao verificar sessão:', err);
+                    console.error('[AuthContext] Erro ao verificar sessão:', err);
                     setUser({ loggedIn: false });
                 }
             } else {
@@ -67,8 +76,8 @@ export const AuthProvider = ({ children }) => {
         checkSession();
     }, []);
 
-    // 🔹 Função de login
     const login = (userData, token) => {
+        console.log("[AuthContext] Login chamado →", userData);
         localStorage.setItem('token', token);
         setUser({
             loggedIn: true,
@@ -79,14 +88,14 @@ export const AuthProvider = ({ children }) => {
         });
     };
 
-    // 🔹 Função de logout
     const logout = () => {
+        console.log("[AuthContext] Logout chamado");
         localStorage.removeItem('token');
         setUser({ loggedIn: false, userName: '', userId: null, avatar: null });
     };
 
-    // 🔹 Atualizar dados do usuário
     const updateUser = (updates) => {
+        console.log("[AuthContext] updateUser chamado →", updates);
         setUser(prev => ({
             ...prev,
             ...updates

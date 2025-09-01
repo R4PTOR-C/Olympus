@@ -40,8 +40,16 @@ select {
 
 .btn-primary {
     background-color: var(--color-primary) !important;
-    color: white !important;
+    color: #c8d1d0 !important;
     border: var(--color-primary);
+}
+
+.btn-edit {
+    background-color: var(--color-primary) !important;
+    color: #c8d1d0 !important;
+    border: var(--color-primary);
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .btn-primary:active {
@@ -138,7 +146,7 @@ body.dark-mode .btn-close {
 
 /* Botões de data */
 .btn-outline-primary {
-    color: #19222B; /* verde */
+    color: #19222B;
     border-color: #19222B;
 }
 .btn-outline-primary:hover,
@@ -263,6 +271,78 @@ body.dark-mode .droppable-day {
     background-color: #2c2c2c !important; /* fundo mais escuro */
 
     border-color: #444 !important;
+}
+
+.dark-mode .exercicios-container .card {
+    background-color: #fff !important;
+    color: #000 !important;
+    border: 1px solid #ddd;
+}
+
+/* Garante que o título e texto fiquem pretos */
+.dark-mode .exercicios-container .card .card-title,
+.dark-mode .exercicios-container .card .card-body {
+    color: #000 !important;
+}
+
+.dark-mode .btn-primary{
+    background-color: #c8d1d0 !important;
+    color: var(--color-primary) !important;
+}
+
+.dark-mode .btn-outline-primary {
+    color: #c8d1d0 !important;
+    border-color: #c8d1d0 !important;
+}
+
+.dark-mode .btn-edit {
+    background-color: #c8d1d0 !important;
+    color: var(--color-primary) !important;
+    border: var(--color-primary);
+
+}
+
+.dark-mode p {
+    color: white !important;
+}
+
+/* Rechart */
+
+/* Grid mais suave no dark mode */
+.dark-mode .recharts-cartesian-grid line {
+    stroke: #444 !important;
+}
+
+/* Eixo X e Y */
+.dark-mode .recharts-x-axis text,
+.dark-mode .recharts-y-axis text {
+    fill: #ddd !important; /* cor do texto dos ticks */
+    font-size: 0.8rem;
+}
+
+/* Linha do eixo */
+.dark-mode .recharts-x-axis line,
+.dark-mode .recharts-y-axis line {
+    stroke: #666 !important;
+}
+
+/* Tooltip */
+.dark-mode .recharts-tooltip-wrapper {
+    background: #222 !important;
+    border: 1px solid #555 !important;
+    border-radius: 6px;
+    color: #eee !important;
+    padding: 6px;
+}
+
+/* Linha no modo claro */
+.grafico-linha path {
+    stroke: #19222B !important;
+}
+
+/* Linha no dark mode */
+.dark-mode .grafico-linha path {
+    stroke: #c8d1d0 !important;
 }
 
 
