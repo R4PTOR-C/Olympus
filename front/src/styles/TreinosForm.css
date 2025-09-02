@@ -1,3 +1,133 @@
+.page-link:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: inherit;
+}
+
+
+/* Ícones no dark mode */
+.dark-mode .bi-search {
+    color: white;
+    background-color: var(--color-primary) !important;
+}
+
+/* Tabela no dark mode */
+.dark-mode .table-responsive tr {
+    background: #1e1e1e; /* fundo mais escuro */
+    border: 1px solid #444;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.dark-mode .table-responsive td {
+    background-color: #1e1e1e;
+    border-bottom: 1px solid #333;
+    color: #eee; /* texto claro */
+}
+
+.dark-mode .table-responsive td::before {
+    color: #aaa; /* label em cinza claro */
+}
+
+/* =========================
+   🔹 Ajustes Dark Mode
+   ========================= */
+
+/* Labels dos inputs */
+.dark-mode label,
+.dark-mode .form-floating label {
+    color: #ccc !important;
+}
+
+/* Textos dos inputs */
+.dark-mode .form-control,
+.dark-mode .form-select,
+.dark-mode textarea {
+    background-color: #1e1e1e;
+    color: #eee;
+    border: 1px solid #444;
+}
+
+/* Placeholder */
+.dark-mode .form-control::placeholder {
+    color: #888;
+}
+
+/* Ícone da lupa */
+.dark-mode .input-group-text {
+    background-color: var(--color-primary);
+    border: none;
+}
+.dark-mode .input-group-text i {
+    color: white !important;
+}
+
+/* Header da tabela */
+.dark-mode thead {
+    background-color: #2a2a2a !important;
+    color: #eee !important;
+}
+
+.dark-mode .table-light{
+    background-color: #2a2a2a !important;
+    color: #eee !important;
+}
+
+/* Linhas da tabela */
+.dark-mode tbody tr {
+    background-color: #1e1e1e;
+    color: #eee;
+    border-bottom: 1px solid #333;
+}
+
+/* Paginação */
+.dark-mode .pagination .page-link {
+    background-color: #1e1e1e;
+    border: 1px solid #444;
+    color: #ccc;
+}
+.dark-mode .pagination .page-item.active .page-link {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+}
+.dark-mode .pagination .page-link:hover {
+    background-color: #333;
+    color: #fff;
+}
+
+/* Miniatura padrão */
+.gif-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Customização dos checkboxes */
+.custom-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: 2px solid #999;
+    transition: all 0.2s ease-in-out;
+}
+
+.custom-checkbox:checked {
+    background-color: var(--color-primary, #0d6efd); /* usa sua cor primária */
+    border-color: var(--color-primary, #0d6efd);
+    box-shadow: 0 0 4px rgba(13, 110, 253, 0.6);
+}
+
+.custom-checkbox:focus {
+    outline: none;
+    box-shadow: 0 0 6px rgba(13, 110, 253, 0.7);
+}
+
+
+
 /* Estilo mobile-friendly para tabela de exercícios */
 @media (max-width: 768px) {
     .table-responsive table,
@@ -8,6 +138,14 @@
     .table-responsive tr {
         display: block;
         width: 100%;
+    }
+
+    .gif-thumb {
+        width: 100%;
+        max-width: 200px; /* evita ficar gigante */
+        height: auto;
+        margin-top: 0.5rem;
+        border-radius: 8px;
     }
 
     .table-responsive thead {
@@ -41,3 +179,5 @@
         color: #555;
     }
 }
+
+

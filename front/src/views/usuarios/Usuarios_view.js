@@ -127,7 +127,7 @@ const UsuariosView = () => {
     const handleDeleteTreino = async (treinoId) => {
         if (!window.confirm("Tem certeza que deseja excluir este treino?")) return;
         try {
-            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/${treinoId}`, {
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
                 method: 'DELETE',
             });
             if (res.ok) {

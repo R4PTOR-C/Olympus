@@ -78,41 +78,42 @@ const TreinosForm = () => {
     return (
         <div className="container mt-5 mb-5">
             <div className="card shadow-lg border-0">
-                <div className="card-header bg-primary text-white text-center py-3 rounded-top">
+                <div className="card-header text-white text-center py-3 rounded-top">
                     <h3 className="mb-0"><i className="bi bi-clipboard-plus me-2"></i>Criar Novo Treino</h3>
                 </div>
                 <div className="card-body p-4">
                     <form onSubmit={handleSubmit}>
                         {/* Nome */}
-                        <div className="form-floating mb-3">
+                        <div className="mb-3">
+                            <label htmlFor="nomeTreino" className="form-label">Nome do Treino</label>
                             <input
                                 type="text"
                                 className="form-control"
                                 id="nomeTreino"
-                                placeholder="Nome do Treino"
+                                placeholder="Digite o nome do treino"
                                 value={nomeTreino}
                                 onChange={(e) => setNomeTreino(e.target.value)}
                                 required
                             />
-                            <label htmlFor="nomeTreino">Nome do Treino</label>
                         </div>
 
                         {/* Descrição */}
-                        <div className="form-floating mb-3">
+                        <div className="mb-3">
+                            <label htmlFor="descricaoTreino" className="form-label">Descrição</label>
                             <textarea
                                 className="form-control"
                                 id="descricaoTreino"
-                                placeholder="Descrição"
+                                placeholder="Digite a descrição do treino"
                                 style={{ height: '100px' }}
                                 value={descricao}
                                 onChange={(e) => setDescricao(e.target.value)}
                                 required
                             />
-                            <label htmlFor="descricaoTreino">Descrição</label>
                         </div>
 
                         {/* Dia da semana */}
-                        <div className="form-floating mb-3">
+                        <div className="mb-3">
+                            <label htmlFor="diaSemana" className="form-label">Dia da Semana</label>
                             <select
                                 className="form-select"
                                 id="diaSemana"
@@ -129,11 +130,11 @@ const TreinosForm = () => {
                                 <option value="Sábado">Sábado</option>
                                 <option value="Domingo">Domingo</option>
                             </select>
-                            <label htmlFor="diaSemana">Dia da Semana</label>
                         </div>
 
                         {/* Grupo Muscular */}
-                        <div className="form-floating mb-4">
+                        <div className="mb-4">
+                            <label htmlFor="grupoMuscular" className="form-label">Grupo Muscular Principal</label>
                             <select
                                 className="form-select"
                                 id="grupoMuscular"
@@ -152,7 +153,6 @@ const TreinosForm = () => {
                                 <option value="Panturrilha">Panturrilha</option>
                                 <option value="Abdômen">Abdômen</option>
                             </select>
-                            <label htmlFor="grupoMuscular">Grupo Muscular Principal</label>
                         </div>
 
                         {/* Busca */}
@@ -175,26 +175,40 @@ const TreinosForm = () => {
                                     <th>Selecionar</th>
                                     <th>Nome</th>
                                     <th>Grupo Muscular</th>
-                                    <th>Nível</th>
+                                    <th>Exemplo</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {currentItems.map((ex) => (
                                     <tr key={ex.id}>
                                         <td data-label="Selecionar">
-                                            <input
-                                                type="checkbox"
-                                                checked={exerciciosSelecionados.includes(ex.id)}
-                                                onChange={() => handleExercicioChange(ex.id)}
-                                            />
+                                            <div className="form-check d-flex justify-content-center">
+                                                <input
+                                                    className="form-check-input custom-checkbox"
+                                                    type="checkbox"
+                                                    checked={exerciciosSelecionados.includes(ex.id)}
+                                                    onChange={() => handleExercicioChange(ex.id)}
+                                                    id={`check-${ex.id}`}
+                                                />
+                                            </div>
+
                                         </td>
                                         <td data-label="Nome">{ex.nome_exercicio}</td>
                                         <td data-label="Grupo Muscular">{ex.grupo_muscular}</td>
-                                        <td data-label="Nível">{ex.nivel}</td>
+                                        <td>
+                                            {ex.gif_url ? (
+                                                <img
+                                                    src={ex.gif_url}
+                                                    alt={`GIF do exercício ${ex.nome_exercicio}`}
+                                                    className="gif-thumb"
+                                                />
+                                            ) : (
+                                                <span className="text-muted">—</span>
+                                            )}
+                                        </td>
                                     </tr>
                                 ))}
                                 </tbody>
-
                             </table>
                         </div>
 
@@ -202,10 +216,7 @@ const TreinosForm = () => {
                         <nav className="mt-3">
                             <ul className="pagination pagination-sm justify-content-center">
                                 {[...Array(totalPages)].map((_, index) => (
-                                    <li
-                                        key={index}
-                                        className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
-                                    >
+                                    <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
                                         <button
                                             type="button"
                                             className="page-link"
