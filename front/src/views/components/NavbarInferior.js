@@ -17,7 +17,7 @@ function NavbarInferior() {
     ];
 
     return (
-        <nav className="navbar-inferior fixed-bottom d-md-none bg-dark d-flex justify-content-around">
+        <nav className="navbar-inferior d-md-none bg-dark d-flex justify-content-around">
             {navItems.map((item, index) => {
                 const isActive = location.pathname.startsWith(item.path);
                 const isImage = item.icon.endsWith(".png"); // 👈 simples checagem

@@ -1,0 +1,29 @@
+.usuarios-edit .card-section {
+    background: #1c1c1c;
+    border-radius: 12px;
+    padding: 16px;
+    color: #fff;
+}
+
+.card-header-custom {
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.field-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    cursor: default;
+}
+
+.field-row.clickable {
+    cursor: pointer;
+}
+
+.field-row:last-child {
+    border-bottom: none;
+}

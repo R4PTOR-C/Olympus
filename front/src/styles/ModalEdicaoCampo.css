@@ -1,0 +1,33 @@
+.bottom-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 2000; /* maior que navbar-inferior */
+}
+
+.bottom-sheet {
+    width: 100%;
+    max-width: 600px;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    overflow: hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+.bottom-sheet-header,
+.bottom-sheet-body,
+.bottom-sheet-footer {
+    padding: 16px;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
