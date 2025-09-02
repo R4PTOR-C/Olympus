@@ -126,6 +126,23 @@
     box-shadow: 0 0 6px rgba(13, 110, 253, 0.7);
 }
 
+.botao-flutuante {
+    position: fixed;
+    bottom: 4rem; /* 👈 ajusta para não colidir com sua navbar inferior */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    display: flex;
+    flex-direction: row;   /* garante que fique lado a lado */
+    gap: 1rem;             /* espaçamento entre os botões */
+    justify-content: center;
+}
+
+
+.container {
+    padding-bottom: 7rem; /* espaço extra pra lista não ficar escondida */
+}
+
 
 
 /* Estilo mobile-friendly para tabela de exercícios */

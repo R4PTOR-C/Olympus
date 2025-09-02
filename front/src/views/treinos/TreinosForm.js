@@ -12,32 +12,23 @@ const TreinosForm = () => {
     const [exercicios, setExercicios] = useState([]);
     const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredExercicios, setFilteredExercicios] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [exercicioAtivo, setExercicioAtivo] = useState(null);
 
     useEffect(() => {
         fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`)
             .then(res => res.json())
-            .then(data => {
-                setExercicios(data);
-                setFilteredExercicios(data);
-            });
+            .then(data => setExercicios(data));
     }, []);
 
-    useEffect(() => {
-        const filtered = exercicios.filter(ex =>
-            (ex.nome_exercicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                ex.grupo_muscular?.toLowerCase().includes(searchTerm.toLowerCase()))
-        );
-        setFilteredExercicios(filtered);
-        setCurrentPage(1);
-    }, [searchTerm, exercicios]);
+    const handleAdicionarExercicio = (ex) => {
+        if (!exerciciosSelecionados.some((s) => s.id === ex.id)) {
+            setExerciciosSelecionados([...exerciciosSelecionados, ex]);
+        }
+        setExercicioAtivo(null);
+    };
 
-    const handleExercicioChange = (id) => {
-        setExerciciosSelecionados(prev =>
-            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-        );
+    const handleRemoveExercicio = (id) => {
+        setExerciciosSelecionados((prev) => prev.filter((ex) => ex.id !== id));
     };
 
     const handleSubmit = async (e) => {
@@ -57,23 +48,17 @@ const TreinosForm = () => {
         });
 
         if (!res.ok) return alert('Erro ao criar treino.');
-
         const novoTreino = await res.json();
 
         await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${novoTreino.id}/exercicios`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ exercicios: exerciciosSelecionados })
+            body: JSON.stringify({ exercicios: exerciciosSelecionados.map((ex) => ex.id) })
         });
 
         alert('Treino criado com sucesso!');
         navigate(`/usuarios/view/${id}`);
     };
-
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredExercicios.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(filteredExercicios.length / itemsPerPage);
 
     return (
         <div className="container mt-5 mb-5">
@@ -85,11 +70,10 @@ const TreinosForm = () => {
                     <form onSubmit={handleSubmit}>
                         {/* Nome */}
                         <div className="mb-3">
-                            <label htmlFor="nomeTreino" className="form-label">Nome do Treino</label>
+                            <label className="form-label">Nome do Treino</label>
                             <input
                                 type="text"
                                 className="form-control"
-                                id="nomeTreino"
                                 placeholder="Digite o nome do treino"
                                 value={nomeTreino}
                                 onChange={(e) => setNomeTreino(e.target.value)}
@@ -99,10 +83,9 @@ const TreinosForm = () => {
 
                         {/* Descrição */}
                         <div className="mb-3">
-                            <label htmlFor="descricaoTreino" className="form-label">Descrição</label>
+                            <label className="form-label">Descrição</label>
                             <textarea
                                 className="form-control"
-                                id="descricaoTreino"
                                 placeholder="Digite a descrição do treino"
                                 style={{ height: '100px' }}
                                 value={descricao}
@@ -113,10 +96,9 @@ const TreinosForm = () => {
 
                         {/* Dia da semana */}
                         <div className="mb-3">
-                            <label htmlFor="diaSemana" className="form-label">Dia da Semana</label>
+                            <label className="form-label">Dia da Semana</label>
                             <select
                                 className="form-select"
-                                id="diaSemana"
                                 value={diaSemana}
                                 onChange={(e) => setDiaSemana(e.target.value)}
                                 required
@@ -134,10 +116,9 @@ const TreinosForm = () => {
 
                         {/* Grupo Muscular */}
                         <div className="mb-4">
-                            <label htmlFor="grupoMuscular" className="form-label">Grupo Muscular Principal</label>
+                            <label className="form-label">Grupo Muscular Principal</label>
                             <select
                                 className="form-select"
-                                id="grupoMuscular"
                                 value={grupoMuscular}
                                 onChange={(e) => setGrupoMuscular(e.target.value)}
                                 required
@@ -155,7 +136,37 @@ const TreinosForm = () => {
                             </select>
                         </div>
 
-                        {/* Busca */}
+                        {/* Exercícios Selecionados */}
+                        <h4 className="mt-4">Exercícios Selecionados</h4>
+                        <div className="row g-2 mb-4">
+                            {exerciciosSelecionados.length > 0 ? (
+                                exerciciosSelecionados.map((ex) => (
+                                    <div key={ex.id} className="col-6 col-md-3">
+                                        <div className="card h-100 text-center shadow-sm p-2">
+                                            <img
+                                                src={ex.gif_url}
+                                                alt={ex.nome_exercicio}
+                                                className="card-img-top"
+                                                style={{ height: '80px', objectFit: 'contain' }}
+                                            />
+                                            <h6 className="mt-1" style={{ fontSize: '0.8rem' }}>{ex.nome_exercicio}</h6>
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-danger mt-1"
+                                                onClick={() => handleRemoveExercicio(ex.id)}
+                                            >
+                                                Remover
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-muted">Nenhum exercício selecionado ainda.</p>
+                            )}
+                        </div>
+
+                        {/* Exercícios Disponíveis */}
+                        <h4 className="mt-4">Exercícios Disponíveis</h4>
                         <div className="input-group mb-3">
                             <span className="input-group-text"><i className="bi bi-search"></i></span>
                             <input
@@ -167,77 +178,55 @@ const TreinosForm = () => {
                             />
                         </div>
 
-                        {/* Tabela */}
-                        <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                            <table className="table table-hover align-middle">
-                                <thead className="table-light sticky-top">
-                                <tr>
-                                    <th>Selecionar</th>
-                                    <th>Nome</th>
-                                    <th>Grupo Muscular</th>
-                                    <th>Exemplo</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {currentItems.map((ex) => (
-                                    <tr key={ex.id}>
-                                        <td data-label="Selecionar">
-                                            <div className="form-check d-flex justify-content-center">
-                                                <input
-                                                    className="form-check-input custom-checkbox"
-                                                    type="checkbox"
-                                                    checked={exerciciosSelecionados.includes(ex.id)}
-                                                    onChange={() => handleExercicioChange(ex.id)}
-                                                    id={`check-${ex.id}`}
-                                                />
-                                            </div>
+                        <div className="row g-2">
+                            {exercicios
+                                .filter((ex) =>
+                                    (ex.nome_exercicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        ex.grupo_muscular?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+                                    !exerciciosSelecionados.some((s) => s.id === ex.id)
+                                )
+                                .map((ex) => (
+                                    <div key={ex.id} className="col-6 col-md-3">
+                                        <div
+                                            className="card h-100 text-center shadow-sm p-2"
+                                            onClick={() => setExercicioAtivo(ex.id)}
+                                        >
+                                            <img
+                                                src={ex.gif_url}
+                                                alt={ex.nome_exercicio}
+                                                className="card-img-top"
+                                                style={{ height: '80px', objectFit: 'contain' }}
+                                            />
+                                            <h6 className="mt-1" style={{ fontSize: '0.8rem' }}>{ex.nome_exercicio}</h6>
 
-                                        </td>
-                                        <td data-label="Nome">{ex.nome_exercicio}</td>
-                                        <td data-label="Grupo Muscular">{ex.grupo_muscular}</td>
-                                        <td>
-                                            {ex.gif_url ? (
-                                                <img
-                                                    src={ex.gif_url}
-                                                    alt={`GIF do exercício ${ex.nome_exercicio}`}
-                                                    className="gif-thumb"
-                                                />
-                                            ) : (
-                                                <span className="text-muted">—</span>
+                                            {exercicioAtivo === ex.id && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-sm btn-success mt-1"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleAdicionarExercicio(ex);
+                                                    }}
+                                                >
+                                                    Usar
+                                                </button>
                                             )}
-                                        </td>
-                                    </tr>
+                                        </div>
+                                    </div>
                                 ))}
-                                </tbody>
-                            </table>
                         </div>
 
-                        {/* Paginação */}
-                        <nav className="mt-3">
-                            <ul className="pagination pagination-sm justify-content-center">
-                                {[...Array(totalPages)].map((_, index) => (
-                                    <li key={index} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
-                                        <button
-                                            type="button"
-                                            className="page-link"
-                                            onClick={() => setCurrentPage(index + 1)}
-                                        >
-                                            {index + 1}
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </nav>
-
-                        {/* Botões */}
-                        <div className="d-flex flex-column flex-md-row justify-content-center gap-3 mt-4">
-                            <button type="submit" className="btn btn-success btn-lg w-100 w-md-auto">
-                                <i className="bi bi-check-circle me-2"></i> Adicionar Treino
+                        {/* Botões fixos */}
+                        <div className="botao-flutuante">
+                            <button type="submit" className="btn btn-success px-4">
+                                <i className="bi bi-check-circle me-2"></i> Adicionar
                             </button>
-                            <button type="button" className="btn btn-danger btn-lg w-100 w-md-auto" onClick={() => navigate(-1)}>
+                            <button type="button" className="btn btn-danger px-4" onClick={() => navigate(-1)}>
                                 <i className="bi bi-x-circle me-2"></i> Cancelar
                             </button>
+
                         </div>
+
                     </form>
                 </div>
             </div>
