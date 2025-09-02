@@ -128,7 +128,7 @@
 
 .botao-flutuante {
     position: fixed;
-    bottom: 4rem; /* 👈 ajusta para não colidir com sua navbar inferior */
+    bottom: 5rem; /* 👈 ajusta para não colidir com sua navbar inferior */
     left: 50%;
     transform: translateX(-50%);
     z-index: 1050;
