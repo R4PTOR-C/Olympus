@@ -16,6 +16,35 @@ const ModalEdicaoCampo = ({ campo, valorAtual, onClose, onSave }) => {
         onSave(campo.name, valor);
     };
 
+    const aplicarMascaraTelefone = (valor) => {
+        if (!valor) return '';
+
+        // remove tudo que não for número
+        let digitos = valor.replace(/\D/g, '');
+
+        if (digitos.length > 11) digitos = digitos.substring(0, 11);
+
+        // aplica a máscara conforme o tamanho
+        if (digitos.length <= 10) {
+            return digitos.replace(/(\d{0,2})(\d{0,4})(\d{0,4})/, function(_, ddd, parte1, parte2) {
+                return [
+                    ddd ? `(${ddd}` + (ddd.length === 2 ? ') ' : '') : '',
+                    parte1,
+                    parte2 ? '-' + parte2 : ''
+                ].join('');
+            });
+        } else {
+            return digitos.replace(/(\d{0,2})(\d{0,5})(\d{0,4})/, function(_, ddd, parte1, parte2) {
+                return [
+                    ddd ? `(${ddd}` + (ddd.length === 2 ? ') ' : '') : '',
+                    parte1,
+                    parte2 ? '-' + parte2 : ''
+                ].join('');
+            });
+        }
+    };
+
+
     return (
         <div className="bottom-sheet-backdrop" onClick={onClose}>
             <div
@@ -43,10 +72,17 @@ const ModalEdicaoCampo = ({ campo, valorAtual, onClose, onSave }) => {
                     ) : (
                         <input
                             type={campo.tipo}
+                            value={campo.name === "telefone" ? aplicarMascaraTelefone(valor) : valor}
+                            onChange={(e) => {
+                                let novoValor = e.target.value;
+                                if (campo.name === "telefone") {
+                                    novoValor = aplicarMascaraTelefone(novoValor);
+                                }
+                                setValor(novoValor);
+                            }}
                             className="form-control"
-                            value={valor}
-                            onChange={(e) => setValor(e.target.value)}
                         />
+
                     )}
                 </div>
 

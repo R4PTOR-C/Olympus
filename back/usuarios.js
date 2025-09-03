@@ -94,29 +94,43 @@ router.delete('/:id', async (req, res) => {
 // PUT - atualiza usuário
 router.put('/:id', upload.single('avatar'), async (req, res) => {
     const { id } = req.params;
-    const { nome, email, genero, idade, senha, data_nascimento, telefone, altura, peso, objetivo } = req.body;
-    const avatar = req.file ? req.file.path : null;
+    const campos = [];
+    const values = [];
+    let paramIndex = 1;
+
+    // Lista de campos que podem ser atualizados
+    const permitidos = ['nome', 'email', 'genero', 'idade', 'data_nascimento', 'telefone', 'altura', 'peso', 'objetivo'];
 
     try {
-        let query = `UPDATE usuarios 
-                     SET nome = $1, email = $2, genero = $3, idade = $4, data_nascimento = $5, telefone = $6, altura = $7, peso = $8, objetivo = $9`;
-        const values = [nome, email, genero, idade, data_nascimento || null, telefone || null, altura || null, peso || null, objetivo || null];
-        let paramIndex = 10;
+        // Monta a query apenas com os campos enviados no body
+        for (const campo of permitidos) {
+            if (req.body[campo] !== undefined) {
+                campos.push(`${campo} = $${paramIndex}`);
+                values.push(req.body[campo]);
+                paramIndex++;
+            }
+        }
 
-        if (senha) {
-            const hashedPassword = await bcrypt.hash(senha, 10);
-            query += `, senha = $${paramIndex}`;
+        // senha só atualiza se vier preenchida
+        if (req.body.senha) {
+            const hashedPassword = await bcrypt.hash(req.body.senha, 10);
+            campos.push(`senha = $${paramIndex}`);
             values.push(hashedPassword);
             paramIndex++;
         }
 
-        if (avatar) {
-            query += `, avatar = $${paramIndex}`;
-            values.push(avatar);
+        // avatar só atualiza se houver upload
+        if (req.file) {
+            campos.push(`avatar = $${paramIndex}`);
+            values.push(req.file.path);
             paramIndex++;
         }
 
-        query += ` WHERE id = $${paramIndex} RETURNING *`;
+        if (campos.length === 0) {
+            return res.status(400).json({ error: 'Nenhum campo válido enviado para atualização' });
+        }
+
+        const query = `UPDATE usuarios SET ${campos.join(', ')} WHERE id = $${paramIndex} RETURNING *`;
         values.push(id);
 
         const resultado = await db.query(query, values);
@@ -131,6 +145,7 @@ router.put('/:id', upload.single('avatar'), async (req, res) => {
         res.status(500).json({ error: 'Erro interno do servidor' });
     }
 });
+
 
 // POST - forgot password
 router.post('/forgot-password', async (req, res) => {

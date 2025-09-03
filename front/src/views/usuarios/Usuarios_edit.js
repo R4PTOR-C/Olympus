@@ -76,27 +76,24 @@ const UsuariosEdit = () => {
 
     const handleSalvarCampo = async (campo, valor) => {
         try {
-            // Atualiza o estado local com o novo valor
-            const usuarioAtualizado = { ...usuario, [campo]: valor };
-            setUsuario(usuarioAtualizado);
+            // Atualiza localmente só o campo editado
+            setUsuario(prev => ({ ...prev, [campo]: valor }));
 
             const formData = new FormData();
-            Object.entries(usuarioAtualizado).forEach(([key, val]) => {
-                if (val !== null && val !== undefined) {
-                    formData.append(key, val);
-                }
-            });
+            formData.append(campo, valor);
 
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`, {
-                method: 'PUT',
+                method: "PUT", // funciona porque seu backend trata agora como PATCH-like
                 body: formData,
             });
-            if (!res.ok) throw new Error('Erro ao atualizar usuário');
+
+            if (!res.ok) throw new Error("Erro ao atualizar usuário");
             const data = await res.json();
 
+            // Atualiza contexto (caso nome/avatar mudem)
             updateUser && updateUser({
                 userName: data.usuario.nome,
-                avatar: data.usuario.avatar
+                avatar: data.usuario.avatar,
             });
         } catch (err) {
             console.error(err);
@@ -107,6 +104,8 @@ const UsuariosEdit = () => {
     };
 
 
+
+
     if (loading) return <ModalCarregando show={true} />;
     if (error) return <div className="alert alert-danger">Erro: {error}</div>;
     if (!usuario) return null;
@@ -115,20 +114,50 @@ const UsuariosEdit = () => {
         ? URL.createObjectURL(avatar)
         : usuario.avatar || null;
 
+    // ...
     const dadosPessoais = [
         { name: 'nome', label: 'Nome', tipo: 'text' },
-        { name: 'email', label: 'Email', tipo: 'email' },
+        { name: 'email', label: 'Email', tipo: 'email'}, // 🔹 agora só visualização
         { name: 'genero', label: 'Gênero', tipo: 'select', options: ['Masculino', 'Feminino', 'Outro'] },
-        { name: 'idade', label: 'Idade', tipo: 'number' },
-        { name: 'data_nascimento', label: 'Data de nascimento', tipo: 'date' },
+        { name: 'data_nascimento', label: 'Data de nascimento', tipo: 'date' }, // 🔹 mantido, mas formatado
         { name: 'telefone', label: 'Telefone', tipo: 'tel' },
     ];
+// ...
+
+// função para formatar datas
+    const formatarData = (dataStr) => {
+        if (!dataStr) return 'Não informado';
+        const data = new Date(dataStr);
+        return data.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+    };
+
+    const formatarTelefone = (numero) => {
+        if (!numero) return 'Não informado';
+
+        // remove tudo que não for número
+        const digitos = numero.replace(/\D/g, '');
+
+        // casos: 10 dígitos (fixo) ou 11 dígitos (celular)
+        if (digitos.length === 10) {
+            return digitos.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        } else if (digitos.length === 11) {
+            return digitos.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        }
+
+        // se não bater com padrão esperado, retorna cru
+        return numero;
+    };
+
+
+
 
     const infoCorporal = [
         { name: 'altura', label: 'Altura (cm)', tipo: 'number' },
         { name: 'peso', label: 'Peso (kg)', tipo: 'number' },
         { name: 'objetivo', label: 'Objetivo', tipo: 'select', options: ['Emagrecimento', 'Hipertrofia', 'Condicionamento físico'] },
     ];
+
+
 
     return (
         <div className="container mt-3 mb-5 usuarios-edit">
@@ -169,24 +198,31 @@ const UsuariosEdit = () => {
             )}
 
             {/* Card Dados Pessoais */}
-            <div className="card-section">
+            <div className="card card-section">
                 <div className="card-header-custom">
                     <i className="bi bi-person-circle me-2"></i> Dados pessoais
                 </div>
                 {dadosPessoais.map(campo => (
                     <div
                         key={campo.name}
-                        className="field-row clickable"
-                        onClick={() => setCampoEditando(campo)}
+                        className={`field-row ${campo.readOnly ? '' : 'clickable'}`}
+                        onClick={() => !campo.readOnly && setCampoEditando(campo)} // 🔹 só abre modal se não for readOnly
                     >
                         <span className="fw-bold">{campo.label}</span>
-                        <span>{usuario[campo.name] || 'Não informado'}</span>
+                        <span>
+            {campo.name === 'data_nascimento'
+                ? formatarData(usuario[campo.name])
+                : campo.name === 'telefone'
+                    ? formatarTelefone(usuario[campo.name])
+                    : usuario[campo.name] || 'Não informado'}
+                        </span>
                     </div>
                 ))}
+
             </div>
 
             {/* Card Informações Corporais */}
-            <div className="card-section mt-4">
+            <div className="card card-section mt-4">
                 <div className="card-header-custom">
                     <i className="bi bi-activity me-2"></i> Informações corporais
                 </div>

@@ -1,8 +1,8 @@
 .usuarios-edit .card-section {
-    background: #1c1c1c;
+    background: var(--color-bg);   /* usa o fundo do tema */
     border-radius: 12px;
     padding: 16px;
-    color: #fff;
+    color: var(--color-text);      /* usa a cor de texto do tema */
 }
 
 .card-header-custom {
@@ -10,14 +10,16 @@
     margin-bottom: 12px;
     display: flex;
     align-items: center;
+    color: var(--color-text);      /* mantém contraste no tema */
 }
 
 .field-row {
     display: flex;
     justify-content: space-between;
     padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid var(--color-primary-hover); /* borda puxa do tema */
     cursor: default;
+    color: var(--color-text);
 }
 
 .field-row.clickable {
