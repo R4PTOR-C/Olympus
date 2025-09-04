@@ -1,3 +1,6 @@
+/* ========================= */
+/* FONTES PERSONALIZADAS     */
+/* ========================= */
 @font-face {
     font-family: 'delirium';
     src: url('fonts/ShockSurgent-q2BO0.otf') format('truetype');
@@ -12,71 +15,27 @@
     font-style: normal;
 }
 
-/* ------------------ VARIÁVEIS DE TEMA ------------------ */
+/* ========================= */
+/* VARIÁVEIS DE TEMA         */
+/* ========================= */
 :root {
-    --color-bg: #ffffff;    /* fundo containers */
-    --color-text: #000000;  /* cor dos textos */
+    --color-bg: #ffffff;          /* fundo containers */
+    --color-text: #000000;        /* cor dos textos */
     --color-primary: #19222B;
     --color-primary-hover: #2f3840;
+
+    --topbar-h: 60px;
+    --bottombar-h: 60px;
 }
 
 body.dark-mode {
-    --color-bg: #2b2b2b;    /* fundo containers no escuro */
-    --color-text: #ffffff;  /* texto branco no escuro */
+    --color-bg: #2b2b2b;          /* fundo containers no escuro */
+    --color-text: #ffffff;        /* texto branco no escuro */
 }
 
-/* ------------------ GERAIS ------------------ */
-input,
-textarea,
-select {
-    font-size: 16px;
-}
-
-
-
-.page-link {
-    background-color: var(--color-primary) !important;
-    color: white !important;
-    border: var(--color-primary);
-}
-
-.btn-primary {
-    background-color: var(--color-primary) !important;
-    color: #c8d1d0 !important;
-    border: var(--color-primary);
-}
-
-.btn-edit {
-    background-color: var(--color-primary) !important;
-    color: #c8d1d0 !important;
-    border: var(--color-primary);
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
-.btn-primary:active {
-    background-color: var(--color-primary-hover) !important;
-    border-color: var(--color-primary-hover) !important;
-}
-
-.btn-success,
-.btn-danger {
-    border: var(--color-primary);
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
-.container {
-    background-color: var(--color-bg);
-    border-radius: 15px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    padding: 1rem;
-}
-
-h1, h2, h3 {
-    color: var(--color-text);
-}
-
+/* ========================= */
+/* RESETS / BASE             */
+/* ========================= */
 body, html {
     margin: 0;
     padding: 0;
@@ -91,12 +50,19 @@ body, html {
     scroll-behavior: auto !important;
 }
 
-:root {
-    --topbar-h: 60px;
-    --bottombar-h: 60px;
+input,
+textarea,
+select {
+    font-size: 16px;
 }
 
-/* páginas com navbars (superior/inferior) */
+h1, h2, h3 {
+    color: var(--color-text);
+}
+
+/* ========================= */
+/* NAVBARS / LAYOUT          */
+/* ========================= */
 body.with-chrome {
     padding-top: var(--topbar-h);
     padding-bottom: calc(var(--bottombar-h) + env(safe-area-inset-bottom));
@@ -106,27 +72,90 @@ body.no-chrome {
     padding: 0 !important;
 }
 
-/* Itens do dropdown */
+/* ========================= */
+/* CONTAINERS / CARDS        */
+/* ========================= */
+.container {
+    background-color: var(--color-bg);
+    border-radius: 15px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+}
+
+/* ========================= */
+/* BOTÕES / PAGINAÇÃO        */
+/* ========================= */
+.page-link {
+    background-color: var(--color-primary) !important;
+    color: white !important;
+    border: var(--color-primary);
+}
+
+.btn-primary {
+    background-color: var(--color-primary) !important;
+    color: #c8d1d0 !important;
+    border: var(--color-primary);
+}
+.btn-primary:active,
+.btn-primary.active,
+.show > .btn-primary.dropdown-toggle {
+    background-color: #19222B !important;
+    border-color: #19222B !important;
+    color: #fff !important;
+}
+
+.btn-edit {
+    background-color: var(--color-primary) !important;
+    color: #c8d1d0 !important;
+    border: var(--color-primary);
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.btn-success,
+.btn-danger {
+    border: var(--color-primary);
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.btn-outline-primary {
+    color: #19222B;
+    border-color: #19222B;
+}
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+    background-color: #19222B;
+    color: #fff;
+    border-color: var(--color-primary);
+}
+.btn-outline-primary:active,
+.btn-outline-primary.active,
+.show > .btn-outline-primary.dropdown-toggle {
+    background-color: #19222B !important;
+    border-color: #19222B !important;
+    color: #fff !important;
+}
+
+/* ========================= */
+/* DROPDOWN                  */
+/* ========================= */
 .dropdown-menu {
     background-color: var(--color-primary) !important;
     border-color: var(--color-primary) !important;
 }
-
 .dropdown-menu .dropdown-item {
     color: white !important;
 }
-
-.dropdown-menu .dropdown-item:hover {
-    background-color: var(--color-primary-hover) !important;
-    color: white !important;
-}
-
+.dropdown-menu .dropdown-item:hover,
 .dropdown-menu .dropdown-item:active {
     background-color: var(--color-primary-hover) !important;
     color: white !important;
 }
 
-/* Modal customizado */
+/* ========================= */
+/* MODAL                     */
+/* ========================= */
 .modal-custom {
     width: 92%;
     max-width: 720px;
@@ -141,63 +170,23 @@ body.dark-mode .modal-custom {
     background-color: #2c2c2c;
     color: #f8f9fa;
 }
-
 body.dark-mode .btn-close {
     filter: invert(1);
 }
 
-/* Botões de data */
-.btn-outline-primary {
-    color: #19222B;
-    border-color: #19222B;
-}
-.btn-outline-primary:hover,
-.btn-outline-primary:focus {
-    background-color: #19222B;
-    color: #fff;
-    border-color: var(--color-primary);
-}
-
-/* Botões outline no clique */
-.btn-outline-primary:active,
-.btn-outline-primary.active,
-.show > .btn-outline-primary.dropdown-toggle {
-    background-color: #19222B !important;
-    border-color: #19222B !important;
-    color: #fff !important;
-}
-
-/* Botões sólidos no clique */
-.btn-primary:active,
-.btn-primary.active,
-.show > .btn-primary.dropdown-toggle {
-    background-color: #19222B !important;
-    border-color: #19222B !important;
-    color: #fff !important;
-}
-
-
-/* Botão ativo */
-.btn-primary {
-    background-color: #19222B;
-    border-color: #19222B;
-}
-
-/* Linha do gráfico (Recharts, se estiver usando) */
+/* ========================= */
+/* RECHARTS                  */
+/* ========================= */
 .recharts-line path {
-    stroke: #19222B; /* verde */
+    stroke: #19222B; /* linha padrão */
+}
+.grafico-linha path {
+    stroke: #19222B !important;
 }
 
-
-
-@media (max-width: 768px) {
-    input,
-    textarea,
-    select {
-        font-size: 16px !important;
-    }
-}
-
+/* ========================= */
+/* APP DEFAULT               */
+/* ========================= */
 .App {
     text-align: center;
 }
@@ -206,13 +195,11 @@ body.dark-mode .btn-close {
     height: 40vmin;
     pointer-events: none;
 }
-
 @media (prefers-reduced-motion: no-preference) {
     .App-logo {
         animation: App-logo-spin infinite 20s linear;
     }
 }
-
 .App-header {
     background-color: #282c34;
     min-height: 100vh;
@@ -224,109 +211,103 @@ body.dark-mode .btn-close {
     color: white;
 }
 
-
+/* ========================= */
+/* MEDIA QUERIES             */
+/* ========================= */
+@media (max-width: 768px) {
+    input,
+    textarea,
+    select {
+        font-size: 16px !important;
+    }
+}
 
 /* ========================= */
-/* Forms - Dark Mode */
+/* DARK MODE                 */
 /* ========================= */
 body.dark-mode .form-control,
 body.dark-mode .form-select,
 body.dark-mode textarea {
-    background-color: #3a3a3a;   /* fundo mais escuro */
-    color: #f8f9fa;              /* texto claro */
-    border: 1px solid #555;      /* borda suave */
+    background-color: #3a3a3a;
+    color: #f8f9fa;
+    border: 1px solid #555;
 }
-
 body.dark-mode .form-control:focus,
 body.dark-mode .form-select:focus,
 body.dark-mode textarea:focus {
-    background-color: #444;       /* destaque no focus */
+    background-color: #444;
     color: #fff;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 0.2rem rgba(25, 34, 43, 0.5); /* sombra na cor primaria */
+    box-shadow: 0 0 0 0.2rem rgba(25, 34, 43, 0.5);
 }
-
 body.dark-mode .form-floating label {
-    color: #444; /* label em floating mais clara */
+    color: #444;
 }
-
 body.dark-mode .form-select option {
     background-color: #3a3a3a;
     color: #fff;
 }
 
-/* ====== Dark Mode para cards de treino ====== */
+/* Dark Mode - Cards */
 body.dark-mode .card {
     background-color: #1e1e1e !important;
-    color: var(--color-text) !important;  /* texto claro */
-    border: 1px solid #444;               /* borda sutil */
+    color: var(--color-text) !important;
+    border: 1px solid #444;
 }
-
 body.dark-mode .card .text-muted {
-    color: #aaa !important; /* deixar texto auxiliar visível */
+    color: #aaa !important;
 }
 
-/* ====== Dark Mode para colunas de dias ====== */
+/* Dark Mode - Colunas de dias */
 body.dark-mode .droppable-day {
-    background-color: #2c2c2c !important; /* fundo mais escuro */
-
+    background-color: #2c2c2c !important;
     border-color: #444 !important;
 }
 
+/* Dark Mode - Exercícios container */
 .dark-mode .exercicios-container .card {
     background-color: #fff !important;
     color: #000 !important;
     border: 1px solid #ddd;
 }
-
-/* Garante que o título e texto fiquem pretos */
 .dark-mode .exercicios-container .card .card-title,
 .dark-mode .exercicios-container .card .card-body {
     color: #000 !important;
 }
 
-.dark-mode .btn-primary{
+/* Dark Mode - Botões */
+.dark-mode .btn-primary {
     background-color: #c8d1d0 !important;
     color: var(--color-primary) !important;
 }
-
 .dark-mode .btn-outline-primary {
     color: #c8d1d0 !important;
     border-color: #c8d1d0 !important;
 }
-
 .dark-mode .btn-edit {
     background-color: #c8d1d0 !important;
     color: var(--color-primary) !important;
     border: var(--color-primary);
-
 }
 
+/* Dark Mode - Textos */
 .dark-mode p {
     color: white !important;
 }
 
-/* Rechart */
-
-/* Grid mais suave no dark mode */
+/* Dark Mode - Recharts */
 .dark-mode .recharts-cartesian-grid line {
     stroke: #444 !important;
 }
-
-/* Eixo X e Y */
 .dark-mode .recharts-x-axis text,
 .dark-mode .recharts-y-axis text {
-    fill: #ddd !important; /* cor do texto dos ticks */
+    fill: #ddd !important;
     font-size: 0.8rem;
 }
-
-/* Linha do eixo */
 .dark-mode .recharts-x-axis line,
 .dark-mode .recharts-y-axis line {
     stroke: #666 !important;
 }
-
-/* Tooltip */
 .dark-mode .recharts-tooltip-wrapper {
     background: #222 !important;
     border: 1px solid #555 !important;
@@ -334,24 +315,14 @@ body.dark-mode .droppable-day {
     color: #eee !important;
     padding: 6px;
 }
-
-/* Linha no modo claro */
-.grafico-linha path {
-    stroke: #19222B !important;
-}
-
-/* Linha no dark mode */
 .dark-mode .grafico-linha path {
     stroke: #c8d1d0 !important;
 }
 
-
-
+/* ========================= */
+/* ANIMAÇÕES                 */
+/* ========================= */
 @keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
 }

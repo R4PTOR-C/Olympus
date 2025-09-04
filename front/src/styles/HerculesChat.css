@@ -1,3 +1,4 @@
+/* ------------------ CHAT CONTAINER ------------------ */
 .chat-container {
     display: flex;
     flex-direction: column;
@@ -6,28 +7,30 @@
     margin: auto;
     border-radius: 12px;
     overflow: hidden;
-    background: #fff;
+    background: var(--color-bg);
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
+/* ------------------ HEADER ------------------ */
 .chat-header {
-    background: #fff;
-    color: #000;
+    background: var(--color-bg);
+    color: var(--color-text);
     padding: 12px;
     text-align: center;
     font-weight: bold;
     font-size: 18px;
-
     font-family: delirium;
 }
 
+/* ------------------ BODY ------------------ */
 .chat-body {
     flex: 1;
     padding: 16px;
     overflow-y: auto;
-    background: #f4f6f9;
+    background: var(--color-body-bg);
 }
 
+/* ------------------ MENSAGENS ------------------ */
 .chat-message {
     margin-bottom: 12px;
     display: flex;
@@ -50,24 +53,26 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
+/* Bolhas */
 .chat-message.me .bubble {
-    background: #19222B;
-    color: white;
+    background: var(--color-primary);
+    color: #fff;
     border-bottom-right-radius: 4px;
 }
 
 .chat-message.hercules .bubble {
-    background: #e9ecef;
-    color: #000;
+    background: var(--color-bubble-hercules);
+    color: var(--color-text);
     border-bottom-left-radius: 4px;
 }
 
+/* ------------------ INPUT ------------------ */
 .chat-input {
     display: flex;
     gap: 8px;
     padding: 12px;
-    border-top: 1px solid #dee2e6;
-    background: #fff;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
 }
 
 .send-btn {
@@ -77,3 +82,35 @@
     align-items: center;
     justify-content: center;
 }
+
+/* ------------------ VARIÁVEIS DE TEMA ------------------ */
+:root {
+    --color-bg: #ffffff;
+    --color-text: #000000;
+    --color-body-bg: #f4f6f9;
+    --color-primary: #19222B;
+    --color-bubble-hercules: #e9ecef;
+    --color-border: #dee2e6;
+}
+
+/* Dark Mode */
+body.dark-mode {
+    --color-bg: #1e1e1e;
+    --color-text: #ffffff;
+    --color-body-bg: #121212;
+    --color-primary: #2f3840;
+    --color-bubble-hercules: #2b2b2b;
+    --color-border: #444;
+}
+
+
+.header-icon {
+    height: 50px;
+    margin-right: 10px;
+    content: url("../../public/hercules2.png"); /* padrão */
+}
+
+body.dark-mode .header-icon {
+    content: url("../../public/hercules.png"); /* muda no escuro */
+}
+

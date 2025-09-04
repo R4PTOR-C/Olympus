@@ -10,6 +10,8 @@ function HerculesChat() {
 
     const [ultimaMeta, setUltimaMeta] = useState(null);
 
+
+
     const enviar = async (extra = {}) => {
         if (!msg.trim() && !extra.confirmado) return;
 
@@ -46,10 +48,10 @@ function HerculesChat() {
         <div className="chat-container">
             {/* Cabeçalho */}
             <div className="chat-header">
-                <img src="/hercules2.png" alt="Hércules" className="header-icon"   style={{ width: "auto", height: "50px",marginRight: "10px" }}
-                />
+                <img src="/hercules2.png" alt="Hércules" className="header-icon" />
                 HÉRCULES
             </div>
+
             {/* Área de mensagens */}
             <div className="chat-body">
                 {chat.length === 0 && (
