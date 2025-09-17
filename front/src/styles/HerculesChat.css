@@ -66,6 +66,11 @@
     border-bottom-left-radius: 4px;
 }
 
+.bubble {
+    white-space: pre-line;
+}
+
+
 /* ------------------ INPUT ------------------ */
 .chat-input {
     display: flex;
