@@ -18,6 +18,9 @@ function HerculesChat() {
         const novaMsg = extra.confirmado ? null : { autor: "Você", texto: msg };
         if (novaMsg) setChat([...chat, novaMsg]);
 
+        setMsg(""); // ✅ limpa imediatamente
+
+
         setLoading(true);
         try {
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/hercules/chat`, {
@@ -86,7 +89,15 @@ function HerculesChat() {
                         )}
                     </div>
                 ))}
-                {loading && <p className="text-muted"><i>Hércules está pensando...</i></p>}
+                {loading && (
+                    <div className="chat-message hercules">
+                        <div className="bubble typing">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Input fixo */}
