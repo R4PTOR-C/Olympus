@@ -227,9 +227,9 @@ const TreinosEdit = () => {
                         {/* Exercícios Disponíveis */}
                         <h4 className="mt-4">Exercícios Disponíveis</h4>
                         <div className="input-group mb-3">
-              <span className="input-group-text">
-                <i className="bi bi-search"></i>
-              </span>
+  <span className="input-group-text">
+    <i className="bi bi-search"></i>
+  </span>
                             <input
                                 type="text"
                                 className="form-control"
@@ -239,43 +239,78 @@ const TreinosEdit = () => {
                             />
                         </div>
 
-                        <div className="row g-2">
-                            {exercicios
-                                .filter((ex) =>
-                                    (ex.nome_exercicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                        ex.grupo_muscular?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-                                    !exerciciosSalvos.some((s) => s.exercicio_id === ex.id)
-                                )
-                                .map((ex) => (
-                                    <div key={ex.id} className="col-6 col-md-3">
-                                        <div
-                                            className="card h-100 text-center shadow-sm p-2"
-                                            onClick={() => setExercicioAtivo(ex.id)}
-                                        >
-                                            <img
-                                                src={ex.gif_url}
-                                                alt={ex.nome_exercicio}
-                                                className="card-img-top"
-                                                style={{ height: '80px', objectFit: 'contain' }}
-                                            />
-                                            <h6 className="mt-1" style={{ fontSize: '0.8rem' }}>{ex.nome_exercicio}</h6>
+                        <div className="accordion" id="accordionExercicios">
+                            {["Peitoral", "Bíceps", "Tríceps", "Costas", "Ombros", "Pernas", "Abdômen", "Panturrilha"].map((grupo, idx) => {
+                                // filtra só os exercícios desse grupo
+                                const exerciciosGrupo = exercicios.filter(
+                                    (ex) =>
+                                        (ex.nome_exercicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                            ex.grupo_muscular?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+                                        ex.grupo_muscular === grupo &&
+                                        !exerciciosSalvos.some((s) => s.exercicio_id === ex.id)
+                                );
 
-                                            {exercicioAtivo === ex.id && (
-                                                <button
-                                                    type="button"   // 👈 fundamental
-                                                    className="btn btn-sm btn-success mt-1"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleAdicionarExercicio(ex);
-                                                    }}
-                                                >
-                                                    Usar
-                                                </button>
-                                            )}
+                                if (exerciciosGrupo.length === 0) return null;
+
+                                return (
+                                    <div className="accordion-item" key={grupo}>
+                                        <h2 className="accordion-header" id={`heading-${idx}`}>
+                                            <button
+                                                className="accordion-button collapsed"
+                                                type="button"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target={`#collapse-${idx}`}
+                                                aria-expanded="false"
+                                                aria-controls={`collapse-${idx}`}
+                                            >
+                                                {grupo}
+                                            </button>
+                                        </h2>
+                                        <div
+                                            id={`collapse-${idx}`}
+                                            className="accordion-collapse collapse"
+                                            aria-labelledby={`heading-${idx}`}
+                                            data-bs-parent="#accordionExercicios"
+                                        >
+                                            <div className="accordion-body">
+                                                <div className="row g-2">
+                                                    {exerciciosGrupo.map((ex) => (
+                                                        <div key={ex.id} className="col-6 col-md-3">
+                                                            <div
+                                                                className="card h-100 text-center shadow-sm p-2"
+                                                                onClick={() => setExercicioAtivo(ex.id)}
+                                                            >
+                                                                <img
+                                                                    src={ex.gif_url}
+                                                                    alt={ex.nome_exercicio}
+                                                                    className="card-img-top"
+                                                                    style={{ height: '80px', objectFit: 'contain' }}
+                                                                />
+                                                                <h6 className="mt-1" style={{ fontSize: '0.8rem' }}>{ex.nome_exercicio}</h6>
+
+                                                                {exercicioAtivo === ex.id && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-sm btn-success mt-1"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleAdicionarExercicio(ex);
+                                                                        }}
+                                                                    >
+                                                                        Usar
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                ))}
+                                );
+                            })}
                         </div>
+
 
                         {/* Botões */}
                         <div className="botao-flutuante">

@@ -200,7 +200,7 @@ const UsuariosView = () => {
                                                             <small className="text-muted mb-2">{t.descricao}</small>
                                                             <div className="mt-auto d-flex justify-content-end gap-2">
                                                                 <button
-                                                                    className="btn btn-edit"
+                                                                    className="btn btn-success"
                                                                     onClick={() => navigate(`/treinos/edit/${id}/${t.id}`)}
                                                                 >
                                                                     Editar
