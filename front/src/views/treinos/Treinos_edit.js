@@ -201,23 +201,26 @@ const TreinosEdit = () => {
                             {exerciciosSalvos.length > 0 ? (
                                 exerciciosSalvos.map((ex) => (
                                     <div key={ex.exercicio_id} className="col-6 col-md-3">
-                                        <div className="card h-100 text-center shadow-sm p-2">
+                                        <div className="card h-100 text-center shadow-sm p-2 d-flex flex-column">
                                             <img
                                                 src={ex.gif_url}
                                                 alt={ex.nome_exercicio}
-                                                className="card-img-top"
+                                                className="card-img-top img-exercicio"
                                                 style={{ height: '80px', objectFit: 'contain' }}
                                             />
-                                            <h6 className="mt-1" style={{ fontSize: '0.8rem' }}>{ex.nome_exercicio}</h6>
+                                            <h6 className="mt-1 flex-grow-1" style={{ fontSize: '0.8rem' }}>
+                                                {ex.nome_exercicio}
+                                            </h6>
                                             <button
-                                                type="button"   // 👈 isso evita que dispare o onSubmit
-                                                className="btn btn-sm btn-danger mt-1"
+                                                type="button"
+                                                className="btn btn-sm btn-danger mt-1 mt-auto"
                                                 onClick={() => handleRemoveExercicio(ex.exercicio_id)}
                                             >
                                                 Remover
                                             </button>
                                         </div>
                                     </div>
+
                                 ))
                             ) : (
                                 <p className="text-muted">Nenhum exercício selecionado ainda.</p>
@@ -275,33 +278,45 @@ const TreinosEdit = () => {
                                             <div className="accordion-body">
                                                 <div className="row g-2">
                                                     {exerciciosGrupo.map((ex) => (
-                                                        <div key={ex.id} className="col-6 col-md-3">
+                                                        <div key={ex.id} className="col-6 col-md-3 position-relative">
                                                             <div
-                                                                className="card h-100 text-center shadow-sm p-2"
+                                                                className={`card shadow-sm p-2 d-flex flex-column ${exercicioAtivo === ex.id ? "ativo" : ""}`}
                                                                 onClick={() => setExercicioAtivo(ex.id)}
+                                                                style={exercicioAtivo === ex.id ? {
+                                                                    position: 'absolute',
+                                                                    top: '-10px',
+                                                                    left: '-10px',
+                                                                    right: '-10px', // garante centralização
+                                                                    zIndex: 20,
+                                                                } : {}}
                                                             >
-                                                                <img
-                                                                    src={ex.gif_url}
-                                                                    alt={ex.nome_exercicio}
-                                                                    className="card-img-top"
-                                                                    style={{ height: '80px', objectFit: 'contain' }}
-                                                                />
-                                                                <h6 className="mt-1" style={{ fontSize: '0.8rem' }}>{ex.nome_exercicio}</h6>
+                                                                <div className="card-content text-center d-flex flex-column h-100">
+                                                                    <img
+                                                                        src={ex.gif_url}
+                                                                        alt={ex.nome_exercicio}
+                                                                        className="card-img-top mx-auto"
+                                                                        style={{ height: '80px', objectFit: 'contain' }}
+                                                                    />
+                                                                    <h6 className="mt-1" style={{ fontSize: '0.8rem' }}>{ex.nome_exercicio}</h6>
 
-                                                                {exercicioAtivo === ex.id && (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn btn-sm btn-success mt-1"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleAdicionarExercicio(ex);
-                                                                        }}
-                                                                    >
-                                                                        Usar
-                                                                    </button>
-                                                                )}
+                                                                    {exercicioAtivo === ex.id && (
+                                                                        <button
+                                                                            type="button"
+                                                                            className="btn btn-sm btn-success mt-auto"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                handleAdicionarExercicio(ex);
+                                                                            }}
+                                                                        >
+                                                                            Usar
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
+
+
+
                                                     ))}
                                                 </div>
                                             </div>
