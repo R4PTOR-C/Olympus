@@ -345,6 +345,54 @@ body.dark-mode .accordion-body {
     color: #ddd !important;
 }
 
+.img-exercicio {
+    border-radius: 12px; /* ajuste o valor conforme quiser */
+}
+
+.card.ativo {
+    transform: scale(1.15);
+    transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    border: 2px solid #198754;
+}
+
+
+.card-ativo .btn {
+    width: 100%;                /* botão ocupa largura total */
+    margin-top: auto;           /* sempre embaixo */
+}
+.card-wrapper {
+    position: relative; /* container base */
+}
+
+.card-flutuante {
+    transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+    cursor: pointer;
+}
+
+.card-flutuante.ativo {
+    position: absolute;      /* sai do fluxo do grid */
+    top: -10px;              /* ajusta para flutuar */
+    left: -10px;
+    width: calc(100% + 20px); /* aumenta sem quebrar layout */
+    transform: scale(1.15);   /* crescimento */
+    z-index: 20;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    border: 2px solid #198754;
+}
+
+.card-flutuante.ativo .btn {
+    position: absolute;
+    bottom: 10px;            /* sempre embaixo do card */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;              /* botão centralizado e menor que o card */
+}
+
+
+
+
+
 
 /* ========================= */
 /* ANIMAÇÕES                 */

@@ -143,6 +143,15 @@
     padding-bottom: 7rem; /* espaço extra pra lista não ficar escondida */
 }
 
+.btn-edit, .btn-cancel {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-edit:active, .btn-cancel:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
 
 
 /* Estilo mobile-friendly para tabela de exercícios */
