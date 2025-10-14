@@ -103,6 +103,39 @@ router.patch('/:treinoId/dia', async (req, res) => {
     }
 });
 
+// PATCH genérico - atualiza apenas os campos enviados
+router.patch('/treinos/:treinoId', async (req, res) => {
+    const { treinoId } = req.params;
+    const campos = req.body;
+
+    // impede update vazio
+    if (!campos || Object.keys(campos).length === 0) {
+        return res.status(400).json({ error: 'Nenhum campo enviado para atualização.' });
+    }
+
+    try {
+        // monta dinamicamente o SET do SQL
+        const colunas = Object.keys(campos)
+            .map((col, idx) => `${col} = $${idx + 1}`)
+            .join(', ');
+
+        const valores = Object.values(campos);
+
+        const result = await db.query(
+            `UPDATE treinos SET ${colunas} WHERE id = $${valores.length + 1} RETURNING *`,
+            [...valores, treinoId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Treino não encontrado' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Erro ao atualizar treino parcialmente:', error);
+        res.status(500).json({ error: 'Erro ao atualizar treino parcialmente' });
+    }
+});
 
 
 
