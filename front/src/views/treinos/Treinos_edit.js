@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
 import ModalCarregando from '../components/ModalCarregando';
-import '../../styles/UsuariosEdit.css'; // mantém o mesmo padrão visual
+import '../../styles/UsuariosEdit.css';
 
 const TreinosEdit = () => {
     const { id, treinoId } = useParams();
@@ -14,6 +14,9 @@ const TreinosEdit = () => {
     const [error, setError] = useState(null);
     const [treino, setTreino] = useState(null);
     const [exerciciosSalvos, setExerciciosSalvos] = useState([]);
+    const [exercicios, setExercicios] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [exercicioAtivo, setExercicioAtivo] = useState(null);
     const [campoEditando, setCampoEditando] = useState(null);
 
     useEffect(() => {
@@ -32,10 +35,6 @@ const TreinosEdit = () => {
                 const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`);
                 if (!res.ok) throw new Error(`Erro ao buscar treino (${res.status})`);
                 const data = await res.json();
-                if (funcao !== 'Professor' && parseInt(data.usuario_id) !== parseInt(userId)) {
-                    navigate(`/usuarios/view/${userId}`);
-                    return;
-                }
                 setTreino(data);
             } catch (err) {
                 console.error(err);
@@ -55,13 +54,23 @@ const TreinosEdit = () => {
             }
         };
 
+        const fetchExercicios = async () => {
+            try {
+                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`);
+                const data = await res.json();
+                setExercicios(data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
         fetchTreino();
         fetchExerciciosSalvos();
+        fetchExercicios();
     }, [treinoId, id, userId, funcao, navigate]);
 
     const handleSalvarCampo = async (campo, valor) => {
         try {
-            // Atualiza localmente
             setTreino(prev => ({ ...prev, [campo]: valor }));
 
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
@@ -75,6 +84,25 @@ const TreinosEdit = () => {
             console.error(err);
         } finally {
             setCampoEditando(null);
+        }
+    };
+
+    const handleAdicionarExercicio = async (ex) => {
+        try {
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exercicios: [ex.id] }),
+            });
+
+            if (res.ok) {
+                setExerciciosSalvos([...exerciciosSalvos, { ...ex, exercicio_id: ex.id }]);
+                setExercicioAtivo(null);
+            } else {
+                alert('Erro ao adicionar exercício');
+            }
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -142,7 +170,7 @@ const TreinosEdit = () => {
                 ))}
             </div>
 
-            {/* Card: Exercícios */}
+            {/* Card: Exercícios do Treino */}
             <div className="card card-section mt-4">
                 <div className="card-header-custom">
                     <i className="bi bi-dumbbell me-2"></i> Exercícios do Treino
@@ -174,6 +202,95 @@ const TreinosEdit = () => {
                 ) : (
                     <p className="text-muted m-3">Nenhum exercício vinculado ainda.</p>
                 )}
+            </div>
+
+            {/* Card: Exercícios Disponíveis */}
+            <div className="card card-section mt-4">
+                <div className="card-header-custom">
+                    <i className="bi bi-list-ul me-2"></i> Exercícios Disponíveis
+                </div>
+
+                <div className="input-group p-3">
+                    <span className="input-group-text"><i className="bi bi-search"></i></span>
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Buscar por nome ou grupo muscular..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+
+                <div className="accordion" id="accordionExercicios">
+                    {["Peitoral", "Bíceps", "Tríceps", "Costas", "Ombros", "Pernas", "Abdômen", "Panturrilha"].map((grupo, idx) => {
+                        const exerciciosGrupo = exercicios.filter(
+                            (ex) =>
+                                (ex.nome_exercicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    ex.grupo_muscular?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+                                ex.grupo_muscular === grupo &&
+                                !exerciciosSalvos.some((s) => s.exercicio_id === ex.id)
+                        );
+
+                        if (exerciciosGrupo.length === 0) return null;
+
+                        return (
+                            <div className="accordion-item" key={grupo}>
+                                <h2 className="accordion-header" id={`heading-${idx}`}>
+                                    <button
+                                        className="accordion-button collapsed"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target={`#collapse-${idx}`}
+                                        aria-expanded="false"
+                                        aria-controls={`collapse-${idx}`}
+                                    >
+                                        {grupo}
+                                    </button>
+                                </h2>
+                                <div
+                                    id={`collapse-${idx}`}
+                                    className="accordion-collapse collapse"
+                                    aria-labelledby={`heading-${idx}`}
+                                    data-bs-parent="#accordionExercicios"
+                                >
+                                    <div className="accordion-body">
+                                        <div className="row g-2">
+                                            {exerciciosGrupo.map((ex) => (
+                                                <div key={ex.id} className="col-6 col-md-3">
+                                                    <div
+                                                        className="card h-100 text-center shadow-sm p-2"
+                                                        onClick={() => setExercicioAtivo(ex.id)}
+                                                    >
+                                                        <img
+                                                            src={ex.gif_url}
+                                                            alt={ex.nome_exercicio}
+                                                            className="card-img-top"
+                                                            style={{ height: '80px', objectFit: 'contain' }}
+                                                        />
+                                                        <h6 className="mt-1" style={{ fontSize: '0.8rem' }}>{ex.nome_exercicio}</h6>
+
+                                                        {exercicioAtivo === ex.id && (
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-sm btn-success mt-1"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleAdicionarExercicio(ex);
+                                                                }}
+                                                            >
+                                                                Usar
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* Modal de edição */}
