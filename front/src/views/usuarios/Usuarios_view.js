@@ -84,7 +84,6 @@ const UsuariosView = () => {
             return;
         }
 
-        // ⚡ update otimista → já atualiza a UI
         setTreinos(prev =>
             prev.map(t =>
                 t.id === parseInt(treinoId) ? { ...t, dia_semana: novoDia } : t

@@ -2,37 +2,68 @@
 .chat-container {
     display: flex;
     flex-direction: column;
-
-    /* Altura considerando navbars superior e inferior */
-    height: calc(100vh - var(--topbar-h) - var(--bottombar-h) - env(safe-area-inset-bottom));
-
-    max-width: 600px;
+    height: calc(100svh - var(--topbar-h, 0px) - var(--bottombar-h, 0px) - env(safe-area-inset-bottom));
+    max-width: 700px;
     margin: auto;
     border-radius: 12px;
     overflow: hidden;
     background: var(--color-bg);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    transition: background 0.3s, color 0.3s;
 }
-
-
 
 /* ------------------ HEADER ------------------ */
 .chat-header {
     background: var(--color-bg);
     color: var(--color-text);
-    padding: 12px;
+    padding: 14px;
     text-align: center;
-    font-weight: bold;
+    font-weight: 700;
     font-size: 18px;
-    font-family: delirium;
+    font-family: delirium, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+/* Ícone adaptativo */
+.header-icon {
+    height: 40px;
+    width: 40px;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+    content: url("../../public/hercules2.png");
+}
+
+body.dark-mode .header-icon {
+    content: url("../../public/hercules.png");
 }
 
 /* ------------------ BODY ------------------ */
 .chat-body {
     flex: 1;
-    padding: 16px;
+    padding: 16px 14px;
     overflow-y: auto;
     background: var(--color-body-bg);
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+
+    padding-bottom: calc(80px + var(--bottombar-h, 0px) + env(safe-area-inset-bottom));
+
+}
+
+/* Scrollbar discreta */
+.chat-body::-webkit-scrollbar {
+    width: 6px;
+}
+.chat-body::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
 }
 
 /* ------------------ MENSAGENS ------------------ */
@@ -40,22 +71,21 @@
     margin-bottom: 12px;
     display: flex;
     flex-direction: column;
+    animation: fadeIn 0.2s ease-in-out;
 }
 
-.chat-message.me {
-    align-items: flex-end;
-}
-
-.chat-message.hercules {
-    align-items: flex-start;
-}
+.chat-message.me { align-items: flex-end; }
+.chat-message.hercules { align-items: flex-start; }
 
 .chat-message .bubble {
     padding: 10px 14px;
     border-radius: 16px;
-    max-width: 75%;
+    max-width: 80%;
     word-wrap: break-word;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    white-space: pre-line;
+    line-height: 1.4;
+    transition: transform 0.15s ease, background 0.3s;
 }
 
 /* Bolhas */
@@ -71,67 +101,76 @@
     border-bottom-left-radius: 4px;
 }
 
-.bubble {
-    white-space: pre-line;
+/* Animação sutil de entrada */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
-
 
 /* ------------------ INPUT ------------------ */
 .chat-input {
+    position: fixed; /* muda de sticky para fixed */
+    bottom: calc(var(--bottombar-h, 0px) + env(safe-area-inset-bottom)); /* ✅ fica acima da bottom bar */
+    left: 0;
+    right: 0;
+    z-index: 999; /* garante que fique acima do conteúdo */
+
     display: flex;
+    align-items: center;
     gap: 8px;
-    padding: 12px;
+    padding: 10px 12px;
     border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+    max-width: 700px;
+    margin: 0 auto; /* centraliza se tiver layout fixo */
+}
+
+
+.chat-input input {
+    flex: 1;
+    border-radius: 24px;
+    padding: 10px 14px;
+    border: 1px solid var(--color-border);
+    background: var(--color-body-bg);
+    color: var(--color-text);
+    font-size: 15px;
+    transition: border-color 0.2s, background 0.3s;
+}
+
+.chat-input input:focus {
+    outline: none;
+    border-color: var(--color-primary);
     background: var(--color-bg);
 }
 
 .send-btn {
     font-size: 18px;
-    padding: 0 16px;
+    padding: 0 14px;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--color-primary);
+    background: transparent;
+    border: none;
+    transition: transform 0.1s ease, color 0.3s;
 }
 
-/* ------------------ VARIÁVEIS DE TEMA ------------------ */
-:root {
-    --color-bg: #ffffff;
-    --color-text: #000000;
-    --color-body-bg: #f4f6f9;
-    --color-primary: #19222B;
-    --color-bubble-hercules: #e9ecef;
-    --color-border: #dee2e6;
+.send-btn:active {
+    transform: scale(0.9);
 }
 
-/* Dark Mode */
-body.dark-mode {
-    --color-bg: #1e1e1e;
-    --color-text: #ffffff;
-    --color-body-bg: #121212;
-    --color-primary: #2f3840;
-    --color-bubble-hercules: #2b2b2b;
-    --color-border: #444;
+.send-btn:disabled {
+    opacity: 0.5;
 }
 
-
-.header-icon {
-    height: 50px;
-    margin-right: 10px;
-    content: url("../../public/hercules2.png"); /* padrão */
-}
-
-body.dark-mode .header-icon {
-    content: url("../../public/hercules.png"); /* muda no escuro */
-}
-
-/* Efeito de digitação estilo WhatsApp */
+/* ------------------ DIGITAÇÃO ------------------ */
 .bubble.typing {
     display: flex;
     gap: 4px;
     padding: 10px 14px;
     border-radius: 16px;
     background: var(--color-bubble-hercules);
-    width: 50px; /* ajusta conforme necessário */
+    width: 50px;
     justify-content: center;
     align-items: flex-end;
     height: 20px;
@@ -146,21 +185,90 @@ body.dark-mode .header-icon {
     animation: bounce 1.2s infinite ease-in-out;
 }
 
-.bubble.typing span:nth-child(1) {
-    animation-delay: 0s;
-}
-.bubble.typing span:nth-child(2) {
-    animation-delay: 0.2s;
-}
-.bubble.typing span:nth-child(3) {
-    animation-delay: 0.4s;
-}
+.bubble.typing span:nth-child(1) { animation-delay: 0s; }
+.bubble.typing span:nth-child(2) { animation-delay: 0.2s; }
+.bubble.typing span:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes bounce {
-    0%, 80%, 100% {
-        transform: translateY(0);
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.7; }
+    40% { transform: translateY(-6px); opacity: 1; }
+}
+
+.btn-copy {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.icon-copy {
+    width: 18px;
+    height: 18px;
+    opacity: 0.8;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-copy:hover .icon-copy {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+/* Animação de feedback (pequeno flash verde quando copia) */
+.icon-copy.copied {
+    filter: brightness(1.8) saturate(1.2) drop-shadow(0 0 4px #00ff88);
+    transform: scale(1.2);
+    transition: all 0.3s ease;
+}
+
+
+/* ------------------ VARIÁVEIS DE TEMA ------------------ */
+:root {
+    --color-bg: #ffffff;
+    --color-text: #111111;
+    --color-body-bg: #f7f8fa;
+    --color-primary: #19222B;
+    --color-bubble-hercules: #e9ecef;
+    --color-border: #dee2e6;
+}
+
+/* Dark Mode */
+body.dark-mode {
+    --color-bg: #1e1e1e;
+    --color-text: #f1f1f1;
+    --color-body-bg: #111;
+    --color-primary: #2f3840;
+    --color-bubble-hercules: #2b2b2b;
+    --color-border: #444;
+}
+
+
+/* ------------------ MOBILE REFINEMENTS ------------------ */
+@media (max-width: 768px) {
+    .chat-container {
+        height: calc(100svh - var(--bottombar-h, 0px) - env(safe-area-inset-bottom));
+        border-radius: 0;
+        max-width: 100%;
+        box-shadow: none;
     }
-    40% {
-        transform: translateY(-6px);
+
+    .chat-body {
+        padding: 12px;
+    }
+
+    .chat-input input {
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    .send-btn {
+        font-size: 22px;
+        padding: 0 16px;
+    }
+
+    .bubble {
+        font-size: 15.5px;
     }
 }

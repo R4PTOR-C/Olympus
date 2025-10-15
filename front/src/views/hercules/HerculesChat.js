@@ -71,24 +71,46 @@ function HerculesChat() {
                             <strong>{c.autor}:</strong> {c.texto}
                         </div>
 
-                        {c.autor === "Hércules" && c.meta?.confirmado === false && (
-                            <div className="mt-2 d-flex gap-2">
+                        {c.autor === "Hércules" && (
+                            <div className="mt-2 d-flex gap-2 align-items-center">
+                                {c.meta?.confirmado === false && (
+                                    <>
+                                        <button
+                                            className="btn btn-success btn-sm"
+                                            onClick={() => enviar({ confirmado: true })}
+                                        >
+                                            Confirmar
+                                        </button>
+                                        <button
+                                            className="btn btn-outline-secondary btn-sm"
+                                            onClick={() => setMsg("")}
+                                        >
+                                            Alterar
+                                        </button>
+                                    </>
+                                )}
+
+                                {/* 🔹 Botão de copiar com ícone */}
                                 <button
-                                    className="btn btn-success btn-sm"
-                                    onClick={() => enviar({ confirmado: true })}
+                                    className="btn btn-outline-secondary btn-sm btn-copy"
+                                    title="Copiar mensagem"
+                                    onClick={(e) => {
+                                        navigator.clipboard.writeText(c.texto);
+                                        const btn = e.currentTarget;
+                                        const img = btn.querySelector("img");
+
+                                        // feedback visual
+                                        img.classList.add("copied");
+                                        setTimeout(() => img.classList.remove("copied"), 1200);
+                                    }}
                                 >
-                                    Confirmar
-                                </button>
-                                <button
-                                    className="btn btn-outline-secondary btn-sm"
-                                    onClick={() => setMsg("")}
-                                >
-                                    Alterar
+                                    <img src="/copy.png" alt="Copiar" className="icon-copy" />
                                 </button>
                             </div>
                         )}
                     </div>
                 ))}
+
                 {loading && (
                     <div className="chat-message hercules">
                         <div className="bubble typing">
