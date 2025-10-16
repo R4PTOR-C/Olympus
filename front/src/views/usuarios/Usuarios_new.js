@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CropAvatar from "../components/CropAvatar";
+import ModalSucesso from "../components/ModalSucesso";
 
 function Usuarios_new() {
+    const navigate = useNavigate();
+
     const [nome, setNome] = useState('');
     const [email, setEmail] = useState('');
     const [genero, setGenero] = useState('');
-    const [idade, setIdade] = useState('');
     const [dataNascimento, setDataNascimento] = useState('');
     const [telefone, setTelefone] = useState('');
     const [altura, setAltura] = useState('');
@@ -18,6 +21,7 @@ function Usuarios_new() {
     const [message, setMessage] = useState(null);
     const [showCropper, setShowCropper] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
+    const [showModal, setShowModal] = useState(false);
 
     const funcao = 'Aluno';
 
@@ -38,6 +42,12 @@ function Usuarios_new() {
         setShowCropper(false);
     };
 
+    function formatarDataParaEnvio(dataStr) {
+        if (!dataStr) return '';
+        const data = new Date(dataStr);
+        return data.toISOString().split('T')[0]; // garante formato ISO
+    }
+
     const handleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
@@ -47,17 +57,14 @@ function Usuarios_new() {
         formData.append('nome', nome);
         formData.append('email', email);
         formData.append('genero', genero);
-        formData.append('idade', idade);
-        formData.append('data_nascimento', dataNascimento);
+        formData.append('data_nascimento', formatarDataParaEnvio(dataNascimento));
         formData.append('telefone', telefone);
         formData.append('altura', altura);
         formData.append('peso', peso);
         formData.append('objetivo', objetivo);
         formData.append('senha', senha);
         formData.append('funcao', funcao);
-        if (avatar) {
-            formData.append('avatar', avatar);
-        }
+        if (avatar) formData.append('avatar', avatar);
 
         try {
             const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios`, {
@@ -65,12 +72,17 @@ function Usuarios_new() {
                 body: formData,
             });
 
+            const text = await response.text();
+            console.log("Status:", response.status);
+            console.log("Resposta do servidor:", text);
+
             if (response.ok) {
-                setMessage({ type: 'success', text: 'Usuário adicionado com sucesso!' });
+                setShowModal(true);
+
+                // limpa os campos
                 setNome('');
                 setEmail('');
                 setGenero('');
-                setIdade('');
                 setDataNascimento('');
                 setTelefone('');
                 setAltura('');
@@ -79,8 +91,19 @@ function Usuarios_new() {
                 setSenha('');
                 setAvatar(null);
                 setPreviewUrl(null);
+
+                // redireciona após 1,5s
+                setTimeout(() => {
+                    setShowModal(false);
+                    navigate('/');
+                }, 1500);
             } else {
-                setMessage({ type: 'error', text: 'Falha ao adicionar usuário.' });
+                try {
+                    const erro = JSON.parse(text);
+                    setMessage({ type: 'error', text: erro.error || 'Falha ao adicionar usuário.' });
+                } catch {
+                    setMessage({ type: 'error', text: text || 'Falha ao adicionar usuário.' });
+                }
             }
         } catch (error) {
             console.error('Erro:', error);
@@ -92,7 +115,7 @@ function Usuarios_new() {
 
     return (
         <div className="container mt-5">
-            <h2 className="text-center mb-4">Adicionar Novo Usuário</h2>
+            <h2 className="text-center mb-4">Criar Conta</h2>
 
             {message && (
                 <div className={`alert ${message.type === 'success' ? 'alert-success' : 'alert-danger'}`} role="alert">
@@ -139,7 +162,6 @@ function Usuarios_new() {
                 {[
                     { label: 'Nome', type: 'text', value: nome, setter: setNome },
                     { label: 'Email', type: 'email', value: email, setter: setEmail },
-                    { label: 'Idade', type: 'number', value: idade, setter: setIdade, min: 1 },
                     { label: 'Data de Nascimento', type: 'date', value: dataNascimento, setter: setDataNascimento },
                     { label: 'Telefone', type: 'tel', value: telefone, setter: setTelefone },
                     { label: 'Altura (cm)', type: 'number', value: altura, setter: setAltura },
@@ -202,6 +224,8 @@ function Usuarios_new() {
                     </button>
                 </div>
             </form>
+
+            <ModalSucesso show={showModal} mensagem="Conta criada com sucesso!" />
         </div>
     );
 }
