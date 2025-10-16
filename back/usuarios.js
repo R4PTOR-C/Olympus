@@ -64,7 +64,7 @@ router.post('/', upload.single('avatar'), async (req, res) => {
         const resultado = await db.query(
             `INSERT INTO usuarios 
             (nome, email, genero, senha, funcao, avatar, data_nascimento, telefone, altura, peso, objetivo) 
-            VALUES ($1,$2,$3,$5,$6,$7,$8,$9,$10,$11,$12) 
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) 
             RETURNING *`,
             [nome, normalizedEmail, genero, hashedPassword, funcao, avatar, data_nascimento || null, telefone || null, altura || null, peso || null, objetivo || null]
         );
