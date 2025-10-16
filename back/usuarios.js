@@ -48,7 +48,7 @@ router.get('/:id', async (req, res) => {
 
 // POST - cria novo usuário com avatar
 router.post('/', upload.single('avatar'), async (req, res) => {
-    const { nome, email, genero, idade, senha, funcao, data_nascimento, telefone, altura, peso, objetivo } = req.body;
+    const { nome, email, genero, senha, funcao, data_nascimento, telefone, altura, peso, objetivo } = req.body;
     const avatar = req.file ? req.file.path : null;
     const normalizedEmail = email.toLowerCase();
 
@@ -66,7 +66,7 @@ router.post('/', upload.single('avatar'), async (req, res) => {
             (nome, email, genero, senha, funcao, avatar, data_nascimento, telefone, altura, peso, objetivo) 
             VALUES ($1,$2,$3,$5,$6,$7,$8,$9,$10,$11,$12) 
             RETURNING *`,
-            [nome, normalizedEmail, genero, idade, hashedPassword, funcao, avatar, data_nascimento || null, telefone || null, altura || null, peso || null, objetivo || null]
+            [nome, normalizedEmail, genero, hashedPassword, funcao, avatar, data_nascimento || null, telefone || null, altura || null, peso || null, objetivo || null]
         );
 
         res.status(201).json(resultado.rows[0]);
