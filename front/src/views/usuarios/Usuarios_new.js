@@ -126,24 +126,39 @@ function Usuarios_new() {
             <form onSubmit={handleSubmit}>
                 {/* Avatar */}
                 <div className="d-flex justify-content-center mb-4">
-                    <div className="position-relative">
-                        {previewUrl && (
-                            <img
-                                src={previewUrl}
-                                alt="Preview"
-                                className="rounded-circle shadow"
-                                style={{ width: 120, height: 120, objectFit: 'cover' }}
-                            />
-                        )}
+                    <div className="position-relative" style={{ width: 140, height: 140 }}>
+                        <img
+                            src={previewUrl || "/user.png"} // pode usar um placeholder
+                            alt="Preview"
+                            className="rounded-circle shadow"
+                            style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                border: "2px solid #dee2e6",
+                            }}
+                        />
+
                         <button
                             type="button"
-                            className="btn btn-light border position-absolute bottom-0 start-50 translate-middle-x"
-                            style={{ borderRadius: '50%', padding: '0.3rem 0.5rem', fontSize: '0.8rem' }}
-                            onClick={() => document.getElementById('avatar-input').click()}
+                            className="btn btn-primary shadow-lg position-absolute bottom-0 start-50 translate-middle-x"
+                            style={{
+                                borderRadius: "50%",
+                                width: 48,
+                                height: 48,
+                                fontSize: "1.3rem",
+                                border: "3px solid white",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                transform: "translate(-50%, 30%)", // 🔹 pequeno deslocamento visual (opcional)
+                            }}
+                            onClick={() => document.getElementById("avatar-input").click()}
                             title="Selecionar avatar"
                         >
-                            <i className="bi bi-camera"></i>
+                            <i className="bi bi-camera-fill"></i>
                         </button>
+
                         <input
                             type="file"
                             id="avatar-input"
@@ -153,6 +168,7 @@ function Usuarios_new() {
                         />
                     </div>
                 </div>
+
 
                 {showCropper && selectedFile && (
                     <CropAvatar file={selectedFile} onCropped={handleCropped} onClose={() => setShowCropper(false)} />
