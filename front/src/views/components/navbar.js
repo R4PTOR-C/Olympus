@@ -43,6 +43,7 @@ function Navbar() {
                     {funcao === 'Professor' ? (
                         <>
                             <Link className="nav-link" to="/usuarios">Alunos</Link>
+                            <Link className="nav-link" to="/meus-chats">Mensagens</Link>
                             <div className="nav-item dropdown">
                                 <a
                                     className="nav-link dropdown-toggle"

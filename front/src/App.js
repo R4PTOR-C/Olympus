@@ -29,6 +29,9 @@ import NavbarInferior from "./views/components/NavbarInferior";
 import HistoricoExercicios from './views/exercicios/HistoricoExercicios';
 import './imgs/muscle.gif';
 import HerculesChat from "./views/hercules/HerculesChat";
+import ProfessoresList from "./views/professores/ProfessoresList";
+import ChatView from "./views/chat/ChatView";
+import ChatsList from "./views/chat/ChatsList";
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }) {
@@ -105,6 +108,10 @@ function AppContent() {
                 <Route path="/avaliacoes/:id" element={<ProtectedRoute><Avaliacoes_view /></ProtectedRoute>} />
                 <Route path="/avaliacoes/:id/new" element={<ProtectedRoute><Avaliacoes_new /></ProtectedRoute>} />
                 <Route path="/hercules" element={<HerculesChat />} />
+                <Route path="/professores" element={<ProfessoresList />} />
+                <Route path="/chat/:chatId" element={<ChatView />} />
+                <Route path="/meus-chats" element={<ChatsList />} />
+
             </Routes>
 
             {loggedIn && !['/', '/sign-in'].includes(location.pathname) && <NavbarInferior />}
