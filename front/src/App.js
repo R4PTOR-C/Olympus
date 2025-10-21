@@ -86,7 +86,7 @@ function AppContent() {
                     loggedIn ? <Navigate to={`/home/${userId}`} /> : <Login />
                 } />
                 <Route path="/sign-in" element={<Usuarios_new />} />
-                <Route path="/professor_new" element={<Professor_new />} />
+                <Route path="/sign-in_professor" element={<Professor_new />} />
                 <Route path="/home/:id" element={<ProtectedRoute><Home /></ProtectedRoute>} />
                 <Route path="/usuarios" element={<ProtectedRoute><Usuarios_index /></ProtectedRoute>} />
                 <Route path="/usuarios/edit/:id" element={<ProtectedRoute><UsuariosEdit /></ProtectedRoute>} />

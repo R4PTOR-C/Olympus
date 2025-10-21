@@ -22,7 +22,7 @@ const Usuarios_index = () => {
             .then(data => {
                 const alunos = data.filter(usuario => usuario.funcao === "Aluno");
                 setUsuarios(alunos);
-                setFilteredUsuarios(alunos); // Inicia a lista filtrada com todos os usuários
+                setFilteredUsuarios(alunos);
                 setLoading(false);
             })
             .catch(error => {
@@ -31,25 +31,6 @@ const Usuarios_index = () => {
                 setLoading(false);
             });
     }, [apiUrl]);
-
-    const handleDelete = (id) => {
-        if (window.confirm("Tem certeza que deseja deletar este usuário?")) {
-            fetch(`${apiUrl}/usuarios/${id}`, {
-                method: 'DELETE',
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Erro ao deletar o usuário');
-                    }
-                    setUsuarios(usuarios.filter(usuario => usuario.id !== id));
-                    setFilteredUsuarios(filteredUsuarios.filter(usuario => usuario.id !== id));
-                })
-                .catch(error => {
-                    console.error("Erro ao deletar o usuário:", error);
-                    setError("Erro ao tentar deletar o usuário. Tente novamente.");
-                });
-        }
-    };
 
     const handleSearch = (e) => {
         const term = e.target.value;
@@ -62,7 +43,7 @@ const Usuarios_index = () => {
             );
             setFilteredUsuarios(filtered);
         } else {
-            setFilteredUsuarios(usuarios); // Mostra todos se o termo de busca estiver vazio
+            setFilteredUsuarios(usuarios);
         }
     };
 
@@ -106,14 +87,7 @@ const Usuarios_index = () => {
                             <td>{usuario.idade}</td>
                             <td>
                                 <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success me-2">Criar Treino</Link>
-                                <Link to={`/usuarios/view/${usuario.id}`} className="btn btn-info me-2">Ver</Link>
-                                <Link to={`/avaliacoes/${usuario.id}/new`} className="btn btn-warning me-2">Avaliação</Link>
-                                <button
-                                    className="btn btn-danger"
-                                    onClick={() => handleDelete(usuario.id)}
-                                >
-                                    Deletar
-                                </button>
+                                <Link to={`/usuarios/view/${usuario.id}`} className="btn btn-info">Ver</Link>
                             </td>
                         </tr>
                     ))}
@@ -142,14 +116,7 @@ const Usuarios_index = () => {
                             <p className="card-text"><strong>Idade:</strong> {usuario.idade}</p>
                             <div className="card-actions">
                                 <Link to={`/usuarios/${usuario.id}/treinos`} className="btn btn-success me-2">Criar Treino</Link>
-                                <Link to={`/usuarios/view/${usuario.id}`} className="btn btn-info me-2">Ver</Link>
-                                <Link to={`/avaliacoes/${usuario.id}/new`} className="btn btn-warning me-2">Avaliação</Link>
-                                <button
-                                    className="btn btn-danger"
-                                    onClick={() => handleDelete(usuario.id)}
-                                >
-                                    Deletar
-                                </button>
+                                <Link to={`/usuarios/view/${usuario.id}`} className="btn btn-info">Ver</Link>
                             </div>
                         </div>
                     </div>

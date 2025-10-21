@@ -12,6 +12,7 @@ const exerciciosRouter = require('./exercicios');
 const treinosRouter = require('./treinos'); // Importa o módulo de treinos
 const avaliacoesRouter = require('./avaliacoes');
 const herculesRouter = require("./hercules");
+const professoresRouter = require("./professores");
 
 
 const app = express();
@@ -51,6 +52,7 @@ app.use('/exercicios', exerciciosRouter);
 app.use('/treinos', treinosRouter);
 app.use('/avaliacoes', avaliacoesRouter);
 app.use('/hercules', herculesRouter);
+app.use('/professores', professoresRouter);
 
 
 // Rotas protegidas
