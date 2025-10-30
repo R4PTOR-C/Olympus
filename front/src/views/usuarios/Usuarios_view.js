@@ -155,8 +155,8 @@ const UsuariosView = () => {
                     />
                 )}
                 <h4 className="mb-1">{usuario.nome}</h4>
-                <p className="text-muted mb-0">{usuario.email}</p>
-                <p className="text-muted">Idade: {usuario.idade} | Gênero: {usuario.genero}</p>
+                <p className="text-muted">Peso: {usuario.peso ? `${usuario.peso} kg` : '—'} |
+                    Altura: {usuario.altura ? `${usuario.altura} cm` : '—'}</p>                <p className="text-muted">Gênero: {usuario.genero}</p>
             </div>
 
             <div className="mb-3 text-end">

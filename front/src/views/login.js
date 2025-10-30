@@ -87,12 +87,7 @@ function Login() {
                             />
                         </div>
                         <div className="form-group form-check">
-                            <input
-                                type="checkbox"
-                                className="form-check-input"
-                                id="rememberMe"
-                            />
-                            <label className="form-check-label remember-me" htmlFor="rememberMe">Lembrar-me</label>
+                            <label className="form-check-label remember-me" htmlFor="rememberMe"></label>
                         </div>
                         <button type="submit" className="btn btn-primary btn-block login-btn" disabled={loading}>
                             {loading ? 'Entrando...' : 'Entrar'}
