@@ -7,23 +7,14 @@ import DarkModeSwitch from "../components/DarkModeSwitch";
 function Navbar() {
     const user = useContext(AuthContext);
     const navigate = useNavigate();
-    const {
-        userId,
-        userName,
-        avatar,
-        funcao,
-        loggedIn,
-    } = useContext(AuthContext);
+    const { userId, avatar, funcao, loggedIn } = useContext(AuthContext);
 
-    // URL do avatar (já vem completo do Cloudinary)
-    const avatarUrl = avatar || null;
+    const avatarUrl = avatar || '/default-avatar.png'; // imagem padrão opcional
 
-    // Função de logout
     const handleLogout = () => {
         user.logout();
     };
 
-    // Determinar o link inicial
     const homeLink =
         funcao === 'Professor'
             ? '/usuarios'
@@ -34,7 +25,11 @@ function Navbar() {
             <div className="container-fluid d-flex justify-content-between align-items-center">
 
                 {/* Logo Olympus */}
-                <Link className="navbar-brand" style={{ fontFamily: 'delirium' }} to={homeLink}>
+                <Link
+                    className="navbar-brand"
+                    style={{ fontFamily: 'delirium' }}
+                    to={homeLink}
+                >
                     OLYMPUS
                 </Link>
 
@@ -83,63 +78,67 @@ function Navbar() {
 
                 {/* Lado direito */}
                 <div className="d-flex align-items-center gap-3">
-
-
-                    {/* Avatar + Dropdown usuário */}
-                    {/* Avatar + Dropdown usuário */}
                     {loggedIn && (
-                        <div className="dropdown d-flex align-items-center">
-                            <a
-                                className="nav-link dropdown-toggle d-flex align-items-center"
-                                href="#"
-                                id="userDropdown"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
+                        <>
+                            {/* Ícone de chat
+                            <button
+                                className="btn btn-link text-white p-0 position-relative"
+                                onClick={() => navigate('/meus-chats')}
+                                title="Mensagens"
                             >
+                                <i className="bi bi-chat-dots" style={{ fontSize: '1.5rem' }}></i>
+                            </button>
+                            */}
+                            {/* Dropdown no avatar */}
+                            <div className="dropdown">
+                                <a
+                                    href="#"
+                                    className="d-flex align-items-center"
+                                    id="userDropdown"
+                                    role="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                >
+                                    <img
+                                        src={avatarUrl}
+                                        alt="Avatar do usuário"
+                                        className="rounded-circle"
+                                        style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            objectFit: 'cover',
+                                            border: '2px solid #fff',
+                                            cursor: 'pointer'
+                                        }}
+                                    />
+                                </a>
 
-                                <span className="d-none d-md-inline">Olá, {userName}!</span>
-                                <span className="d-inline d-md-none">{userName}</span>
-                            </a>
+                                {/* Menu dropdown */}
+                                <ul
+                                    className="dropdown-menu dropdown-menu-end animate-dropdown shadow-lg border-0 rounded-3"
+                                    aria-labelledby="userDropdown"
+                                >
+                                    <li className="dropdown-item d-flex justify-content-between align-items-center">
+                                        <span>Tema escuro</span>
+                                        <DarkModeSwitch />
+                                    </li>
 
-                            {/* Dropdown estilizado */}
-                            <ul
-                                className="dropdown-menu dropdown-menu-end animate-dropdown shadow-lg border-0 rounded-3"
-                                aria-labelledby="userDropdown"
-                            >
+                                    <li><hr className="dropdown-divider" /></li>
 
-
-                                {/* Switch Dark Mode dentro do menu */}
-                                <li className="dropdown-item d-flex justify-content-between align-items-center">
-                                    <span>Tema escuro</span>
-                                    <DarkModeSwitch />
-                                </li>
-
-                                <li><hr className="dropdown-divider" /></li>
-
-                                <li>
-                                    <Link className="dropdown-item" to={`/usuarios/edit/${userId}`}>
-                                        Perfil
-                                    </Link>
-                                </li>
-                                <li>
-                                    <button className="dropdown-item text-danger" onClick={handleLogout}>
-                                        Logout
-                                    </button>
-                                </li>
-
-                            </ul>
-                            {avatarUrl && (
-                                <img
-                                    src={avatarUrl}
-                                    alt="Avatar do usuário"
-                                    className="rounded-circle me-2"
-                                    style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-                                />
-                            )}
-                        </div>
+                                    <li>
+                                        <Link className="dropdown-item" to={`/usuarios/edit/${userId}`}>
+                                            Perfil
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <button className="dropdown-item text-danger" onClick={handleLogout}>
+                                            Logout
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </>
                     )}
-
                 </div>
             </div>
         </nav>
