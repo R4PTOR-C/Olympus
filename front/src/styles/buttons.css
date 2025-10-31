@@ -1,0 +1,89 @@
+/* ========================= */
+/* BOTÃO PERSONALIZADO       */
+/* ========================= */
+.btn-olympus {
+    position: relative;
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #fff;
+    background: linear-gradient(135deg, #19222B, #2c3e50);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    overflow: hidden;
+    transition: all 0.25s ease;
+    white-space: nowrap; 
+
+}
+
+.btn-olympus::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, rgba(255,255,255,0.3), transparent);
+    transition: all 0.4s ease;
+}
+
+.btn-olympus:hover::before {
+    left: 100%;
+}
+
+.btn-olympus:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+}
+
+.btn-olympus:active {
+    transform: scale(0.97);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+}
+
+.btn-olympus.sm {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+}
+
+
+/* ========================= */
+/* VARIAÇÕES DE COR          */
+/* ========================= */
+.btn-olympus.success {
+    background: linear-gradient(135deg, #198754, #27ae60) !important;
+}
+
+.btn-olympus.danger {
+    background: linear-gradient(135deg, #dc3545, #c0392b) !important;
+}
+
+.btn-olympus.outline {
+    background: transparent;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    box-shadow: none;
+}
+
+.btn-olympus.outline:hover {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+/* ========================= */
+/* DARK MODE COMPATÍVEL      */
+/* ========================= */
+body.dark-mode .btn-olympus {
+    color: var(--color-primary);
+    background: linear-gradient(135deg, #c8d1d0, #b5c1c0);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+}
+
+body.dark-mode .btn-olympus:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255,255,255,0.1);
+}

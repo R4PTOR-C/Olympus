@@ -160,7 +160,7 @@ const UsuariosView = () => {
             </div>
 
             <div className="mb-3 text-end">
-                <button className="btn btn-success" onClick={() => navigate(`/usuarios/${id}/treinos`)}>
+                <button className="btn-olympus success sm" onClick={() => navigate(`/usuarios/${id}/treinos`)}>
                     + Criar Novo Treino
                 </button>
             </div>
@@ -199,13 +199,13 @@ const UsuariosView = () => {
                                                             <small className="text-muted mb-2">{t.descricao}</small>
                                                             <div className="mt-auto d-flex justify-content-end gap-2">
                                                                 <button
-                                                                    className="btn btn-success"
+                                                                    className="btn-olympus success sm"
                                                                     onClick={() => navigate(`/treinos/edit/${id}/${t.id}`)}
                                                                 >
                                                                     Editar
                                                                 </button>
                                                                 <button
-                                                                    className="btn btn-danger"
+                                                                    className="btn-olympus danger sm"
                                                                     onClick={() => handleDeleteTreino(t.id)}
                                                                 >
                                                                     Excluir

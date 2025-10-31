@@ -36,19 +36,18 @@ body.dark-mode {
 /* ========================= */
 /* RESETS / BASE             */
 /* ========================= */
-body, html {
+html, body {
+    min-height: 100vh;  /* em vez de height: 100% */
     margin: 0;
     padding: 0;
     color: var(--color-text);
-
-    /* imagem sempre presente */
-    background-image: url('../public/academia fundo 35.png');
+    background-color: var(--color-bg);
     background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-position: center;
-    scroll-behavior: auto !important;
 }
+
 
 input,
 textarea,
@@ -56,7 +55,7 @@ select {
     font-size: 16px;
 }
 
-h1, h2, h3 {
+h1, h2, h3, small {
     color: var(--color-text);
 }
 

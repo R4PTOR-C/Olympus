@@ -25,6 +25,7 @@ import { AuthProvider, AuthContext } from './AuthContext';
 import './App.css';
 import './styles/Navbar.css'
 import './styles/Usuarios.css';
+import './styles/buttons.css'
 import NavbarInferior from "./views/components/NavbarInferior";
 import HistoricoExercicios from './views/exercicios/HistoricoExercicios';
 import './imgs/muscle.gif';

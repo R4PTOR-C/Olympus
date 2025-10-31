@@ -253,10 +253,10 @@ const TreinosForm = () => {
 
                         {/* Botões fixos */}
                         <div className="botao-flutuante">
-                            <button type="submit" className="btn btn-success px-4">
+                            <button type="submit" className="btn-olympus success sm">
                                 <i className="bi bi-check-circle me-2"></i> Adicionar
                             </button>
-                            <button type="button" className="btn btn-danger px-4" onClick={() => navigate(-1)}>
+                            <button type="button" className="btn-olympus danger sm" onClick={() => navigate(-1)}>
                                 <i className="bi bi-x-circle me-2"></i> Cancelar
                             </button>
 

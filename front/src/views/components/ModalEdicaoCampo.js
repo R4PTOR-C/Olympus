@@ -87,10 +87,10 @@ const ModalEdicaoCampo = ({ campo, valorAtual, onClose, onSave }) => {
                 </div>
 
                 <div className="bottom-sheet-footer d-flex justify-content-end gap-2">
-                    <button className="btn btn-secondary" onClick={onClose}>
+                    <button className="btn-olympus outline sm" onClick={onClose}>
                         Cancelar
                     </button>
-                    <button className="btn btn-primary" onClick={handleSalvar}>
+                    <button className="btn-olympus sm" onClick={handleSalvar}>
                         Salvar
                     </button>
                 </div>

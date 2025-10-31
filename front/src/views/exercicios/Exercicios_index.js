@@ -337,12 +337,12 @@ function Exercicios_index() {
                 <div className="d-flex flex-column flex-lg-row align-items-end justify-content-end gap-2">
                     {/* Botão principal */}
                     {modoEdicao ? (
-                        <button className="btn btn-outline-danger btn-sm" onClick={handleFinalizarTreino}>
+                        <button className="btn-olympus sm danger" onClick={handleFinalizarTreino}>
                             Finalizar Treino
                         </button>
                     ) : treinoRealizadoId && dataUltimoTreino?.split('T')[0] === new Date().toISOString().split('T')[0] ? (
                         <button
-                            className="btn btn-outline-success btn-sm"
+                            className="btn-olympus sm success"
                             onClick={() => {
                                 setModoEdicao(true);
                             }}
@@ -350,7 +350,7 @@ function Exercicios_index() {
                             Editar treino de hoje
                         </button>
                     ) : (
-                        <button className="btn btn-outline-success btn-sm" onClick={handleNovoTreino}>
+                        <button className="btn-olympus sm success" onClick={handleNovoTreino}>
                             Iniciar Novo Treino
                         </button>
                     )}
