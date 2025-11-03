@@ -319,45 +319,31 @@ function Exercicios_index() {
 
 
     return (
-        <PageStateHandler   loading={loading} error={error}>
-        <div className="container mt-4 exercicios-container">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h4 className="mb-0">Treino: {nomeTreino}</h4>
-                    <div className="text-muted">
-                        <small>Dia da semana: {diaSemana}</small>
+        <PageStateHandler loading={loading} error={error}>
+            <div className="container mt-4 exercicios-container">
+
+                {/* ====== Cabeçalho com informações ====== */}
+                <div className="d-flex flex-wrap align-items-center justify-content-between mb-3 position-relative">
+
+                    {/* Informações do treino */}
+                    <div className="d-flex flex-wrap align-items-center gap-3">
+                        <h4 className="mb-0">
+                            Treino: <span className="fw-semibold">{nomeTreino}</span>
+                        </h4>
+                        <span className="text-muted small">
+                    Dia: <strong>{diaSemana}</strong>
+                </span>
+                        {dataFormatada && (
+                            <span className="text-muted small">
+                        Último: <strong>{dataFormatada}</strong>
+                    </span>
+                        )}
                     </div>
-                    {dataFormatada && (
-                        <div className="text-muted">
-                            <small>Treino realizado em: {dataFormatada}</small>
-                        </div>
-                    )}
-                </div>
 
-                <div className="d-flex flex-column flex-lg-row align-items-end justify-content-end gap-2">
-                    {/* Botão principal */}
-                    {modoEdicao ? (
-                        <button className="btn-olympus sm danger" onClick={handleFinalizarTreino}>
-                            Finalizar Treino
-                        </button>
-                    ) : treinoRealizadoId && dataUltimoTreino?.split('T')[0] === new Date().toISOString().split('T')[0] ? (
-                        <button
-                            className="btn-olympus sm success"
-                            onClick={() => {
-                                setModoEdicao(true);
-                            }}
-                        >
-                            Editar treino de hoje
-                        </button>
-                    ) : (
-                        <button className="btn-olympus sm success" onClick={handleNovoTreino}>
-                            Iniciar Novo Treino
-                        </button>
-                    )}
-
-                    {/* Botão histórico */}
+                    {/* Botão de histórico no topo direito */}
                     <button
-                        className="btn btn-outline-secondary btn-sm"
+                        className="btn btn-outline-secondary btn-sm position-absolute"
+                        style={{ top: 0, right: 0 }}
                         onClick={() => setMostrarModalHistorico(true)}
                         title="Ver histórico de treinos"
                     >
@@ -365,12 +351,27 @@ function Exercicios_index() {
                     </button>
                 </div>
 
-
-
-
-
-
-            </div>
+                {/* ====== Botão principal (centralizado e largo) ====== */}
+                <div className="d-flex justify-content-center mb-4">
+                    <div style={{ width: '100%', maxWidth: '400px' }}>
+                        {modoEdicao ? (
+                            <button className="btn-olympus danger w-100 sm" onClick={handleFinalizarTreino}>
+                                Finalizar Treino
+                            </button>
+                        ) : treinoRealizadoId && dataUltimoTreino?.split('T')[0] === new Date().toISOString().split('T')[0] ? (
+                            <button
+                                className="btn-olympus success w-100 sm"
+                                onClick={() => setModoEdicao(true)}
+                            >
+                                Editar treino de hoje
+                            </button>
+                        ) : (
+                            <button className="btn-olympus success w-100 sm" onClick={handleNovoTreino}>
+                                Iniciar Novo Treino
+                            </button>
+                        )}
+                    </div>
+                </div>
             <div className="d-flex flex-wrap justify-content-center gap-3">
                 {exercicios.map((exercicio) => {
                     const series = formData[exercicio.exercicio_id] || exercicio.series || [];
@@ -418,7 +419,7 @@ function Exercicios_index() {
                                                         style={{ cursor: 'pointer' }}
                                                     >
           {serie.carga || '-'} kg
-          <img src="/weight.png" alt="Peso" style={{ width: '18px', height: '18px', marginLeft: '4px' }} />
+<span className="icone-exercicio peso"></span>
         </span>
                                                 )}
 
@@ -451,7 +452,7 @@ function Exercicios_index() {
                                                         style={{ cursor: 'pointer' }}
                                                     >
           {serie.repeticoes || '-'} reps
-          <img src="/reps.png" alt="Repetições" style={{ width: '18px', height: '18px', marginLeft: '4px' }} />
+<span className="icone-exercicio reps"></span>
         </span>
                                                 )}
                                             </div>
