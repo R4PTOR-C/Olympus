@@ -251,16 +251,16 @@ const TreinosForm = () => {
                         </div>
 
 
-                        {/* Botões fixos */}
-                        <div className="botao-flutuante">
+                        {/* Botões finais */}
+                        <div className="d-flex justify-content-end mt-4 gap-3">
                             <button type="submit" className="btn-olympus success sm">
                                 <i className="bi bi-check-circle me-2"></i> Adicionar
                             </button>
                             <button type="button" className="btn-olympus danger sm" onClick={() => navigate(-1)}>
                                 <i className="bi bi-x-circle me-2"></i> Cancelar
                             </button>
-
                         </div>
+
 
                     </form>
                 </div>
