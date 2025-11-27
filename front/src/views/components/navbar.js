@@ -68,6 +68,11 @@ function Navbar() {
                             </button>
                             <button
                                 className="btn btn-outline-light"
+                                onClick={() => navigate(`/hercules`)}
+                            >
+Hércules                            </button>
+                            <button
+                                className="btn btn-outline-light"
                                 onClick={() => navigate(`/historico-exercicios`)}
                             >
                                 Histórico Treinos
