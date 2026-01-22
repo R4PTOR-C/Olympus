@@ -129,7 +129,6 @@ Hércules                            </button>
                                     aria-labelledby="userDropdown"
                                 >
 
-                                    {isInstallable && (
                                         <>
                                             <li>
                                                 <button
@@ -141,7 +140,6 @@ Hércules                            </button>
                                             </li>
                                             <li><hr className="dropdown-divider" /></li>
                                         </>
-                                    )}
 
                                     <li className="dropdown-item d-flex justify-content-between align-items-center">
                                         <span>Tema escuro</span>
