@@ -3,11 +3,16 @@ import React, { useContext } from 'react';
 import { AuthContext } from '../../AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import DarkModeSwitch from "../components/DarkModeSwitch";
+import usePWAInstall from "../../hooks/usePWAInstall";
+
 
 function Navbar() {
     const user = useContext(AuthContext);
     const navigate = useNavigate();
     const { userId, avatar, funcao, loggedIn } = useContext(AuthContext);
+
+    const { isInstallable, installApp } = usePWAInstall(); // 👈 AQUI
+
 
     const avatarUrl = avatar || '/default-avatar.png'; // imagem padrão opcional
 
@@ -123,6 +128,21 @@ Hércules                            </button>
                                     className="dropdown-menu dropdown-menu-end animate-dropdown shadow-lg border-0 rounded-3"
                                     aria-labelledby="userDropdown"
                                 >
+
+                                    {isInstallable && (
+                                        <>
+                                            <li>
+                                                <button
+                                                    className="dropdown-item d-flex align-items-center gap-2"
+                                                    onClick={installApp}
+                                                >
+                                                    📲 Instalar aplicativo
+                                                </button>
+                                            </li>
+                                            <li><hr className="dropdown-divider" /></li>
+                                        </>
+                                    )}
+
                                     <li className="dropdown-item d-flex justify-content-between align-items-center">
                                         <span>Tema escuro</span>
                                         <DarkModeSwitch />
@@ -135,12 +155,14 @@ Hércules                            </button>
                                             Perfil
                                         </Link>
                                     </li>
+
                                     <li>
                                         <button className="dropdown-item text-danger" onClick={handleLogout}>
                                             Logout
                                         </button>
                                     </li>
                                 </ul>
+
                             </div>
                         </>
                     )}

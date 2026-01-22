@@ -1,21 +1,31 @@
 {
   "short_name": "Olympus",
   "name": "Olympus Treinos",
-  "icons": [
-    {
-      "src": "logo.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
-  ],
   "start_url": ".",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#002366",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icons/logo.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile-home.png",
+      "sizes": "590x1280",
+      "type": "image/png"
+    },
+    {
+      "src": "/screenshots/desktop-home.png",
+      "sizes": "1600x799",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+
 }
+
