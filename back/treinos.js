@@ -137,6 +137,54 @@ router.patch('/treinos/:treinoId', async (req, res) => {
     }
 });
 
+// 🔄 Adicione esta rota no seu arquivo treinos.js (antes do module.exports)
+
+// Rota para fazer swap (troca) de treinos entre dias
+router.patch('/swap', async (req, res) => {
+    const { treino1_id, treino2_id, dia1, dia2 } = req.body;
+
+    if (!treino1_id || !treino2_id || !dia1 || !dia2) {
+        return res.status(400).json({
+            error: 'Parâmetros obrigatórios: treino1_id, treino2_id, dia1, dia2'
+        });
+    }
+
+    try {
+        await db.query('BEGIN');
+
+        await db.query(
+            'UPDATE treinos SET dia_semana = $1 WHERE id = $2',
+            ['__TEMP_SWAP__', treino1_id]
+        );
+
+        await db.query(
+            'UPDATE treinos SET dia_semana = $1 WHERE id = $2',
+            [dia1, treino2_id]
+        );
+
+        await db.query(
+            'UPDATE treinos SET dia_semana = $1 WHERE id = $2',
+            [dia2, treino1_id]
+        );
+
+        await db.query('COMMIT');
+
+        res.json({
+            success: true,
+            message: 'Treinos trocados com sucesso'
+        });
+
+    } catch (error) {
+        await db.query('ROLLBACK');
+        console.error('Erro ao fazer swap de treinos:', error);
+        res.status(500).json({
+            error: 'Erro ao trocar treinos de lugar',
+            details: error.message
+        });
+    }
+});
+
+
 
 
 

@@ -7,8 +7,7 @@ import {
     Draggable
 } from "@hello-pangea/dnd";
 import '../../styles/Board.css';
-import ModalCarregando from '../components/ModalCarregando'; // 👈 importa a modal de loading
-
+import ModalCarregando from '../components/ModalCarregando';
 
 const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 const mapDiasBack = {
@@ -33,7 +32,6 @@ const UsuariosView = () => {
     const [error, setError] = useState(null);
     const { userId, funcao } = useContext(AuthContext);
 
-    // 🔹 Carregar dados
     useEffect(() => {
         const carregarDados = async () => {
             if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
@@ -64,64 +62,105 @@ const UsuariosView = () => {
         carregarDados();
     }, [id, userId, funcao, navigate]);
 
-    // 🔹 Lida com arrastar e soltar
+    // Substituir apenas a função handleDragEnd no seu componente UsuariosView
+
     const handleDragEnd = async (result) => {
         const { source, destination, draggableId } = result;
-        if (!destination) return;
 
+        // Se não há destino ou moveu para o mesmo lugar, não faz nada
+        if (!destination) return;
         if (source.droppableId === destination.droppableId) return;
 
-        const treinoId = draggableId.replace("treino-", "");
+        const treinoArrastadoId = parseInt(draggableId.replace("treino-", ""));
         const novoDiaCurto = destination.droppableId;
         const novoDia = mapDiasBack[novoDiaCurto] || novoDiaCurto;
+        const diaOrigemCurto = source.droppableId;
+        const diaOrigem = mapDiasBack[diaOrigemCurto] || diaOrigemCurto;
 
-        // 🚫 verifica se já existe treino nesse dia
-        const jaExiste = treinos.some(
-            (t) => mapDias[t.dia_semana] === novoDiaCurto
-        );
-        if (jaExiste) {
-            alert("⚠️ Já existe um treino neste dia. Só é permitido um treino por dia.");
-            return;
-        }
+        // Busca treino que está sendo arrastado
+        const treinoArrastado = treinos.find(t => t.id === treinoArrastadoId);
+        if (!treinoArrastado) return;
 
-        setTreinos(prev =>
-            prev.map(t =>
-                t.id === parseInt(treinoId) ? { ...t, dia_semana: novoDia } : t
-            )
-        );
+        // Busca se já existe treino no dia de destino
+        const treinoNoDestino = treinos.find(t => mapDias[t.dia_semana] === novoDiaCurto);
 
-        try {
-            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/${treinoId}/dia`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ dia_semana: novoDia })
-            });
+        // Guarda estado anterior para rollback
+        const treinosAnteriores = [...treinos];
 
-            if (!res.ok) {
-                console.error(`❌ Erro ao atualizar treino ${treinoId}`);
-                // rollback se deu erro no backend
-                setTreinos(prev =>
-                    prev.map(t =>
-                        t.id === parseInt(treinoId)
-                            ? { ...t, dia_semana: mapDiasBack[source.droppableId] }
-                            : t
-                    )
-                );
+        if (treinoNoDestino) {
+            // 🔄 SWAP: troca os dois treinos de lugar
+            console.log(`🔄 Fazendo swap: Treino ${treinoArrastadoId} (${diaOrigem}) ↔️ Treino ${treinoNoDestino.id} (${novoDia})`);
+
+            // Atualiza UI otimisticamente
+            setTreinos(prev =>
+                prev.map(t => {
+                    if (t.id === treinoArrastadoId) {
+                        return { ...t, dia_semana: novoDia };
+                    }
+                    if (t.id === treinoNoDestino.id) {
+                        return { ...t, dia_semana: diaOrigem };
+                    }
+                    return t;
+                })
+            );
+
+            try {
+                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/swap`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        treino1_id: treinoArrastadoId,
+                        treino2_id: treinoNoDestino.id,
+                        dia1: diaOrigem,
+                        dia2: novoDia
+                    })
+                });
+
+                if (!res.ok) {
+                    const error = await res.json();
+                    console.error('❌ Erro ao fazer swap:', error);
+                    setTreinos(treinosAnteriores); // rollback
+                    alert('⚠️ Erro ao trocar treinos de lugar');
+                } else {
+                    const data = await res.json();
+                    console.log('✅ Swap realizado com sucesso:', data);
+                }
+            } catch (err) {
+                console.error('⚠️ Erro na requisição de swap:', err);
+                setTreinos(treinosAnteriores); // rollback
+                alert('⚠️ Erro ao trocar treinos de lugar');
             }
-        } catch (err) {
-            console.error("⚠️ Erro na requisição:", err);
-            // rollback em caso de falha na requisição
+        } else {
+            // 📍 Movimento simples para dia vazio
+            console.log(`📍 Movendo treino ${treinoArrastadoId} de ${diaOrigem} para ${novoDia}`);
+
             setTreinos(prev =>
                 prev.map(t =>
-                    t.id === parseInt(treinoId)
-                        ? { ...t, dia_semana: mapDiasBack[source.droppableId] }
-                        : t
+                    t.id === treinoArrastadoId ? { ...t, dia_semana: novoDia } : t
                 )
             );
+
+            try {
+                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/${treinoArrastadoId}/dia`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dia_semana: novoDia })
+                });
+
+                if (!res.ok) {
+                    console.error(`❌ Erro ao atualizar treino ${treinoArrastadoId}`);
+                    setTreinos(treinosAnteriores); // rollback
+                    alert('⚠️ Erro ao mover treino');
+                } else {
+                    console.log('✅ Treino movido com sucesso');
+                }
+            } catch (err) {
+                console.error('⚠️ Erro na requisição:', err);
+                setTreinos(treinosAnteriores); // rollback
+                alert('⚠️ Erro ao mover treino');
+            }
         }
     };
-
-
 
     const handleDeleteTreino = async (treinoId) => {
         if (!window.confirm("Tem certeza que deseja excluir este treino?")) return;
@@ -137,7 +176,7 @@ const UsuariosView = () => {
         }
     };
 
-    if (loading) return <ModalCarregando show={true} />; // 👈 agora usa o overlay padronizado
+    if (loading) return <ModalCarregando show={true} />;
     if (error) return <div className="alert alert-danger text-center mt-5">Erro: {error}</div>;
     if (!usuario) return <div className="text-center mt-5">Usuário não encontrado.</div>;
 
@@ -156,7 +195,8 @@ const UsuariosView = () => {
                 )}
                 <h4 className="mb-1">{usuario.nome}</h4>
                 <p className="text-muted">Peso: {usuario.peso ? `${usuario.peso} kg` : '—'} |
-                    Altura: {usuario.altura ? `${usuario.altura} cm` : '—'}</p>                <p className="text-muted">Gênero: {usuario.genero}</p>
+                    Altura: {usuario.altura ? `${usuario.altura} cm` : '—'}</p>
+                <p className="text-muted">Gênero: {usuario.genero}</p>
             </div>
 
             <div className="mb-3 text-end">
@@ -165,7 +205,6 @@ const UsuariosView = () => {
                 </button>
             </div>
 
-            {/* 🔹 Board vertical (dias empilhados) */}
             <DragDropContext onDragEnd={handleDragEnd}>
                 <div className="d-flex flex-column gap-4">
                     {diasSemana.map((dia) => (
@@ -177,8 +216,7 @@ const UsuariosView = () => {
                                     className="border rounded p-3 droppable-day"
                                     style={{ minHeight: 100 }}
                                 >
-
-                                <h5 className="mb-3">{dia}</h5>
+                                    <h5 className="mb-3">{dia}</h5>
                                     {treinos
                                         .filter(t => mapDias[t.dia_semana] === dia)
                                         .map((t, index) => (
@@ -211,12 +249,10 @@ const UsuariosView = () => {
                                                                     Excluir
                                                                 </button>
                                                             </div>
-
                                                         </div>
                                                     </div>
                                                 )}
                                             </Draggable>
-
                                         ))}
                                     {provided.placeholder}
                                 </div>
