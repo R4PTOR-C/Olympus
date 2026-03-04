@@ -33,8 +33,7 @@ router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
         Ombros: 'ombros.png',
         Bíceps: 'biceps.png',
         Tríceps: 'triceps.png',
-        Posterior: 'posterior.png',
-        Frontal: 'frontal.png',
+        Pernas: 'perna.png',
         Panturrilha: 'panturrilha.png',
         Abdômen: 'abdomen.png',
     };

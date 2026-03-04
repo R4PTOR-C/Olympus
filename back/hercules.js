@@ -8,20 +8,215 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
 
+const diasSemana = [
+    "domingo",
+    "segunda-feira",
+    "terça-feira",
+    "quarta-feira",
+    "quinta-feira",
+    "sexta-feira",
+    "sábado"
+];
+
+const diasSemanaFormatados = {
+    "domingo": "Domingo",
+    "segunda-feira": "Segunda-feira",
+    "terça-feira": "Terça-feira",
+    "quarta-feira": "Quarta-feira",
+    "quinta-feira": "Quinta-feira",
+    "sexta-feira": "Sexta-feira",
+    "sábado": "Sábado"
+};
+
+const grupoParaImagem = {
+    Peitoral: "peito.png",
+    Costas: "costas.png",
+    Ombros: "ombros.png",
+    Bíceps: "biceps.png",
+    Tríceps: "triceps.png",
+    Pernas: "perna.png",
+    Panturrilha: "panturrilha.png",
+    Abdômen: "abdomen.png"
+};
+
+const grupoParaDescricao = {
+    Peitoral: "peitoral",
+    Costas: "costas",
+    Ombros: "ombros",
+    Bíceps: "bíceps",
+    Tríceps: "tríceps",
+    Posterior: "posterior",
+    Frontal: "frontal",
+    Panturrilha: "panturrilha",
+    Abdômen: "abdômen",
+    Pernas: "perna"
+};
+
+const aliasesGruposMusculares = {
+    perna: "Pernas",
+    pernas: "Pernas",
+    panturrilha: "Panturrilha",
+    panturrilhas: "Panturrilha",
+    abdomen: "Abdômen",
+    abdômen: "Abdômen",
+    abdominal: "Abdômen",
+    abdominais: "Abdômen",
+    biceps: "Bíceps",
+    bíceps: "Bíceps",
+    triceps: "Tríceps",
+    tríceps: "Tríceps",
+    ombro: "Ombros",
+    ombros: "Ombros",
+    costa: "Costas",
+    costas: "Costas",
+    peito: "Peitoral",
+    peitoral: "Peitoral"
+};
+
 // Normalização de dias
 function normalizarDia(dia) {
-    const diasSemana = [
-        "domingo", "segunda-feira", "terça-feira",
-        "quarta-feira", "quinta-feira", "sexta-feira", "sábado"
-    ];
+    if (!dia) {
+        return null;
+    }
 
-    if (dia === "hoje") {
+    const diaNormalizado = dia
+        .toString()
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+    const mapaDias = {
+        dom: "domingo",
+        domingo: "domingo",
+        seg: "segunda-feira",
+        segunda: "segunda-feira",
+        "segunda-feira": "segunda-feira",
+        ter: "terça-feira",
+        terca: "terça-feira",
+        "terca-feira": "terça-feira",
+        terça: "terça-feira",
+        "terça-feira": "terça-feira",
+        qua: "quarta-feira",
+        quarta: "quarta-feira",
+        "quarta-feira": "quarta-feira",
+        qui: "quinta-feira",
+        quinta: "quinta-feira",
+        "quinta-feira": "quinta-feira",
+        sex: "sexta-feira",
+        sexta: "sexta-feira",
+        "sexta-feira": "sexta-feira",
+        sab: "sábado",
+        sabado: "sábado",
+        sábado: "sábado",
+    };
+
+    if (diaNormalizado === "hoje") {
         return diasSemana[new Date().getDay()];
     }
-    if (dia === "amanhã") {
+    if (diaNormalizado === "amanha" || diaNormalizado === "amanhã") {
         return diasSemana[(new Date().getDay() + 1) % 7];
     }
-    return dia;
+
+    return mapaDias[diaNormalizado] || dia;
+}
+
+function formatarDiaParaBanco(dia) {
+    const diaNormalizado = normalizarDia(dia);
+    return diaNormalizado ? (diasSemanaFormatados[diaNormalizado] || diaNormalizado) : null;
+}
+
+function ordenarDias(dias) {
+    return [...dias].sort((a, b) => diasSemana.indexOf(a) - diasSemana.indexOf(b));
+}
+
+function formatarListaDias(dias) {
+    return ordenarDias(dias).map((dia) => diasSemanaFormatados[dia] || dia);
+}
+
+function montarDescricaoTreino(tipos) {
+    const gruposDescricao = (Array.isArray(tipos) ? tipos : [])
+        .map((tipo) => grupoParaDescricao[tipo] || tipo.toString().trim().toLowerCase())
+        .filter(Boolean);
+
+    if (gruposDescricao.length === 0) {
+        return "Treino com foco geral";
+    }
+
+    if (gruposDescricao.length === 1) {
+        return `Treino com foco em ${gruposDescricao[0]}`;
+    }
+
+    const ultimoGrupo = gruposDescricao[gruposDescricao.length - 1];
+    const gruposIniciais = gruposDescricao.slice(0, -1);
+
+    return `Treino com foco em ${gruposIniciais.join(", ")} e ${ultimoGrupo}`;
+}
+
+function normalizarGrupoMuscular(grupo) {
+    if (!grupo) {
+        return null;
+    }
+
+    const grupoNormalizado = grupo
+        .toString()
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+    return aliasesGruposMusculares[grupoNormalizado] || grupo.toString().trim();
+}
+
+async function buscarDiasLivres(usuarioId) {
+    const diasTreinoRes = await pool.query(
+        `SELECT DISTINCT dia_semana
+         FROM treinos
+         WHERE usuario_id = $1`,
+        [usuarioId]
+    );
+
+    const diasOcupados = new Set(
+        diasTreinoRes.rows
+            .map(({ dia_semana }) => normalizarDia(dia_semana))
+            .filter(Boolean)
+    );
+
+    return diasSemana.filter((dia) => !diasOcupados.has(dia));
+}
+
+async function salvarTreinoDoHercules({ usuarioId, tipos, exerciciosIds, dia }) {
+    const grupoPrincipal = tipos[0] || "Geral";
+    const nomeTreino = tipos.length > 0 ? `Treino de ${tipos.join(" + ")}` : "Treino sugerido pelo Hércules";
+    const descricaoCurta = montarDescricaoTreino(tipos);
+    const diaBanco = formatarDiaParaBanco(dia);
+    const imagemSelecionada = grupoParaImagem[grupoPrincipal] || "default.png";
+
+    await pool.query("BEGIN");
+
+    try {
+        const treinoRes = await pool.query(
+            `INSERT INTO treinos (usuario_id, nome_treino, descricao, dia_semana, grupo_muscular, imagem)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING *`,
+            [usuarioId, nomeTreino, descricaoCurta, diaBanco, grupoPrincipal, imagemSelecionada]
+        );
+
+        const treino = treinoRes.rows[0];
+
+        for (const exercicioId of exerciciosIds) {
+            await pool.query(
+                "INSERT INTO treinos_exercicios (treino_id, exercicio_id) VALUES ($1, $2)",
+                [treino.id, exercicioId]
+            );
+        }
+
+        await pool.query("COMMIT");
+        return treino;
+    } catch (error) {
+        await pool.query("ROLLBACK");
+        throw error;
+    }
 }
 
 router.post("/chat", async (req, res) => {
@@ -31,6 +226,101 @@ router.post("/chat", async (req, res) => {
         // 🔹 Buscar nome do usuário logado
         const userRes = await pool.query("SELECT nome FROM usuarios WHERE id = $1", [usuarioId]);
         const nomeUsuario = userRes.rows.length > 0 ? userRes.rows[0].nome : "usuário";
+
+        if (req.body.aguardando_agendamento_treino) {
+            const tiposPendentes = Array.isArray(req.body.tipo) ? req.body.tipo : [];
+            const exerciciosPendentes = Array.isArray(req.body.exercicios_ids) ? req.body.exercicios_ids : [];
+            const descricaoTreino = req.body.texto_treino || req.body.texto || "";
+            const mensagemNormalizada = (mensagem || "")
+                .trim()
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            if (["nao", "não", "cancelar", "depois", "agora nao", "agora não"].includes(mensagemNormalizada)) {
+                return res.json({
+                    acao: "outro",
+                    tipo: tiposPendentes,
+                    dia: null,
+                    aguardando_agendamento_treino: false,
+                    texto: `Beleza, ${nomeUsuario}. Quando quiser salvar esse treino, é só me pedir de novo.`,
+                    raw: null
+                });
+            }
+
+            const diasLivres = await buscarDiasLivres(usuarioId);
+            const diasLivresFormatados = formatarListaDias(diasLivres);
+
+            if (diasLivres.length === 0) {
+                return res.json({
+                    acao: "outro",
+                    tipo: tiposPendentes,
+                    dia: null,
+                    aguardando_agendamento_treino: false,
+                    texto: `⚠️ ${nomeUsuario}, no momento você não tem dias livres para salvar esse treino.`,
+                    raw: null
+                });
+            }
+
+            const diaEscolhido = normalizarDia(mensagem);
+            const diaValido = diasSemana.includes(diaEscolhido);
+
+            if (["sim", "quero", "pode", "ok", "beleza"].includes(mensagemNormalizada) || !diaValido) {
+                return res.json({
+                    acao: "criar_treino",
+                    tipo: tiposPendentes,
+                    dia: null,
+                    exercicios_ids: exerciciosPendentes,
+                    aguardando_agendamento_treino: true,
+                    dias_livres: diasLivresFormatados,
+                    texto_treino: descricaoTreino,
+                    texto: `📅 ${nomeUsuario}, me diga em qual dia livre devo salvar esse treino: ${diasLivresFormatados.join(", ")}.`,
+                    raw: null
+                });
+            }
+
+            if (!diasLivres.includes(diaEscolhido)) {
+                return res.json({
+                    acao: "criar_treino",
+                    tipo: tiposPendentes,
+                    dia: null,
+                    exercicios_ids: exerciciosPendentes,
+                    aguardando_agendamento_treino: true,
+                    dias_livres: diasLivresFormatados,
+                    texto_treino: descricaoTreino,
+                    texto: `⚠️ ${nomeUsuario}, ${formatarDiaParaBanco(diaEscolhido)} não está livre. Escolha um destes dias: ${diasLivresFormatados.join(", ")}.`,
+                    raw: null
+                });
+            }
+
+            if (exerciciosPendentes.length === 0) {
+                return res.json({
+                    acao: "outro",
+                    tipo: tiposPendentes,
+                    dia: null,
+                    aguardando_agendamento_treino: false,
+                    texto: `⚠️ ${nomeUsuario}, não encontrei exercícios suficientes para salvar esse treino.`,
+                    raw: null
+                });
+            }
+
+            const treinoSalvo = await salvarTreinoDoHercules({
+                usuarioId,
+                tipos: tiposPendentes,
+                exerciciosIds: exerciciosPendentes,
+                dia: diaEscolhido
+            });
+
+            return res.json({
+                acao: "criar_treino",
+                tipo: tiposPendentes,
+                dia: diaEscolhido,
+                treino_id: treinoSalvo.id,
+                aguardando_agendamento_treino: false,
+                texto: `✅ ${nomeUsuario}, salvei o treino "${treinoSalvo.nome_treino}" em ${treinoSalvo.dia_semana}.`,
+                raw: null
+            });
+        }
 
         // 🔹 1. Interpretar intenção com GPT
         const completion = await openai.chat.completions.create({
@@ -69,6 +359,16 @@ O usuário pode pedir:
 - Consulta de treino já cadastrado
 - Edição de treino
 - Dicas de execução/postura de exercícios
+- "Qual o treino de sexta?"
+- "Em quais dias eu tenho treino?"
+
+Para essas perguntas, use:
+{
+  "acao": "consultar_treino",
+  "tipo": [],
+  "dia": "segunda-feira",  // dia mencionado, ou null se perguntar pelos dias disponíveis
+  "texto": "Vou verificar seu treino!"
+}
 
 Mapeamento:
 - "criar_treino" → montar novo treino
@@ -111,6 +411,28 @@ Formato fixo de resposta (sempre JSON):
 ⚠️ O campo "dia" deve SEMPRE ser um dia da semana (domingo a sábado).
 ⚠️ Nunca use datas absolutas (ex: 2025-09-18). Se o usuário falar "hoje" ou "amanhã", converta para o dia da semana correspondente.
 
+⚠️ CRITICAL: Normalização de dias da semana
+Quando o usuário mencionar qualquer variação de dia, você DEVE retornar o dia COMPLETO e padronizado:
+- "segunda", "seg" → "segunda-feira"
+- "terça", "terca", "ter" → "terça-feira"
+- "quarta", "qua" → "quarta-feira"
+- "quinta", "qui" → "quinta-feira"
+- "sexta", "sex" → "sexta-feira"
+- "sábado", "sabado", "sab" → "sábado"
+- "domingo", "dom" → "domingo"
+
+Exemplos:
+Usuário: "qual treino de quarta?"
+Resposta: {"dia": "quarta-feira"}  ✅
+
+Usuário: "e de seg?"
+Resposta: {"dia": "segunda-feira"}  ✅
+
+Usuário: "treino de sab"
+Resposta: {"dia": "sábado"}  ✅
+
+⚠️ SEMPRE normalize o dia antes de retornar o JSON.
+
 `
                 },
                 { role: "user", content: mensagem }
@@ -144,7 +466,10 @@ Formato fixo de resposta (sempre JSON):
 
         // 🔹 2. Tratar ações
         if (dados.acao === "criar_treino") {
-            const grupos = dados.tipo.map(g => g.toLowerCase());
+            const tiposNormalizados = dados.tipo
+                .map((g) => normalizarGrupoMuscular(g))
+                .filter(Boolean);
+            const grupos = tiposNormalizados.map((g) => g.toLowerCase());
 
             let todosExercicios = [];
             let exercicios_ids = [];
@@ -167,40 +492,118 @@ Formato fixo de resposta (sempre JSON):
             if (todosExercicios.length === 0) {
                 return res.json({
                     ...dados,
+                    tipo: tiposNormalizados,
                     texto: `⚠️ ${nomeUsuario}, não encontrei exercícios para os grupos informados.`,
                     raw
                 });
             }
 
             // 👉 agora devolve direto a resposta bruta do GPT (dados)
+            const diasLivres = await buscarDiasLivres(usuarioId);
+            const diasLivresFormatados = formatarListaDias(diasLivres);
+
+            const textoAgendamento = diasLivres.length > 0
+                ? `${dados.texto}\n\n📅 Se quiser que eu salve esse treino, me diga um destes dias livres: ${diasLivresFormatados.join(", ")}.`
+                : `${dados.texto}\n\n⚠️ Você não tem dias livres no momento para eu salvar esse treino.`;
+
             return res.json({
                 ...dados,
+                tipo: tiposNormalizados,
                 exercicios_ids,
+                texto_treino: dados.texto,
+                aguardando_agendamento_treino: diasLivres.length > 0,
+                dias_livres: diasLivresFormatados,
+                texto: textoAgendamento,
                 raw
             });
         }
 
         if (dados.acao === "consultar_treino") {
             const diaNormalizado = normalizarDia(dados.dia);
-            const { rows } = await pool.query(
-                `SELECT nome_treino, dia_semana 
-     FROM treinos 
-     WHERE usuario_id=$1 
-       AND LOWER(REPLACE(dia_semana, '-feira', '')) = LOWER($2)`,
-                [usuarioId, diaNormalizado.replace("-feira", "")]
-            );
 
+            if (!diaNormalizado) {
+                const diasTreinoRes = await pool.query(
+                    `SELECT dia_semana
+                     FROM (
+                         SELECT DISTINCT
+                             dia_semana,
+                             CASE LOWER(dia_semana)
+                                 WHEN 'domingo' THEN 0
+                                 WHEN 'segunda-feira' THEN 1
+                                 WHEN 'terça-feira' THEN 2
+                                 WHEN 'quarta-feira' THEN 3
+                                 WHEN 'quinta-feira' THEN 4
+                                 WHEN 'sexta-feira' THEN 5
+                                 WHEN 'sábado' THEN 6
+                                 ELSE 7
+                             END AS ordem
+                         FROM treinos
+                         WHERE usuario_id = $1
+                     ) dias_ordenados
+                     ORDER BY ordem, dia_semana`,
+                    [usuarioId]
+                );
 
-            if (rows.length > 0) {
+                if (diasTreinoRes.rows.length === 0) {
+                    return res.json({
+                        ...dados,
+                        treino_encontrado: false,
+                        texto: `ℹ️ ${nomeUsuario}, você ainda não tem treinos cadastrados. Quer que eu monte um para você?`,
+                        raw
+                    });
+                }
+
+                const diasTreino = diasTreinoRes.rows.map(({ dia_semana }) => dia_semana);
+
                 return res.json({
                     ...dados,
-                    texto: `📅 ${nomeUsuario}, você já tem o treino "${rows[0].nome_treino}" marcado para ${rows[0].dia_semana}.`,
+                    treino_encontrado: true,
+                    dias_treino: diasTreino,
+                    texto: `📅 ${nomeUsuario}, você tem treinos em: ${diasTreino.join(", ")}.`,
+                    raw
+                });
+            }
+
+            // Busca o treino do dia
+            const { rows } = await pool.query(
+                `SELECT t.id, t.nome_treino, t.dia_semana, t.grupo_muscular, t.descricao
+         FROM treinos t
+         WHERE t.usuario_id = $1 
+           AND LOWER(t.dia_semana) = LOWER($2)`,
+                [usuarioId, diaNormalizado]
+            );
+
+            if (rows.length > 0) {
+                const treino = rows[0];
+
+                // Busca os exercícios desse treino
+                const exerciciosRes = await pool.query(
+                    `SELECT e.nome_exercicio, e.grupo_muscular
+             FROM treinos_exercicios te
+             JOIN exercicios e ON te.exercicio_id = e.id
+             WHERE te.treino_id = $1`,
+                    [treino.id]
+                );
+
+                // Formata a lista de exercícios
+                let listaExercicios = '';
+                if (exerciciosRes.rows.length > 0) {
+                    listaExercicios = '\n\nExercícios:\n' +
+                        exerciciosRes.rows.map(ex => `- ${ex.nome_exercicio}`).join('\n');
+                }
+
+                return res.json({
+                    ...dados,
+                    treino_id: treino.id,
+                    treino_encontrado: true,
+                    texto: `📅 ${nomeUsuario}, você tem "${treino.nome_treino}" agendado para ${treino.dia_semana}! 💪${listaExercicios}`,
                     raw
                 });
             } else {
                 return res.json({
                     ...dados,
-                    texto: `ℹ️ ${nomeUsuario}, não encontrei treino cadastrado para ${diaNormalizado}.`,
+                    treino_encontrado: false,
+                    texto: `ℹ️ ${nomeUsuario}, você ainda não tem treino cadastrado para ${diaNormalizado}. Quer que eu crie um?`,
                     raw
                 });
             }
