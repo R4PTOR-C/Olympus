@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import "../../styles/TreinosForm.css"
+import ModalCarregando from '../components/ModalCarregando';
+import '../../styles/TreinosForm.css';
+
+const GRUPOS = ['Peitoral', 'Bíceps', 'Tríceps', 'Costas', 'Ombros', 'Pernas', 'Abdômen', 'Panturrilha'];
 
 const TreinosForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+
     const [nomeTreino, setNomeTreino] = useState('');
     const [descricao, setDescricao] = useState('');
     const [diaSemana, setDiaSemana] = useState('');
@@ -13,6 +17,8 @@ const TreinosForm = () => {
     const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [exercicioAtivo, setExercicioAtivo] = useState(null);
+    const [openGroups, setOpenGroups] = useState({});
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`)
@@ -20,251 +26,297 @@ const TreinosForm = () => {
             .then(data => setExercicios(data));
     }, []);
 
+    const toggleGroup = (grupo) => {
+        setOpenGroups(prev => ({ ...prev, [grupo]: !prev[grupo] }));
+    };
+
     const handleAdicionarExercicio = (ex) => {
-        if (!exerciciosSelecionados.some((s) => s.id === ex.id)) {
-            setExerciciosSelecionados([...exerciciosSelecionados, ex]);
+        if (!exerciciosSelecionados.some(s => s.id === ex.id)) {
+            setExerciciosSelecionados(prev => [...prev, ex]);
         }
         setExercicioAtivo(null);
     };
 
-    const handleRemoveExercicio = (id) => {
-        setExerciciosSelecionados((prev) => prev.filter((ex) => ex.id !== id));
+    const handleRemoveExercicio = (exId) => {
+        setExerciciosSelecionados(prev => prev.filter(ex => ex.id !== exId));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (!nomeTreino || !descricao || !diaSemana || !grupoMuscular || exerciciosSelecionados.length === 0) {
             alert('Preencha todos os campos e selecione ao menos um exercício.');
             return;
         }
 
-        const treino = { nome_treino: nomeTreino, descricao, dia_semana: diaSemana, grupo_muscular: grupoMuscular };
+        setSubmitting(true);
+        try {
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome_treino: nomeTreino, descricao, dia_semana: diaSemana, grupo_muscular: grupoMuscular }),
+            });
+            if (!res.ok) { alert('Erro ao criar treino.'); return; }
+            const novoTreino = await res.json();
 
-        const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(treino)
-        });
+            await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${novoTreino.id}/exercicios`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exercicios: exerciciosSelecionados.map(ex => ex.id) }),
+            });
 
-        if (!res.ok) return alert('Erro ao criar treino.');
-        const novoTreino = await res.json();
-
-        await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${novoTreino.id}/exercicios`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ exercicios: exerciciosSelecionados.map((ex) => ex.id) })
-        });
-
-        alert('Treino criado com sucesso!');
-        navigate(`/usuarios/view/${id}`);
+            navigate(`/usuarios/view/${id}`);
+        } catch {
+            alert('Erro ao criar treino.');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
+    if (submitting) return <ModalCarregando show={true} />;
+
     return (
-        <div className="container mt-5 mb-5">
-            <div className="card shadow-lg border-0">
-                <div className="card-header text-white text-center py-3 rounded-top">
-                    <h3 className="mb-0"><i className="bi bi-clipboard-plus me-2"></i>Criar Novo Treino</h3>
+        <div className="tf-page">
+
+            {/* ── HEADER ── */}
+            <div className="tf-header">
+                <div className="tf-header-top">
+                    <button className="tf-back-btn" onClick={() => navigate(-1)}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                    </button>
+                    <div>
+                        <p className="tf-header-eyebrow">Novo Treino</p>
+                        <h1 className="tf-header-title">Criar Treino</h1>
+                    </div>
                 </div>
-                <div className="card-body p-4">
-                    <form onSubmit={handleSubmit}>
-                        {/* Nome */}
-                        <div className="mb-3">
-                            <label className="form-label">Nome do Treino</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                placeholder="Digite o nome do treino"
-                                value={nomeTreino}
-                                onChange={(e) => setNomeTreino(e.target.value)}
-                                required
-                            />
-                        </div>
+                <div className="tf-header-badge">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Preencha os dados abaixo
+                </div>
+            </div>
 
-                        {/* Descrição */}
-                        <div className="mb-3">
-                            <label className="form-label">Descrição</label>
-                            <textarea
-                                className="form-control"
-                                placeholder="Digite a descrição do treino"
-                                style={{ height: '100px' }}
-                                value={descricao}
-                                onChange={(e) => setDescricao(e.target.value)}
-                                required
-                            />
-                        </div>
+            {/* ── BODY ── */}
+            <form onSubmit={handleSubmit}>
+                <div className="tf-body">
 
-                        {/* Dia da semana */}
-                        <div className="mb-3">
-                            <label className="form-label">Dia da Semana</label>
-                            <select
-                                className="form-select"
-                                value={diaSemana}
-                                onChange={(e) => setDiaSemana(e.target.value)}
-                                required
-                            >
-                                <option value="">Selecione o Dia</option>
-                                <option value="Segunda-feira">Segunda-feira</option>
-                                <option value="Terça-feira">Terça-feira</option>
-                                <option value="Quarta-feira">Quarta-feira</option>
-                                <option value="Quinta-feira">Quinta-feira</option>
-                                <option value="Sexta-feira">Sexta-feira</option>
-                                <option value="Sábado">Sábado</option>
-                                <option value="Domingo">Domingo</option>
-                            </select>
+                    {/* ── Dados do treino ── */}
+                    <div className="tf-section">
+                        <div className="tf-section-header">
+                            <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            <span className="tf-section-title">Dados do Treino</span>
                         </div>
+                        <div className="tf-section-body">
+                            <div className="tf-field">
+                                <label className="tf-label">Nome do Treino</label>
+                                <input
+                                    className="tf-input"
+                                    type="text"
+                                    placeholder="Ex: Treino A — Peito e Tríceps"
+                                    value={nomeTreino}
+                                    onChange={e => setNomeTreino(e.target.value)}
+                                    required
+                                />
+                            </div>
 
-                        {/* Grupo Muscular */}
-                        <div className="mb-4">
-                            <label className="form-label">Grupo Muscular Principal</label>
-                            <select
-                                className="form-select"
-                                value={grupoMuscular}
-                                onChange={(e) => setGrupoMuscular(e.target.value)}
-                                required
-                            >
-                                <option value="">Selecione o Grupo Muscular</option>
-                                <option value="Peitoral">Peitoral</option>
-                                <option value="Costas">Costas</option>
-                                <option value="Ombros">Ombros</option>
-                                <option value="Bíceps">Bíceps</option>
-                                <option value="Tríceps">Tríceps</option>
-                                <option value="Posterior">Posterior</option>
-                                <option value="Frontal">Frontal</option>
-                                <option value="Panturrilha">Panturrilha</option>
-                                <option value="Abdômen">Abdômen</option>
-                            </select>
+                            <div className="tf-field">
+                                <label className="tf-label">Descrição</label>
+                                <textarea
+                                    className="tf-textarea"
+                                    placeholder="Descreva o objetivo ou foco deste treino..."
+                                    value={descricao}
+                                    onChange={e => setDescricao(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="tf-field">
+                                <label className="tf-label">Dia da Semana</label>
+                                <div className="tf-select-wrap">
+                                    <select
+                                        className="tf-select"
+                                        value={diaSemana}
+                                        onChange={e => setDiaSemana(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Selecione o dia</option>
+                                        <option value="Segunda-feira">Segunda-feira</option>
+                                        <option value="Terça-feira">Terça-feira</option>
+                                        <option value="Quarta-feira">Quarta-feira</option>
+                                        <option value="Quinta-feira">Quinta-feira</option>
+                                        <option value="Sexta-feira">Sexta-feira</option>
+                                        <option value="Sábado">Sábado</option>
+                                        <option value="Domingo">Domingo</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="tf-field">
+                                <label className="tf-label">Grupo Muscular Principal</label>
+                                <div className="tf-select-wrap">
+                                    <select
+                                        className="tf-select"
+                                        value={grupoMuscular}
+                                        onChange={e => setGrupoMuscular(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Selecione o grupo muscular</option>
+                                        <option value="Peitoral">Peitoral</option>
+                                        <option value="Costas">Costas</option>
+                                        <option value="Ombros">Ombros</option>
+                                        <option value="Bíceps">Bíceps</option>
+                                        <option value="Tríceps">Tríceps</option>
+                                        <option value="Posterior">Posterior</option>
+                                        <option value="Frontal">Frontal</option>
+                                        <option value="Panturrilha">Panturrilha</option>
+                                        <option value="Abdômen">Abdômen</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
+                    </div>
 
-                        {/* Exercícios Selecionados */}
-                        <h4 className="mt-4">Exercícios Selecionados</h4>
-                        <div className="row g-2 mb-4">
+                    {/* ── Exercícios selecionados ── */}
+                    <div className="tf-section">
+                        <div className="tf-section-header">
+                            <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            <span className="tf-section-title">Exercícios Selecionados</span>
+                            {exerciciosSelecionados.length > 0 && (
+                                <span className="tf-acc-count">{exerciciosSelecionados.length}</span>
+                            )}
+                        </div>
+                        <div className="tf-section-body">
                             {exerciciosSelecionados.length > 0 ? (
-                                exerciciosSelecionados.map((ex) => (
-                                    <div key={ex.id} className="col-6 col-md-3">
-                                        <div className="card h-100 text-center shadow-sm p-2">
-                                            <img
-                                                src={ex.gif_url}
-                                                alt={ex.nome_exercicio}
-                                                className="card-img-top"
-                                                style={{ height: '80px', objectFit: 'contain' }}
-                                            />
-                                            <h6 className="mt-1" style={{ fontSize: '0.8rem' }}>{ex.nome_exercicio}</h6>
+                                <div className="tf-selected-grid">
+                                    {exerciciosSelecionados.map(ex => (
+                                        <div key={ex.id} className="tf-selected-card">
+                                            <div className="tf-selected-gif">
+                                                <img src={ex.gif_url} alt={ex.nome_exercicio} />
+                                            </div>
+                                            <p className="tf-selected-name">{ex.nome_exercicio}</p>
                                             <button
                                                 type="button"
-                                                className="btn btn-sm btn-danger mt-1"
+                                                className="tf-rm-btn"
                                                 onClick={() => handleRemoveExercicio(ex.id)}
                                             >
                                                 Remover
                                             </button>
                                         </div>
-                                    </div>
-                                ))
+                                    ))}
+                                </div>
                             ) : (
-                                <p className="text-muted">Nenhum exercício selecionado ainda.</p>
+                                <p className="tf-empty-msg">Nenhum exercício selecionado ainda</p>
                             )}
                         </div>
+                    </div>
 
-                        {/* Exercícios Disponíveis */}
-                        <h4 className="mt-4">Exercícios Disponíveis</h4>
-                        <div className="input-group mb-3">
-                            <span className="input-group-text"><i className="bi bi-search"></i></span>
+                    {/* ── Exercícios disponíveis ── */}
+                    <div className="tf-section">
+                        <div className="tf-section-header">
+                            <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+                            </svg>
+                            <span className="tf-section-title">Exercícios Disponíveis</span>
+                        </div>
+
+                        {/* Busca */}
+                        <div className="tf-search-wrap">
+                            <svg className="tf-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
                             <input
+                                className="tf-search"
                                 type="text"
-                                className="form-control"
                                 placeholder="Buscar por nome ou grupo muscular..."
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={e => setSearchTerm(e.target.value)}
                             />
                         </div>
 
-                        <div className="accordion" id="accordionExercicios">
-                            {["Peitoral", "Bíceps", "Tríceps", "Costas", "Ombros", "Pernas", "Abdômen", "Panturrilha"].map((grupo, idx) => {
-                                const exerciciosGrupo = exercicios.filter(
-                                    (ex) =>
-                                        (ex.nome_exercicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                            ex.grupo_muscular?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-                                        ex.grupo_muscular === grupo &&
-                                        !exerciciosSelecionados.some((s) => s.id === ex.id)
+                        {/* Accordion */}
+                        <div className="tf-accordion">
+                            {GRUPOS.map((grupo) => {
+                                const exerciciosGrupo = exercicios.filter(ex =>
+                                    (ex.nome_exercicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                        ex.grupo_muscular?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+                                    ex.grupo_muscular === grupo &&
+                                    !exerciciosSelecionados.some(s => s.id === ex.id)
                                 );
-
                                 if (!exerciciosGrupo.length) return null;
 
+                                const isOpen = !!openGroups[grupo];
                                 return (
-                                    <div className="accordion-item" key={grupo}>
-                                        <h2 className="accordion-header" id={`heading-${idx}`}>
-                                            <button
-                                                className="accordion-button collapsed"
-                                                type="button"
-                                                data-bs-toggle="collapse"
-                                                data-bs-target={`#collapse-${idx}`}
-                                                aria-expanded="false"
-                                                aria-controls={`collapse-${idx}`}
-                                            >
-                                                {grupo}
-                                            </button>
-                                        </h2>
-                                        <div
-                                            id={`collapse-${idx}`}
-                                            className="accordion-collapse collapse"
-                                            aria-labelledby={`heading-${idx}`}
-                                            data-bs-parent="#accordionExercicios"
+                                    <div className="tf-acc-item" key={grupo}>
+                                        <button
+                                            type="button"
+                                            className="tf-acc-trigger"
+                                            onClick={() => toggleGroup(grupo)}
                                         >
-                                            <div className="accordion-body">
-                                                <div className="row g-2">
-                                                    {exerciciosGrupo.map((ex) => (
-                                                        <div key={ex.id} className="col-6 col-md-3 position-relative">
-                                                            <div
-                                                                className={`card shadow-sm p-2 d-flex flex-column ${exercicioAtivo === ex.id ? "ativo" : ""}`}
-                                                                onClick={() => setExercicioAtivo(ex.id)}
-                                                                style={exercicioAtivo === ex.id ? { position: 'absolute', top: '-10px', left: '-10px', right: '-10px', zIndex: 20 } : {}}
-                                                            >
-                                                                <img
-                                                                    src={ex.gif_url}
-                                                                    alt={ex.nome_exercicio}
-                                                                    className="card-img-top mx-auto"
-                                                                    style={{ height: '80px', objectFit: 'contain' }}
-                                                                />
-                                                                <h6 className="mt-1" style={{ fontSize: '0.8rem' }}>{ex.nome_exercicio}</h6>
+                                            <span className="tf-acc-label">{grupo}</span>
+                                            <span className="tf-acc-count">{exerciciosGrupo.length}</span>
+                                            <svg
+                                                className={`tf-acc-chevron${isOpen ? ' open' : ''}`}
+                                                width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                                            >
+                                                <polyline points="6 9 12 15 18 9"/>
+                                            </svg>
+                                        </button>
 
-                                                                {exercicioAtivo === ex.id && (
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn btn-sm btn-success mt-auto"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleAdicionarExercicio(ex);
-                                                                        }}
-                                                                    >
-                                                                        Usar
-                                                                    </button>
-                                                                )}
+                                        {isOpen && (
+                                            <div className="tf-acc-body">
+                                                <div className="tf-ex-grid">
+                                                    {exerciciosGrupo.map(ex => (
+                                                        <div
+                                                            key={ex.id}
+                                                            className={`tf-ex-card${exercicioAtivo === ex.id ? ' tf-ex-active' : ''}`}
+                                                            onClick={() => setExercicioAtivo(ex.id === exercicioAtivo ? null : ex.id)}
+                                                        >
+                                                            <div className="tf-ex-gif">
+                                                                <img src={ex.gif_url} alt={ex.nome_exercicio} />
                                                             </div>
+                                                            <p className="tf-ex-name">{ex.nome_exercicio}</p>
+                                                            {exercicioAtivo === ex.id && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="tf-use-btn"
+                                                                    onClick={e => { e.stopPropagation(); handleAdicionarExercicio(ex); }}
+                                                                >
+                                                                    Usar
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
                                 );
                             })}
                         </div>
+                    </div>
 
+                    {/* ── Ações ── */}
+                    <div className="tf-actions">
+                        <button type="submit" className="tf-btn-submit">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Criar Treino
+                        </button>
+                        <button type="button" className="tf-btn-cancel" onClick={() => navigate(-1)}>
+                            Cancelar
+                        </button>
+                    </div>
 
-                        {/* Botões finais */}
-                        <div className="d-flex justify-content-end mt-4 gap-3">
-                            <button type="submit" className="btn-olympus success sm">
-                                <i className="bi bi-check-circle me-2"></i> Adicionar
-                            </button>
-                            <button type="button" className="btn-olympus danger sm" onClick={() => navigate(-1)}>
-                                <i className="bi bi-x-circle me-2"></i> Cancelar
-                            </button>
-                        </div>
-
-
-                    </form>
                 </div>
-            </div>
+            </form>
         </div>
     );
 };

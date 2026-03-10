@@ -1,209 +1,669 @@
-.page-link:focus {
-    outline: none !important;
-    box-shadow: none !important;
-    border-color: inherit;
+/* =============================== */
+/* TREINOS FORM — OLYMPUS          */
+/* =============================== */
+
+/* ── LIGHT MODE ── */
+:root {
+    --tf-accent: #4A90D9;
+    --tf-accent-dim: rgba(74, 144, 217, 0.12);
+    --tf-accent-border: rgba(74, 144, 217, 0.35);
+    --tf-bg: #F0F3F8;
+    --tf-surface: #FFFFFF;
+    --tf-surface-2: #EBF0F7;
+    --tf-surface-3: #DDE5F0;
+    --tf-text: #19222B;
+    --tf-text-muted: #5A6B82;
+    --tf-text-dim: #9CAAB8;
+    --tf-border: rgba(0, 0, 0, 0.08);
+    --tf-shadow: 0 2px 14px rgba(0, 0, 0, 0.07);
+    --tf-red: #E84040;
+    --tf-radius-lg: 18px;
+    --tf-radius-md: 14px;
+    --tf-radius-sm: 8px;
 }
 
-
-/* Ícones no dark mode */
-.dark-mode .bi-search {
-    color: white;
-    background-color: var(--color-primary) !important;
+/* ── DARK MODE ── */
+body.dark-mode {
+    --tf-bg: #0B0F14;
+    --tf-surface: #111720;
+    --tf-surface-2: #171E2A;
+    --tf-surface-3: #1D2535;
+    --tf-text: #E8EDF5;
+    --tf-text-muted: #6B7A99;
+    --tf-text-dim: #3D4E6A;
+    --tf-border: rgba(255, 255, 255, 0.06);
+    --tf-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
 }
 
-/* Tabela no dark mode */
-.dark-mode .table-responsive tr {
-    background: #1e1e1e; /* fundo mais escuro */
-    border: 1px solid #444;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+/* ── PÁGINA ── */
+.tf-page {
+    background: var(--tf-bg);
+    min-height: 100vh;
+    font-family: 'Barlow', sans-serif;
+    padding-bottom: 88px;
 }
 
-.dark-mode .table-responsive td {
-    background-color: #1e1e1e;
-    border-bottom: 1px solid #333;
-    color: #eee; /* texto claro */
+/* =============================== */
+/* HEADER — sempre escuro          */
+/* =============================== */
+.tf-header {
+    background: linear-gradient(135deg, #19222B 0%, #2c3e50 100%);
+    padding: 20px 20px 24px;
+    position: relative;
+    overflow: hidden;
 }
 
-.dark-mode .table-responsive td::before {
-    color: #aaa; /* label em cinza claro */
+.tf-header::before {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    right: -40px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(74,144,217,0.1) 0%, transparent 70%);
+    pointer-events: none;
 }
 
-/* =========================
-   🔹 Ajustes Dark Mode
-   ========================= */
-
-/* Labels dos inputs */
-.dark-mode label,
-.dark-mode .form-floating label {
-    color: #ccc !important;
-}
-
-/* Textos dos inputs */
-.dark-mode .form-control,
-.dark-mode .form-select,
-.dark-mode textarea {
-    background-color: #1e1e1e;
-    color: #eee;
-    border: 1px solid #444;
-}
-
-/* Placeholder */
-.dark-mode .form-control::placeholder {
-    color: #888;
-}
-
-/* Ícone da lupa */
-.dark-mode .input-group-text {
-    background-color: var(--color-primary);
-    border: none;
-}
-.dark-mode .input-group-text i {
-    color: white !important;
-}
-
-/* Header da tabela */
-.dark-mode thead {
-    background-color: #2a2a2a !important;
-    color: #eee !important;
-}
-
-.dark-mode .table-light{
-    background-color: #2a2a2a !important;
-    color: #eee !important;
-}
-
-/* Linhas da tabela */
-.dark-mode tbody tr {
-    background-color: #1e1e1e;
-    color: #eee;
-    border-bottom: 1px solid #333;
-}
-
-/* Paginação */
-.dark-mode .pagination .page-link {
-    background-color: #1e1e1e;
-    border: 1px solid #444;
-    color: #ccc;
-}
-.dark-mode .pagination .page-item.active .page-link {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-    color: #fff;
-}
-.dark-mode .pagination .page-link:hover {
-    background-color: #333;
-    color: #fff;
-}
-
-/* Miniatura padrão */
-.gif-thumb {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 6px;
-    display: block;
-    margin: 0 auto;
-}
-
-/* Customização dos checkboxes */
-.custom-checkbox {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    border-radius: 6px;
-    border: 2px solid #999;
-    transition: all 0.2s ease-in-out;
-}
-
-.custom-checkbox:checked {
-    background-color: var(--color-primary, #0d6efd); /* usa sua cor primária */
-    border-color: var(--color-primary, #0d6efd);
-    box-shadow: 0 0 4px rgba(13, 110, 253, 0.6);
-}
-
-.custom-checkbox:focus {
-    outline: none;
-    box-shadow: 0 0 6px rgba(13, 110, 253, 0.7);
-}
-
-.botao-flutuante {
-    position: fixed;
-    bottom: 5rem; /* 👈 ajusta para não colidir com sua navbar inferior */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1050;
+.tf-header-top {
     display: flex;
-    flex-direction: row;   /* garante que fique lado a lado */
-    gap: 1rem;             /* espaçamento entre os botões */
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.tf-back-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(200, 209, 208, 0.7);
+    display: flex;
+    align-items: center;
     justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.18s;
 }
 
-
-.container {
-    padding-bottom: 7rem; /* espaço extra pra lista não ficar escondida */
+.tf-back-btn:active {
+    background: rgba(74,144,217,0.15);
+    border-color: rgba(74,144,217,0.4);
+    color: #4A90D9;
 }
 
-.btn-edit, .btn-cancel {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    transition: all 0.2s ease-in-out;
+.tf-header-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(200, 209, 208, 0.45);
+    margin: 0 0 4px;
 }
 
-.btn-edit:active, .btn-cancel:active {
-    transform: scale(0.97);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+.tf-header-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.04em;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1;
 }
 
-
-/* Estilo mobile-friendly para tabela de exercícios */
-@media (max-width: 768px) {
-    .table-responsive table,
-    .table-responsive thead,
-    .table-responsive tbody,
-    .table-responsive th,
-    .table-responsive td,
-    .table-responsive tr {
-        display: block;
-        width: 100%;
-    }
-
-    .gif-thumb {
-        width: 100%;
-        max-width: 200px; /* evita ficar gigante */
-        height: auto;
-        margin-top: 0.5rem;
-        border-radius: 8px;
-    }
-
-    .table-responsive thead {
-        display: none; /* esconde cabeçalho no mobile */
-    }
-
-    .table-responsive tr {
-        margin-bottom: 1rem;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 0.5rem;
-        background: #fff;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
-
-    .table-responsive td {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.5rem;
-        border: none;
-        border-bottom: 1px solid #eee;
-    }
-
-    .table-responsive td:last-child {
-        border-bottom: none;
-    }
-
-    .table-responsive td::before {
-        content: attr(data-label);
-        font-weight: bold;
-        color: #555;
-    }
+.tf-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(74, 144, 217, 0.15);
+    border: 1px solid rgba(74, 144, 217, 0.3);
+    border-radius: 100px;
+    padding: 3px 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #4A90D9;
+    margin-top: 8px;
+    width: fit-content;
 }
 
+/* =============================== */
+/* BODY                            */
+/* =============================== */
+.tf-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
+/* ── Seção / Card ── */
+.tf-section {
+    background: var(--tf-surface);
+    border: 1px solid var(--tf-border);
+    border-radius: var(--tf-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--tf-shadow);
+}
+
+.tf-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 16px 12px;
+    border-bottom: 1px solid var(--tf-border);
+    background: var(--tf-surface-2);
+}
+
+.tf-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+    color: var(--tf-text);
+    margin: 0;
+    flex: 1;
+}
+
+.tf-section-icon {
+    color: var(--tf-accent);
+    flex-shrink: 0;
+}
+
+.tf-section-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ── Campos de formulário ── */
+.tf-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.tf-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--tf-text-muted);
+}
+
+.tf-input,
+.tf-textarea {
+    background: var(--tf-surface-2);
+    border: 1px solid var(--tf-border);
+    border-radius: var(--tf-radius-sm);
+    padding: 11px 14px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.9rem;
+    color: var(--tf-text);
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.tf-input:focus,
+.tf-textarea:focus {
+    border-color: var(--tf-accent);
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+    background: var(--tf-surface);
+}
+
+.tf-input::placeholder,
+.tf-textarea::placeholder {
+    color: var(--tf-text-dim);
+}
+
+.tf-textarea {
+    resize: vertical;
+    min-height: 88px;
+    line-height: 1.5;
+}
+
+/* Select com seta customizada */
+.tf-select-wrap {
+    position: relative;
+}
+
+.tf-select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid var(--tf-text-dim);
+    pointer-events: none;
+}
+
+.tf-select {
+    background: var(--tf-surface-2);
+    border: 1px solid var(--tf-border);
+    border-radius: var(--tf-radius-sm);
+    padding: 11px 36px 11px 14px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.9rem;
+    color: var(--tf-text);
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    width: 100%;
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+.tf-select:focus {
+    border-color: var(--tf-accent);
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+}
+
+.tf-select option {
+    background: var(--tf-surface);
+    color: var(--tf-text);
+}
+
+/* ── Exercícios selecionados ── */
+.tf-selected-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.tf-selected-card {
+    background: var(--tf-surface-2);
+    border: 1px solid var(--tf-border);
+    border-radius: var(--tf-radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 10px 8px;
+    gap: 6px;
+}
+
+.tf-selected-gif {
+    background: #ffffff;
+    border-radius: 8px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80px;
+    overflow: hidden;
+}
+
+.tf-selected-gif img {
+    height: 70px;
+    object-fit: contain;
+}
+
+.tf-selected-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--tf-text);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.tf-rm-btn {
+    width: 100%;
+    background: rgba(232, 64, 64, 0.08);
+    border: 1px solid rgba(232, 64, 64, 0.25);
+    color: var(--tf-red);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.tf-rm-btn:active {
+    background: rgba(232, 64, 64, 0.15);
+    transform: scale(0.96);
+}
+
+.tf-empty-msg {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tf-text-dim);
+    text-align: center;
+    padding: 14px 0 6px;
+}
+
+/* ── Busca ── */
+.tf-search-wrap {
+    padding: 12px 16px 4px;
+    position: relative;
+}
+
+.tf-search-icon {
+    position: absolute;
+    left: 28px;
+    top: 24px;
+    color: var(--tf-text-dim);
+    pointer-events: none;
+}
+
+.tf-search {
+    background: var(--tf-surface-2);
+    border: 1px solid var(--tf-border);
+    border-radius: var(--tf-radius-sm);
+    padding: 10px 12px 10px 38px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.85rem;
+    color: var(--tf-text);
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.18s;
+}
+
+.tf-search:focus {
+    border-color: var(--tf-accent);
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.12);
+}
+
+.tf-search::placeholder {
+    color: var(--tf-text-dim);
+}
+
+/* ── Accordion ── */
+.tf-accordion {
+    display: flex;
+    flex-direction: column;
+}
+
+.tf-acc-item {
+    border-top: 1px solid var(--tf-border);
+}
+
+.tf-acc-item:first-child {
+    border-top: none;
+}
+
+.tf-acc-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 16px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    transition: background 0.15s;
+    gap: 8px;
+}
+
+.tf-acc-trigger:active {
+    background: var(--tf-surface-2);
+}
+
+.tf-acc-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.92rem;
+    letter-spacing: 0.08em;
+    color: var(--tf-text);
+    flex: 1;
+}
+
+.tf-acc-count {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tf-accent);
+    background: var(--tf-accent-dim);
+    border: 1px solid var(--tf-accent-border);
+    border-radius: 100px;
+    padding: 2px 8px;
+}
+
+.tf-acc-chevron {
+    color: var(--tf-text-dim);
+    transition: transform 0.22s;
+    flex-shrink: 0;
+}
+
+.tf-acc-chevron.open {
+    transform: rotate(180deg);
+}
+
+.tf-acc-body {
+    padding: 0 12px 12px;
+}
+
+/* ── Grid de exercícios no accordion ── */
+.tf-ex-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.tf-ex-card {
+    background: var(--tf-surface-2);
+    border: 1px solid var(--tf-border);
+    border-radius: var(--tf-radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 8px 7px;
+    gap: 5px;
+    cursor: pointer;
+    transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.tf-ex-card.tf-ex-active {
+    border-color: var(--tf-accent);
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+}
+
+.tf-ex-gif {
+    background: #ffffff;
+    border-radius: 6px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 70px;
+    overflow: hidden;
+}
+
+.tf-ex-gif img {
+    height: 62px;
+    object-fit: contain;
+}
+
+.tf-ex-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.67rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--tf-text);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.tf-use-btn {
+    width: 100%;
+    background: var(--tf-accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.tf-use-btn:active {
+    transform: scale(0.96);
+}
+
+/* ── Ações finais ── */
+.tf-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tf-btn-submit {
+    width: 100%;
+    background: var(--tf-accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--tf-radius-md);
+    padding: 15px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.18s;
+    box-shadow: 0 4px 16px rgba(74, 144, 217, 0.3);
+}
+
+.tf-btn-submit:active {
+    transform: scale(0.98);
+}
+
+.tf-btn-cancel {
+    width: 100%;
+    background: transparent;
+    color: var(--tf-text-muted);
+    border: 1px solid var(--tf-border);
+    border-radius: var(--tf-radius-md);
+    padding: 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+.tf-btn-cancel:active {
+    background: var(--tf-surface-2);
+    transform: scale(0.98);
+}
+
+/* =============================== */
+/* FIELD ROWS — tela de edição     */
+/* =============================== */
+.tf-field-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.tf-field-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--tf-border);
+    cursor: pointer;
+    transition: background 0.15s;
+    gap: 12px;
+}
+
+.tf-field-row:last-child {
+    border-bottom: none;
+}
+
+.tf-field-row:active {
+    background: var(--tf-surface-2);
+}
+
+.tf-field-row-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.tf-field-row-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--tf-text-dim);
+}
+
+.tf-field-row-value {
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.9rem;
+    color: var(--tf-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tf-field-row-value.empty {
+    color: var(--tf-text-dim);
+    font-style: italic;
+}
+
+.tf-field-row-chevron {
+    color: var(--tf-text-dim);
+    flex-shrink: 0;
+}
+
+/* ── Exercícios salvos (edit) ── */
+.tf-saved-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 14px 16px;
+}
+
+/* ── DESKTOP ── */
+@media (min-width: 768px) {
+    .tf-page {
+        max-width: 700px;
+        margin: 0 auto;
+        padding-bottom: 2rem;
+    }
+
+    .tf-body {
+        padding: 20px;
+        gap: 14px;
+    }
+
+    .tf-selected-grid,
+    .tf-ex-grid,
+    .tf-saved-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
