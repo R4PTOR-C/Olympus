@@ -221,6 +221,7 @@ const UsuariosView = () => {
                                                             <div
                                                                 ref={provided.innerRef}
                                                                 {...provided.draggableProps}
+                                                                {...provided.dragHandleProps}
                                                                 className={`uv-workout-card${snapshot.isDragging ? ' uv-dragging' : ''}`}
                                                                 style={provided.draggableProps.style}
                                                             >
@@ -246,32 +247,20 @@ const UsuariosView = () => {
                                                                     )}
                                                                 </div>
 
-                                                                {/* Ações + drag handle */}
-                                                                <div className="uv-workout-side">
-                                                                    <div {...provided.dragHandleProps} className="uv-drag-handle">
-                                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                                            <line x1="8" y1="6" x2="21" y2="6"/>
-                                                                            <line x1="8" y1="12" x2="21" y2="12"/>
-                                                                            <line x1="8" y1="18" x2="21" y2="18"/>
-                                                                            <line x1="3" y1="6" x2="3.01" y2="6"/>
-                                                                            <line x1="3" y1="12" x2="3.01" y2="12"/>
-                                                                            <line x1="3" y1="18" x2="3.01" y2="18"/>
-                                                                        </svg>
-                                                                    </div>
-                                                                    <div className="uv-actions">
-                                                                        <button
-                                                                            className="uv-btn-edit"
-                                                                            onClick={() => navigate(`/treinos/edit/${id}/${t.id}`)}
-                                                                        >
-                                                                            Editar
-                                                                        </button>
-                                                                        <button
-                                                                            className="uv-btn-delete"
-                                                                            onClick={() => handleDeleteTreino(t.id)}
-                                                                        >
-                                                                            Excluir
-                                                                        </button>
-                                                                    </div>
+                                                                {/* Ações */}
+                                                                <div className="uv-actions" onMouseDown={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()}>
+                                                                    <button
+                                                                        className="uv-btn-edit"
+                                                                        onClick={e => { e.stopPropagation(); navigate(`/treinos/edit/${id}/${t.id}`); }}
+                                                                    >
+                                                                        Editar
+                                                                    </button>
+                                                                    <button
+                                                                        className="uv-btn-delete"
+                                                                        onClick={e => { e.stopPropagation(); handleDeleteTreino(t.id); }}
+                                                                    >
+                                                                        Excluir
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         )}

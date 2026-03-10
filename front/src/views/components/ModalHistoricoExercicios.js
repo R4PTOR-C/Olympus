@@ -1,12 +1,54 @@
 import React, { useEffect, useState } from 'react';
 import GraficoHistoricoExercicio from './GraficoHistoricoExercicio';
+import '../../styles/ModalHistorico.css';
+
+/* Agrupa rows por data e calcula métricas para o gráfico */
+function agruparParaGrafico(rows) {
+    const byDate = new Map();
+    for (const r of rows) {
+        const dia   = (r.data_treino || '').split('T')[0];
+        const carga = r.carga      == null ? 0 : Number(r.carga);
+        const reps  = r.repeticoes == null ? 0 : Number(r.repeticoes);
+        const oneRM = carga > 0 && reps > 0 ? carga * (1 + reps / 30) : 0;
+
+        if (!byDate.has(dia)) {
+            byDate.set(dia, { date: dia, maxCarga: 0, totalVolume: 0, max1RM: 0 });
+        }
+        const d = byDate.get(dia);
+        d.maxCarga     = Math.max(d.maxCarga, carga);
+        d.totalVolume += carga * reps;
+        d.max1RM       = Math.max(d.max1RM, oneRM);
+    }
+    return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/* Agrupa rows por data para exibição de sessões */
+function agruparPorData(rows) {
+    const acc = {};
+    for (const r of rows) {
+        const key = (r.data_treino || '').split('T')[0];
+        if (!acc[key]) acc[key] = { nomeTreino: r.nome_treino || '', series: [] };
+        acc[key].series.push(r);
+    }
+    /* Ordena séries dentro de cada data */
+    for (const key of Object.keys(acc)) {
+        acc[key].series.sort((a, b) => a.numero_serie - b.numero_serie);
+    }
+    /* Retorna datas mais recentes primeiro */
+    return Object.entries(acc).sort(([a], [b]) => b.localeCompare(a));
+}
+
+function formatDate(iso) {
+    return new Date(iso + 'T12:00:00').toLocaleDateString('pt-BR', {
+        weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
+    });
+}
 
 function ModalHistoricoExercicio({ exercicio, userId, onClose }) {
-    const [historico, setHistorico] = useState({});
-    const [datasOrdenadas, setDatasOrdenadas] = useState([]);
-    const [dataSelecionada, setDataSelecionada] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [erro, setErro] = useState(null);
+    const [dadosGrafico, setDadosGrafico] = useState([]);
+    const [sessoes,      setSessoes]      = useState([]);   // [{data, {nomeTreino, series}}]
+    const [loading,      setLoading]      = useState(true);
+    const [erro,         setErro]         = useState(null);
 
     useEffect(() => {
         if (!exercicio) return;
@@ -16,30 +58,15 @@ function ModalHistoricoExercicio({ exercicio, userId, onClose }) {
                 setLoading(true);
                 setErro(null);
 
-                // ✅ URL corrigida para bater com o backend
                 const res = await fetch(
                     `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/exercicios/${exercicio.exercicio_id}/historico`,
                     { credentials: 'include' }
                 );
-
-
                 if (!res.ok) throw new Error('Falha ao carregar histórico');
-                const data = await res.json();
+                const rows = await res.json();
 
-                // Agrupa por data (YYYY-MM-DD)
-                const agrupado = data.reduce((acc, item) => {
-                    const raw = item.data_treino || '';
-                    const key = raw.includes('T') ? raw.split('T')[0] : raw; // segurança
-                    if (!acc[key]) acc[key] = [];
-                    acc[key].push(item);
-                    return acc;
-                }, {});
-
-                // Ordena datas (ASC) e seleciona a mais recente
-                const ordenadas = Object.keys(agrupado).sort((a, b) => a.localeCompare(b));
-                setHistorico(agrupado);
-                setDatasOrdenadas(ordenadas);
-                setDataSelecionada(ordenadas[ordenadas.length - 1] || null);
+                setDadosGrafico(agruparParaGrafico(rows));
+                setSessoes(agruparPorData(rows));
             } catch (err) {
                 console.error('Erro ao carregar histórico:', err);
                 setErro('Não foi possível carregar o histórico.');
@@ -52,65 +79,105 @@ function ModalHistoricoExercicio({ exercicio, userId, onClose }) {
     }, [exercicio, userId]);
 
     return (
-        <div
-            className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-            style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}
-            role="dialog" aria-modal="true"
-        >
-            <div className="modal-custom shadow"
-                 style={{ width: '92%', maxWidth: 720, maxHeight: '90vh', overflowY: 'auto' }}>
-                {/* Header */}
-                <div className="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                        <h5 className="mb-1">Histórico: {exercicio?.nome_exercicio}</h5>
-                        <small className="text-muted">{exercicio?.grupo_muscular}</small>
-                    </div>
-                    <button className="btn-close" aria-label="Fechar" onClick={onClose}></button>
-                </div>
+        <div className="mh-overlay" onClick={onClose} role="dialog" aria-modal="true">
+            <div className="mh-sheet" onClick={e => e.stopPropagation()}>
 
-                {/* Gráfico */}
-                <div className="mb-3">
-                    <GraficoHistoricoExercicio userId={userId} exercicioId={exercicio.exercicio_id} />
-                </div>
-
-                {/* Corpo */}
-                {loading && <p>Carregando...</p>}
-                {!loading && erro && <div className="alert alert-danger">{erro}</div>}
-
-                {!loading && !erro && datasOrdenadas.length === 0 && (
-                    <div className="text-muted">Ainda não há séries registradas para este exercício.</div>
-                )}
-
-                {!loading && !erro && datasOrdenadas.length > 0 && (
-                    <>
-                        <div className="mb-3">
-                            <strong>Datas:</strong>
-                            <div className="d-flex flex-wrap gap-2 mt-2">
-                                {datasOrdenadas.map((data) => (
-                                    <button
-                                        key={data}
-                                        className={`btn btn-sm ${dataSelecionada === data ? 'btn-primary' : 'btn-outline-primary'}`}
-                                        onClick={() => setDataSelecionada(data)}
-                                    >
-                                        {new Date(data).toLocaleDateString('pt-BR')}
-                                    </button>
-                                ))}
+                {/* ── HEADER ── */}
+                <div className="mh-header">
+                    <div className="mh-header-row">
+                        <div className="mh-header-info">
+                            <div className="mh-badge">
+                                <span className="mh-badge-dot" />
+                                Histórico
                             </div>
+                            <div className="mh-title">{exercicio?.nome_exercicio}</div>
+                            {exercicio?.grupo_muscular && (
+                                <div className="mh-subtitle">{exercicio.grupo_muscular}</div>
+                            )}
                         </div>
+                        <button className="mh-close-btn" onClick={onClose} aria-label="Fechar">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                <line x1="18" y1="6" x2="6"  y2="18"/>
+                                <line x1="6"  y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
 
-                        {dataSelecionada && (
-                            <div>
-                                <h6>Detalhes de {new Date(dataSelecionada).toLocaleDateString('pt-BR')}:</h6>
-                                {historico[dataSelecionada].map((s, i) => (
-                                    <div key={`${dataSelecionada}-${i}`} className="border-bottom py-2">
-                                        <div><strong>Treino:</strong> {s.nome_treino}</div>
-                                        <div><strong>{s.numero_serie}ª série:</strong> {s.carga} kg × {s.repeticoes} reps</div>
-                                    </div>
-                                ))}
-                            </div>
+                {/* ── BODY ── */}
+                <div className="mh-body">
+
+                    {/* Gráfico — recebe dados já processados */}
+                    <div className="mh-sec-label">Evolução</div>
+                    <GraficoHistoricoExercicio dados={dadosGrafico} loading={loading} />
+
+                    {/* Sessões */}
+                    <div className="mh-sec-label" style={{ marginTop: 8 }}>
+                        Sessões
+                        {sessoes.length > 0 && (
+                            <span style={{ fontFamily: 'Barlow Condensed', fontWeight: 700, fontSize: '0.7rem', color: 'var(--h-accent)', marginLeft: 8, letterSpacing: '0.08em' }}>
+                                {sessoes.length}
+                            </span>
                         )}
-                    </>
-                )}
+                    </div>
+
+                    {loading && <div className="mh-chart-loading">Carregando sessões...</div>}
+                    {!loading && erro && <div className="mh-error">{erro}</div>}
+                    {!loading && !erro && sessoes.length === 0 && (
+                        <div className="mh-empty">Nenhuma série registrada para este exercício.</div>
+                    )}
+
+                    {!loading && !erro && sessoes.map(([data, { nomeTreino, series }], idx) => (
+                        <div key={data} className="mh-session-card">
+                            {/* Cabeçalho da sessão */}
+                            <div className="mh-session-header">
+                                <div className="mh-session-num">
+                                    Sessão {sessoes.length - idx}
+                                </div>
+                                <div className="mh-session-date">{formatDate(data)}</div>
+                                {nomeTreino && (
+                                    <div className="mh-session-treino">{nomeTreino}</div>
+                                )}
+                            </div>
+
+                            {/* Séries */}
+                            <table className="mh-series-table">
+                                <thead>
+                                    <tr>
+                                        <th>Série</th>
+                                        <th>Carga</th>
+                                        <th className="mh-serie-sep"> </th>
+                                        <th>Reps</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {series.map((s, i) => (
+                                        <tr key={i}>
+                                            <td className="mh-serie-num">{s.numero_serie}ª</td>
+                                            <td>
+                                                <span className="mh-serie-val">
+                                                    {s.carga}<small>kg</small>
+                                                </span>
+                                            </td>
+                                            <td className="mh-serie-sep">×</td>
+                                            <td>
+                                                <span className="mh-serie-val">
+                                                    {s.repeticoes}<small>rep</small>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ))}
+                </div>
+
+                {/* ── FOOTER ── */}
+                <div className="mh-footer">
+                    <button className="mh-btn-close" onClick={onClose}>Fechar</button>
+                </div>
+
             </div>
         </div>
     );

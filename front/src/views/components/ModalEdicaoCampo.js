@@ -1,99 +1,111 @@
 import React, { useState, useEffect } from 'react';
+import CalendarioData, { normalizarData } from './CalendarioData';
 import '../../styles/ModalEdicaoCampo.css';
 
+const aplicarMascaraTelefone = (valor) => {
+    if (!valor) return '';
+    let digitos = valor.replace(/\D/g, '');
+    if (digitos.length > 11) digitos = digitos.substring(0, 11);
+    if (digitos.length <= 10) {
+        return digitos.replace(/(\d{0,2})(\d{0,4})(\d{0,4})/, (_, ddd, p1, p2) =>
+            [ddd ? `(${ddd}` + (ddd.length === 2 ? ') ' : '') : '', p1, p2 ? '-' + p2 : ''].join('')
+        );
+    }
+    return digitos.replace(/(\d{0,2})(\d{0,5})(\d{0,4})/, (_, ddd, p1, p2) =>
+        [ddd ? `(${ddd}` + (ddd.length === 2 ? ') ' : '') : '', p1, p2 ? '-' + p2 : ''].join('')
+    );
+};
+
+/* Formata YYYY-MM-DD → "15 de março de 1990" */
+const formatarDataExibicao = (iso) => {
+    if (!iso) return null;
+    return new Date(iso + 'T12:00:00').toLocaleDateString('pt-BR', {
+        day: '2-digit', month: 'long', year: 'numeric',
+    });
+};
+
 const ModalEdicaoCampo = ({ campo, valorAtual, onClose, onSave }) => {
-    const [valor, setValor] = useState(valorAtual || '');
+    const valorInicial = campo.tipo === 'date'
+        ? normalizarData(valorAtual)
+        : (valorAtual || '');
+
+    const [valor, setValor] = useState(valorInicial);
 
     useEffect(() => {
-        const handleEsc = (e) => {
-            if (e.key === 'Escape') onClose();
-        };
+        const handleEsc = (e) => { if (e.key === 'Escape') onClose(); };
         document.addEventListener('keydown', handleEsc);
         return () => document.removeEventListener('keydown', handleEsc);
     }, [onClose]);
 
-    const handleSalvar = () => {
-        onSave(campo.name, valor);
+    const handleChange = (e) => {
+        let v = e.target.value;
+        if (campo.name === 'telefone') v = aplicarMascaraTelefone(v);
+        setValor(v);
     };
 
-    const aplicarMascaraTelefone = (valor) => {
-        if (!valor) return '';
-
-        // remove tudo que não for número
-        let digitos = valor.replace(/\D/g, '');
-
-        if (digitos.length > 11) digitos = digitos.substring(0, 11);
-
-        // aplica a máscara conforme o tamanho
-        if (digitos.length <= 10) {
-            return digitos.replace(/(\d{0,2})(\d{0,4})(\d{0,4})/, function(_, ddd, parte1, parte2) {
-                return [
-                    ddd ? `(${ddd}` + (ddd.length === 2 ? ') ' : '') : '',
-                    parte1,
-                    parte2 ? '-' + parte2 : ''
-                ].join('');
-            });
-        } else {
-            return digitos.replace(/(\d{0,2})(\d{0,5})(\d{0,4})/, function(_, ddd, parte1, parte2) {
-                return [
-                    ddd ? `(${ddd}` + (ddd.length === 2 ? ') ' : '') : '',
-                    parte1,
-                    parte2 ? '-' + parte2 : ''
-                ].join('');
-            });
-        }
-    };
-
+    const isDate = campo.tipo === 'date';
 
     return (
-        <div className="bottom-sheet-backdrop" onClick={onClose}>
-            <div
-                className="bottom-sheet card shadow-lg"
-                onClick={(e) => e.stopPropagation()} // evita fechar ao clicar dentro
-            >
-                <div className="bottom-sheet-header d-flex justify-content-between align-items-center">
-                    <h5 className="m-0">Editar {campo.label}</h5>
-                    <button className="btn-close" onClick={onClose}></button>
+        <div className="mec-overlay" onClick={onClose}>
+            <div className="mec-sheet" onClick={e => e.stopPropagation()}>
+
+                {/* ── HEADER ── */}
+                <div className="mec-header">
+                    <div className="mec-header-info">
+                        <div className="mec-label">Editando</div>
+                        <div className="mec-title">{campo.label}</div>
+                        {isDate && valor && (
+                            <div className="mec-date-preview">{formatarDataExibicao(valor)}</div>
+                        )}
+                    </div>
+                    <button className="mec-close-btn" onClick={onClose} aria-label="Fechar">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                            <line x1="18" y1="6" x2="6"  y2="18"/>
+                            <line x1="6"  y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
                 </div>
 
-                <div className="bottom-sheet-body">
-                    <label className="form-label">{campo.label}</label>
-                    {campo.tipo === 'select' ? (
-                        <select
-                            className="form-select"
-                            value={valor}
-                            onChange={(e) => setValor(e.target.value)}
-                        >
-                            <option value="">Selecione</option>
-                            {campo.options.map(opt => (
-                                <option key={opt} value={opt}>{opt}</option>
-                            ))}
-                        </select>
+                {/* ── BODY ── */}
+                <div className="mec-body">
+                    {isDate ? (
+                        <CalendarioData value={valor} onChange={setValor} />
+                    ) : campo.tipo === 'select' ? (
+                        <div className="mec-select-wrap">
+                            <select
+                                className="mec-select"
+                                value={valor}
+                                onChange={handleChange}
+                            >
+                                <option value="">Selecione</option>
+                                {campo.options.map(opt => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                            </select>
+                        </div>
                     ) : (
                         <input
                             type={campo.tipo}
-                            value={campo.name === "telefone" ? aplicarMascaraTelefone(valor) : valor}
-                            onChange={(e) => {
-                                let novoValor = e.target.value;
-                                if (campo.name === "telefone") {
-                                    novoValor = aplicarMascaraTelefone(novoValor);
-                                }
-                                setValor(novoValor);
-                            }}
-                            className="form-control"
+                            className="mec-input"
+                            value={campo.name === 'telefone' ? aplicarMascaraTelefone(valor) : valor}
+                            onChange={handleChange}
+                            autoFocus
                         />
-
                     )}
                 </div>
 
-                <div className="bottom-sheet-footer d-flex justify-content-end gap-2">
-                    <button className="btn-olympus outline sm" onClick={onClose}>
-                        Cancelar
-                    </button>
-                    <button className="btn-olympus sm" onClick={handleSalvar}>
+                {/* ── FOOTER ── */}
+                <div className="mec-footer">
+                    <button className="mec-btn-cancel" onClick={onClose}>Cancelar</button>
+                    <button
+                        className="mec-btn-save"
+                        onClick={() => onSave(campo.name, valor)}
+                        disabled={isDate && !valor}
+                    >
                         Salvar
                     </button>
                 </div>
+
             </div>
         </div>
     );

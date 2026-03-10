@@ -1,33 +1,440 @@
-.bottom-sheet-backdrop {
+/* =============================== */
+/* MODAL EDIÇÃO DE CAMPO — OLYMPUS */
+/* =============================== */
+
+.mec-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 2000;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    z-index: 2000; /* maior que navbar-inferior */
+    animation: mec-fadeIn 0.18s ease both;
 }
 
-.bottom-sheet {
+@media (min-width: 600px) {
+    .mec-overlay { align-items: center; }
+}
+
+@keyframes mec-fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ── SHEET ── */
+.mec-sheet {
+    background: var(--h-surface);
     width: 100%;
-    max-width: 600px;
-    background: #fff;
-    border-radius: 20px 20px 0 0;
+    max-width: 500px;
+    border-radius: 24px 24px 0 0;
     overflow: hidden;
-    animation: slideUp 0.3s ease-out;
+    animation: mec-slideUp 0.26s cubic-bezier(0.34, 1.20, 0.64, 1) both;
+    box-shadow: 0 -8px 48px rgba(0, 0, 0, 0.3);
 }
 
-.bottom-sheet-header,
-.bottom-sheet-body,
-.bottom-sheet-footer {
-    padding: 16px;
+@media (min-width: 600px) {
+    .mec-sheet {
+        border-radius: 24px;
+        animation: mec-zoomIn 0.22s cubic-bezier(0.34, 1.20, 0.64, 1) both;
+    }
 }
 
-@keyframes slideUp {
-    from {
-        transform: translateY(100%);
-    }
-    to {
-        transform: translateY(0);
-    }
+@keyframes mec-slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes mec-zoomIn {
+    from { transform: scale(0.96); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+
+/* ── HEADER ── */
+.mec-header {
+    background: linear-gradient(135deg, #19222B 0%, #2c3e50 100%);
+    padding: 18px 20px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.mec-header::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(74, 144, 217, 0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.mec-header-info { flex: 1; min-width: 0; }
+
+.mec-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(200, 209, 208, 0.45);
+    margin-bottom: 3px;
+}
+
+.mec-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 0.04em;
+    color: #ffffff;
+    line-height: 1;
+}
+
+.mec-close-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(200, 209, 208, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.mec-close-btn:hover {
+    background: rgba(232, 64, 64, 0.15);
+    border-color: rgba(232, 64, 64, 0.3);
+    color: #E84040;
+}
+
+.mec-close-btn:active { transform: scale(0.92); }
+
+/* Preview de data no header */
+.mec-date-preview {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(74, 144, 217, 0.85);
+    margin-top: 4px;
+    letter-spacing: 0.03em;
+}
+
+/* ── BODY ── */
+.mec-body {
+    padding: 16px 16px 8px;
+}
+
+/* ── INPUT ── */
+.mec-input,
+.mec-select {
+    width: 100%;
+    background: var(--h-surface-2);
+    border: 1.5px solid var(--h-border);
+    border-radius: var(--h-radius-md);
+    padding: 13px 16px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 1rem;
+    color: var(--h-text);
+    outline: none;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.mec-input:focus,
+.mec-select:focus {
+    border-color: var(--h-accent);
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.12);
+    background: var(--h-surface);
+}
+
+.mec-input::placeholder { color: var(--h-text-dim); }
+
+/* Select com seta customizada */
+.mec-select-wrap {
+    position: relative;
+}
+
+.mec-select-wrap::after {
+    content: '';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--h-text-dim);
+    pointer-events: none;
+}
+
+/* =============================== */
+/* CALENDÁRIO CUSTOMIZADO          */
+/* =============================== */
+
+.cal-wrap {
+    background: var(--h-surface-2);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-md);
+    overflow: hidden;
+    user-select: none;
+}
+
+/* ── NAV ── */
+.cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--h-surface-3);
+    border-bottom: 1px solid var(--h-border);
+}
+
+.cal-arrow {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--h-border);
+    background: var(--h-surface);
+    color: var(--h-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.cal-arrow:active {
+    background: var(--h-accent-dim);
+    border-color: rgba(74,144,217,0.35);
+    color: var(--h-accent);
+    transform: scale(0.94);
+}
+
+.cal-nav-center {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cal-mes {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    letter-spacing: 0.06em;
+    color: var(--h-text);
+}
+
+.cal-ano {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--h-accent-dim);
+    border: 1px solid rgba(74,144,217,0.3);
+    border-radius: 8px;
+    padding: 3px 9px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--h-accent);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.cal-ano.open {
+    background: var(--h-accent);
+    color: #fff;
+    border-color: var(--h-accent);
+}
+
+.cal-ano:active { transform: scale(0.96); }
+
+/* ── YEAR PICKER ── */
+.cal-year-picker {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    padding: 12px;
+    max-height: 224px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--h-border) transparent;
+}
+
+.cal-year-picker::-webkit-scrollbar { width: 4px; }
+.cal-year-picker::-webkit-scrollbar-thumb {
+    background: var(--h-border);
+    border-radius: 2px;
+}
+
+.cal-year-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 7px 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--h-text-muted);
+    cursor: pointer;
+    transition: all 0.12s;
+    text-align: center;
+}
+
+.cal-year-btn:hover {
+    background: var(--h-surface-3);
+    color: var(--h-text);
+}
+
+.cal-year-btn.sel {
+    background: var(--h-accent);
+    border-color: var(--h-accent);
+    color: #ffffff;
+}
+
+.cal-year-btn:active { transform: scale(0.94); }
+
+/* ── GRID ── */
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+/* Cabeçalho dos dias da semana */
+.cal-weekdays {
+    padding: 8px 8px 4px;
+}
+
+.cal-wd {
+    text-align: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--h-text-dim);
+    padding: 4px 0;
+}
+
+/* Dias */
+.cal-days {
+    padding: 4px 8px 12px;
+    gap: 2px;
+}
+
+.cal-day {
+    aspect-ratio: 1;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--h-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s, color 0.12s;
+    position: relative;
+}
+
+.cal-day:hover:not(.sel) {
+    background: var(--h-surface-3);
+}
+
+.cal-day:active { transform: scale(0.9); }
+
+/* Dia de outro mês */
+.cal-day.other {
+    color: var(--h-text-dim);
+    opacity: 0.5;
+}
+
+/* Hoje */
+.cal-day.hoje {
+    color: var(--h-accent);
+    font-weight: 700;
+}
+
+.cal-day.hoje::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--h-accent);
+}
+
+/* Dia selecionado */
+.cal-day.sel {
+    background: var(--h-accent);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.cal-day.sel::after { display: none; }
+
+/* ── FOOTER ── */
+.mec-footer {
+    padding: 16px 20px 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.mec-btn-cancel {
+    flex: 1;
+    background: var(--h-surface-2);
+    color: var(--h-text-muted);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-md);
+    padding: 13px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.83rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.mec-btn-cancel:active {
+    background: var(--h-surface-3);
+    transform: scale(0.98);
+}
+
+.mec-btn-save {
+    flex: 2;
+    background: var(--h-accent);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--h-radius-md);
+    padding: 13px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.83rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 4px 14px rgba(74, 144, 217, 0.3);
+}
+
+.mec-btn-save:active {
+    transform: scale(0.98);
+    box-shadow: none;
 }

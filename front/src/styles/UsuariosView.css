@@ -313,20 +313,7 @@ body.dark-mode {
     color: var(--uv-accent);
 }
 
-/* Ações + drag handle */
-.uv-workout-side {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-    flex-shrink: 0;
-}
-
-.uv-drag-handle {
-    color: var(--uv-text-dim);
-    line-height: 1;
-}
-
+/* Ações */
 .uv-actions {
     display: flex;
     gap: 6px;

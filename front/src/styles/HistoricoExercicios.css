@@ -1,0 +1,175 @@
+/* =============================== */
+/* HISTÓRICO POR EXERCÍCIO         */
+/* =============================== */
+
+.hx-wrapper {
+    background: var(--h-bg);
+    min-height: 100vh;
+    font-family: 'Barlow', sans-serif;
+    padding-bottom: 88px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ── PAGE HEADER ── */
+.hx-page-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 18px 20px 14px;
+}
+
+.hx-page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.06em;
+    color: var(--h-text);
+}
+
+.hx-page-count {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--h-accent);
+    opacity: 0.85;
+}
+
+/* ── GRID ── */
+.hx-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 0 16px 14px;
+}
+
+/* ── CARD ── */
+.hx-card {
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: var(--h-shadow);
+    transition: box-shadow 0.2s, transform 0.15s;
+    animation: h-fadeUp 0.35s ease both;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.hx-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--h-accent), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.hx-card:hover { box-shadow: var(--h-shadow-hover); }
+.hx-card:hover::after { opacity: 1; }
+.hx-card:active { transform: scale(0.97); }
+
+.hx-card:nth-child(2) { animation-delay: 0.05s; }
+.hx-card:nth-child(3) { animation-delay: 0.10s; }
+.hx-card:nth-child(4) { animation-delay: 0.15s; }
+.hx-card:nth-child(5) { animation-delay: 0.20s; }
+.hx-card:nth-child(6) { animation-delay: 0.25s; }
+.hx-card:nth-child(7) { animation-delay: 0.30s; }
+.hx-card:nth-child(8) { animation-delay: 0.35s; }
+
+/* ── GIF (topo do card, fundo sempre branco) ── */
+.hx-gif-wrap {
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 140px;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    flex-shrink: 0;
+}
+
+.hx-gif-wrap img {
+    height: 120px;
+    width: 100%;
+    object-fit: contain;
+}
+
+/* ── INFO (parte inferior do card) ── */
+.hx-info {
+    padding: 11px 13px 13px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.hx-muscle {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--h-accent);
+}
+
+.hx-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--h-text);
+    line-height: 1.2;
+}
+
+.hx-sessions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.68rem;
+    color: var(--h-text-dim);
+    margin-top: 4px;
+}
+
+/* ── EMPTY STATE ── */
+.hx-empty {
+    margin: 0 20px;
+    background: var(--h-surface);
+    border: 1.5px dashed var(--h-border);
+    border-radius: var(--h-radius-lg);
+    padding: 3rem 1.5rem;
+    text-align: center;
+    box-shadow: var(--h-shadow);
+}
+
+.hx-empty svg { margin-bottom: 1rem; }
+
+.hx-empty h5 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.06em;
+    color: var(--h-text);
+    margin: 0 0 0.3rem;
+}
+
+.hx-empty p {
+    font-size: 0.8rem;
+    color: var(--h-text-muted);
+    margin: 0;
+}
+
+/* ── DESKTOP ── */
+@media (min-width: 600px) {
+    .hx-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 0 20px 14px; }
+    .hx-gif-wrap { height: 160px; }
+    .hx-gif-wrap img { height: 140px; }
+}
+
+@media (min-width: 900px) {
+    .hx-wrapper { padding-bottom: 2rem; }
+    .hx-grid { grid-template-columns: repeat(4, 1fr); }
+}

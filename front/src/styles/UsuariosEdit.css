@@ -1,31 +1,208 @@
-.usuarios-edit .card-section {
-    background: var(--color-bg);   /* usa o fundo do tema */
-    border-radius: 12px;
-    padding: 16px;
-    color: var(--color-text);      /* usa a cor de texto do tema */
+/* =============================== */
+/* EDITAR PERFIL — OLYMPUS         */
+/* =============================== */
+
+.ue-page {
+    background: var(--h-bg);
+    min-height: 100vh;
+    font-family: 'Barlow', sans-serif;
+    padding-bottom: 88px;
 }
 
-.card-header-custom {
-    font-weight: 600;
-    margin-bottom: 12px;
+/* ── HEADER (sempre escuro) ── */
+.ue-header {
+    background: linear-gradient(135deg, #19222B 0%, #2c3e50 100%);
+    padding: 28px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.ue-header::before {
+    content: '';
+    position: absolute;
+    bottom: -50px;
+    right: -40px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(74, 144, 217, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Avatar */
+.ue-avatar-wrap {
+    position: relative;
+    margin-bottom: 14px;
+}
+
+.ue-avatar,
+.ue-avatar-placeholder {
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    border: 3px solid rgba(74, 144, 217, 0.45);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    display: block;
+    object-fit: cover;
+}
+
+.ue-avatar-placeholder {
+    background: linear-gradient(135deg, #1C2436, #2c3e50);
     display: flex;
     align-items: center;
-    color: var(--color-text);      /* mantém contraste no tema */
+    justify-content: center;
 }
 
-.field-row {
+.ue-avatar-edit-btn {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--h-accent);
+    border: 2px solid #19222B;
+    color: #fff;
     display: flex;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--color-primary-hover); /* borda puxa do tema */
-    cursor: default;
-    color: var(--color-text);
-}
-
-.field-row.clickable {
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
+    transition: transform 0.15s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-.field-row:last-child {
-    border-bottom: none;
+.ue-avatar-edit-btn:active { transform: scale(0.92); }
+
+.ue-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.9rem;
+    letter-spacing: 0.05em;
+    color: #ffffff;
+    margin: 0 0 12px;
+    line-height: 1;
+}
+
+/* Stat chips no header */
+.ue-stats-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.ue-stat-chip {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    padding: 5px 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ue-stat-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.ue-stat-lbl {
+    font-size: 0.68rem;
+    color: rgba(200, 209, 208, 0.5);
+}
+
+/* ── BODY ── */
+.ue-body {
+    padding: 20px 20px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* ── SECTION CARD ── */
+.ue-section {
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--h-shadow);
+}
+
+.ue-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.88rem;
+    letter-spacing: 0.1em;
+    color: var(--h-text-dim);
+    padding: 12px 18px 10px;
+    border-bottom: 1px solid var(--h-border);
+    background: var(--h-surface-2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ── FIELD ROW ── */
+.ue-field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--h-border);
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+}
+
+.ue-field:last-child { border-bottom: none; }
+
+.ue-field:active { background: var(--h-surface-2); }
+
+.ue-field-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.ue-field-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--h-text-dim);
+    margin-bottom: 2px;
+}
+
+.ue-field-value {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.97rem;
+    font-weight: 600;
+    color: var(--h-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ue-field-value.empty {
+    color: var(--h-text-dim);
+    font-weight: 400;
+    font-style: italic;
+}
+
+.ue-field-chevron {
+    color: var(--h-text-dim);
+    flex-shrink: 0;
+    transition: color 0.15s;
+}
+
+.ue-field:active .ue-field-chevron { color: var(--h-accent); }
+
+/* ── DESKTOP ── */
+@media (min-width: 768px) {
+    .ue-page { padding-bottom: 2rem; }
+    .ue-name { font-size: 2.2rem; }
 }

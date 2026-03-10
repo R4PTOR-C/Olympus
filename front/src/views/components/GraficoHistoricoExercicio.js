@@ -1,128 +1,130 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
-    LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend, ResponsiveContainer,
+    LineChart, Line, XAxis, YAxis, Tooltip,
+    CartesianGrid, ResponsiveContainer,
 } from 'recharts';
+import { AuthContext } from '../../AuthContext';
+import '../../styles/ModalHistorico.css';
 
-function agruparPorData(rows) {
-    const byDate = new Map();
+const METRICS = [
+    { key: 'maxCarga',    label: 'Carga Máx',  unit: 'kg'     },
+    { key: 'totalVolume', label: 'Volume',      unit: 'kg·rep' },
+    { key: 'max1RM',      label: '1RM (Epley)', unit: 'kg'     },
+];
 
-    for (const r of rows) {
-        const dia = r.data_treino.split('T')[0]; // garante formato YYYY-MM-DD
-        const carga = r.carga == null ? 0 : Number(r.carga);
-        const reps = r.repeticoes == null ? 0 : Number(r.repeticoes);
-        const oneRM = carga > 0 && reps > 0 ? carga * (1 + reps / 30) : 0;
-        const vol = carga * reps;
-
-        if (!byDate.has(dia)) {
-            byDate.set(dia, {
-                date: dia,
-                maxCarga: 0,
-                totalVolume: 0,
-                max1RM: 0,
-            });
-        }
-        const d = byDate.get(dia);
-        d.maxCarga = Math.max(d.maxCarga, carga);
-        d.totalVolume += vol;
-        d.max1RM = Math.max(d.max1RM, oneRM);
-    }
-
-    return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
-}
-
-export default function GraficoHistoricoExercicio({ userId, exercicioId }) {
-    const [dados, setDados] = useState([]);
-    const [metric, setMetric] = useState('maxCarga');
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        let cancel = false;
-        async function load() {
-            try {
-                const res = await fetch(
-                    `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/exercicios/${exercicioId}/historico`,
-                    { credentials: 'include' }
-                );
-                const rows = await res.json();
-                if (!cancel) setDados(agruparPorData(rows));
-            } catch (e) {
-                console.error('Erro ao carregar histórico:', e);
-            } finally {
-                if (!cancel) setLoading(false);
-            }
-        }
-        load();
-        return () => { cancel = true; };
-    }, [userId, exercicioId]);
-
-    if (loading) return <div>Carregando gráfico...</div>;
-    if (dados.length === 0) return <div className="text-muted">Sem dados suficientes para o gráfico.</div>;
-
-    const metricLabel = {
-        maxCarga: 'Carga Máx (kg)',
-        totalVolume: 'Volume (kg-reps)',
-        max1RM: '1RM Estimado (kg)',
-    }[metric];
-
+const CustomTooltip = ({ active, payload, label, unit, lineColor }) => {
+    if (!active || !payload?.length) return null;
+    const val = payload[0].value;
     return (
-        <div>
-            <div className="d-flex gap-2 mb-3 flex-wrap">
-                <button
-                    type="button"
-                    className={`btn btn-sm ${metric === 'maxCarga' ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => setMetric('maxCarga')}
-                >
-                    Carga Máx
-                </button>
-                <button
-                    type="button"
-                    className={`btn btn-sm ${metric === 'totalVolume' ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => setMetric('totalVolume')}
-                >
-                    Volume
-                </button>
-                <button
-                    type="button"
-                    className={`btn btn-sm ${metric === 'max1RM' ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => setMetric('max1RM')}
-                >
-                    1RM (Epley)
-                </button>
+        <div style={{
+            background: 'var(--h-surface)',
+            border: '1px solid var(--h-border)',
+            borderRadius: 10,
+            padding: '8px 14px',
+            boxShadow: 'var(--h-shadow)',
+        }}>
+            <div style={{
+                fontFamily: 'Barlow Condensed, sans-serif',
+                fontSize: '0.62rem',
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'var(--h-text-dim)',
+                marginBottom: 4,
+            }}>
+                {new Date(label + 'T12:00:00').toLocaleDateString('pt-BR')}
             </div>
-
-            <div style={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
-                    <LineChart data={dados} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                            dataKey="date"
-                            tickFormatter={(str) => {
-                                const d = new Date(str);
-                                return d.toLocaleDateString('pt-BR');
-                            }}
-                        />
-                        <YAxis allowDecimals={false} />
-                        <Tooltip
-                            labelFormatter={(str) => {
-                                const d = new Date(str);
-                                return d.toLocaleDateString('pt-BR');
-                            }}
-                        />
-                        <Legend />
-                        <Line
-                            type="monotone"
-                            dataKey={metric}
-                            name={metricLabel}
-                            dot={{ r: 4, stroke: "currentColor", fill: "currentColor" }}
-                            stroke="currentColor"
-                            strokeWidth={2}
-                            className="grafico-linha"
-                        />
-
-
-                    </LineChart>
-                </ResponsiveContainer>
+            <div style={{
+                fontFamily: 'Bebas Neue, sans-serif',
+                fontSize: '1.3rem',
+                letterSpacing: '0.04em',
+                color: lineColor,
+                lineHeight: 1,
+            }}>
+                {Number.isInteger(val) ? val : val.toFixed(1)}
+                <span style={{ fontSize: '0.7rem', color: 'var(--h-text-dim)', marginLeft: 4 }}>
+                    {unit}
+                </span>
             </div>
         </div>
+    );
+};
+
+/* dados: array já agrupado por data, recebido como prop */
+export default function GraficoHistoricoExercicio({ dados = [], loading = false }) {
+    const { darkMode } = useContext(AuthContext);
+    const [metric, setMetric] = useState('maxCarga');
+
+    const currentMetric = METRICS.find(m => m.key === metric);
+
+    /* Cores que funcionam em atributos SVG (sem CSS vars) */
+    const lineColor = darkMode ? '#C0CDD8' : '#8899AA';
+    const gridColor = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+    const tickColor = darkMode ? '#6B7A99'               : '#9CAAB8';
+
+    return (
+        <>
+            <div className="mh-metric-row">
+                {METRICS.map(m => (
+                    <button
+                        key={m.key}
+                        type="button"
+                        className={`mh-metric-btn${metric === m.key ? ' active' : ''}`}
+                        onClick={() => setMetric(m.key)}
+                    >
+                        {m.label}
+                    </button>
+                ))}
+            </div>
+
+            <div className="mh-chart-wrap">
+                {loading ? (
+                    <div className="mh-chart-loading">Carregando gráfico...</div>
+                ) : dados.length < 2 ? (
+                    <div className="mh-chart-empty">
+                        {dados.length === 0
+                            ? 'Sem dados para o gráfico.'
+                            : 'Registre mais sessões para ver a evolução.'}
+                    </div>
+                ) : (
+                    <ResponsiveContainer key={darkMode ? 'dark' : 'light'} width="100%" height={220}>
+                        <LineChart data={dados} margin={{ top: 6, right: 16, left: -16, bottom: 4 }}>
+                            <CartesianGrid
+                                strokeDasharray="3 3"
+                                stroke={gridColor}
+                                vertical={false}
+                            />
+                            <XAxis
+                                dataKey="date"
+                                tickFormatter={str => {
+                                    const d = new Date(str + 'T12:00:00');
+                                    return `${d.getDate()}/${d.getMonth() + 1}`;
+                                }}
+                                tick={{ fontFamily: 'Barlow Condensed', fontSize: 11, fill: tickColor, fontWeight: 700 }}
+                                axisLine={false}
+                                tickLine={false}
+                            />
+                            <YAxis
+                                tick={{ fontFamily: 'Barlow Condensed', fontSize: 11, fill: tickColor, fontWeight: 700 }}
+                                axisLine={false}
+                                tickLine={false}
+                            />
+                            <Tooltip
+                                content={<CustomTooltip unit={currentMetric.unit} lineColor={lineColor} />}
+                                cursor={{ stroke: lineColor, strokeWidth: 1, strokeOpacity: 0.4 }}
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey={metric}
+                                stroke={lineColor}
+                                strokeWidth={2.5}
+                                dot={{ r: 4, fill: lineColor, stroke: lineColor }}
+                                activeDot={{ r: 6, fill: lineColor, strokeWidth: 0 }}
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                )}
+            </div>
+        </>
     );
 }
