@@ -1,0 +1,507 @@
+/* =============================== */
+/* EXERCÍCIOS INDEX — OLYMPUS      */
+/* =============================== */
+
+/* ── LIGHT MODE ── */
+:root {
+    --ex-accent: #4A90D9;
+    --ex-accent-dim: rgba(74, 144, 217, 0.12);
+    --ex-accent-border: rgba(74, 144, 217, 0.35);
+    --ex-bg: #F0F3F8;
+    --ex-surface: #FFFFFF;
+    --ex-surface-2: #EBF0F7;
+    --ex-surface-3: #DDE5F0;
+    --ex-text: #19222B;
+    --ex-text-muted: #5A6B82;
+    --ex-text-dim: #9CAAB8;
+    --ex-border: rgba(0, 0, 0, 0.08);
+    --ex-shadow: 0 2px 14px rgba(0, 0, 0, 0.07);
+    --ex-shadow-hover: 0 4px 22px rgba(0, 0, 0, 0.12);
+    --ex-red: #E84040;
+    --ex-green: #2ECC71;
+    --ex-radius-lg: 18px;
+    --ex-radius-md: 14px;
+    --ex-radius-sm: 8px;
+}
+
+/* ── DARK MODE ── */
+body.dark-mode {
+    --ex-bg: #0B0F14;
+    --ex-surface: #111720;
+    --ex-surface-2: #171E2A;
+    --ex-surface-3: #1D2535;
+    --ex-text: #E8EDF5;
+    --ex-text-muted: #6B7A99;
+    --ex-text-dim: #3D4E6A;
+    --ex-border: rgba(255, 255, 255, 0.06);
+    --ex-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+    --ex-shadow-hover: 0 4px 24px rgba(0, 0, 0, 0.7);
+}
+
+/* ── PÁGINA ── */
+.ex-page {
+    background: var(--ex-bg);
+    min-height: 100vh;
+    font-family: 'Barlow', sans-serif;
+    padding-bottom: 88px;
+}
+
+/* ── HEADER ── */
+/* O header sempre escuro — igual ao hero card da home */
+.ex-header {
+    background: linear-gradient(135deg, #19222B 0%, #2c3e50 100%);
+    padding: 22px 20px 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.ex-header::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    left: -40px;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(74,144,217,0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.ex-header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ex-day-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(74, 144, 217, 0.15);
+    border: 1px solid rgba(74, 144, 217, 0.3);
+    border-radius: 100px;
+    padding: 3px 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #4A90D9;
+    margin-bottom: 8px;
+    width: fit-content;
+}
+
+.ex-badge-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #4A90D9;
+    box-shadow: 0 0 5px rgba(74,144,217,0.8);
+    animation: ex-blink 1.5s ease-in-out infinite;
+}
+
+@keyframes ex-blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.2; }
+}
+
+.ex-workout-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.04em;
+    line-height: 1.05;
+    color: #ffffff;
+    margin: 0 0 6px;
+}
+
+.ex-last-info {
+    font-size: 0.74rem;
+    color: rgba(200, 209, 208, 0.55);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Botão histórico */
+.ex-history-btn {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(200,209,208,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+.ex-history-btn:hover {
+    background: rgba(74,144,217,0.15);
+    border-color: rgba(74,144,217,0.4);
+    color: #4A90D9;
+}
+
+/* ── BARRA CTA ── */
+.ex-cta-wrap {
+    padding: 16px 20px 12px;
+}
+
+.ex-btn-start {
+    width: 100%;
+    background: var(--ex-accent);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.18s;
+    box-shadow: 0 4px 16px rgba(74, 144, 217, 0.3);
+}
+
+.ex-btn-start:active { transform: scale(0.98); }
+
+.ex-btn-finish {
+    width: 100%;
+    background: var(--ex-red);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.18s;
+    box-shadow: 0 4px 16px rgba(232, 64, 64, 0.3);
+}
+
+.ex-btn-finish:active { transform: scale(0.98); }
+
+.ex-btn-edit-today {
+    width: 100%;
+    background: transparent;
+    color: var(--ex-accent);
+    border: 1.5px solid var(--ex-accent-border);
+    border-radius: 14px;
+    padding: 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.18s;
+}
+
+.ex-btn-edit-today:active {
+    background: var(--ex-accent-dim);
+    transform: scale(0.98);
+}
+
+/* Indicador de modo edição */
+.ex-editing-bar {
+    margin: 0 20px 12px;
+    background: rgba(74, 144, 217, 0.1);
+    border: 1px solid rgba(74, 144, 217, 0.25);
+    border-radius: 10px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ex-accent);
+}
+
+.ex-editing-pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ex-accent);
+    animation: ex-blink 1s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+/* ── LISTA DE EXERCÍCIOS ── */
+.ex-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0 20px 10px;
+}
+
+/* ── CARD DE EXERCÍCIO ── */
+.ex-card {
+    background: var(--ex-surface);
+    border: 1px solid var(--ex-border);
+    border-radius: var(--ex-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--ex-shadow);
+    animation: ex-fadeUp 0.35s ease both;
+    transition: box-shadow 0.2s;
+}
+
+.ex-card:nth-child(2) { animation-delay: 0.05s; }
+.ex-card:nth-child(3) { animation-delay: 0.10s; }
+.ex-card:nth-child(4) { animation-delay: 0.15s; }
+.ex-card:nth-child(5) { animation-delay: 0.20s; }
+
+@keyframes ex-fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* GIF — sempre branco */
+.ex-gif-wrap {
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 190px;
+    overflow: hidden;
+    padding: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.ex-gif-wrap img {
+    max-height: 166px;
+    width: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+/* Body do card */
+.ex-card-body {
+    padding: 16px 18px 18px;
+}
+
+.ex-ex-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.25rem;
+    letter-spacing: 0.04em;
+    color: var(--ex-text);
+    margin: 0 0 14px;
+    line-height: 1.1;
+}
+
+/* ── TABELA DE SÉRIES ── */
+.ex-series-wrap {
+    border: 1px solid var(--ex-border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.ex-series-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ex-series-table thead th {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ex-text-dim);
+    padding: 9px 4px 8px;
+    text-align: center;
+    background: var(--ex-surface-2);
+    border-bottom: 1px solid var(--ex-border);
+}
+
+.ex-series-table thead th:first-child {
+    text-align: left;
+    padding-left: 14px;
+}
+
+.ex-series-table tbody tr {
+    border-bottom: 1px solid var(--ex-border);
+}
+
+.ex-series-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.ex-series-table tbody td {
+    padding: 10px 4px;
+    text-align: center;
+    vertical-align: middle;
+    background: transparent;
+}
+
+/* Número da série */
+.ex-serie-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--ex-text-dim);
+    text-align: left;
+    padding-left: 14px;
+    width: 42px;
+}
+
+/* Separador × */
+.ex-sep {
+    color: var(--ex-text-dim);
+    font-size: 0.75rem;
+    width: 16px;
+}
+
+/* Valor (carga ou reps) */
+.ex-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--ex-text);
+    border-radius: var(--ex-radius-sm);
+    padding: 5px 10px;
+    min-width: 54px;
+    display: inline-block;
+    text-align: center;
+    transition: background 0.15s, color 0.15s;
+}
+
+.ex-val small {
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: var(--ex-text-dim);
+    margin-left: 2px;
+}
+
+/* Valor vazio */
+.ex-val.empty {
+    color: var(--ex-text-dim);
+}
+
+/* Valor editável (modo edição, mas não focado) */
+.ex-val.editable {
+    cursor: pointer;
+    background: var(--ex-surface-2);
+    border: 1px solid var(--ex-border);
+}
+
+.ex-val.editable:active {
+    background: var(--ex-accent-dim);
+    border-color: var(--ex-accent-border);
+    color: var(--ex-accent);
+}
+
+/* Input inline de edição */
+.ex-inline-input {
+    width: 62px;
+    background: var(--ex-surface-2);
+    border: 1.5px solid var(--ex-accent);
+    border-radius: var(--ex-radius-sm);
+    padding: 5px 6px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ex-text);
+    text-align: center;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+    -moz-appearance: textfield;
+}
+
+.ex-inline-input::-webkit-outer-spin-button,
+.ex-inline-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+/* Botão remover série */
+.ex-rm-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid rgba(232, 64, 64, 0.3);
+    color: var(--ex-red);
+    font-size: 1.1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin: 0 auto;
+}
+
+.ex-rm-btn:active {
+    background: rgba(232, 64, 64, 0.12);
+    transform: scale(0.92);
+}
+
+/* Botão adicionar série */
+.ex-add-serie-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px dashed var(--ex-border);
+    border-radius: var(--ex-radius-sm);
+    padding: 9px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ex-text-dim);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.18s;
+}
+
+.ex-add-serie-btn:active {
+    background: var(--ex-accent-dim);
+    border-color: var(--ex-accent-border);
+    color: var(--ex-accent);
+}
+
+/* ── DESKTOP ── */
+@media (min-width: 768px) {
+    .ex-page {
+        max-width: 700px;
+        margin: 0 auto;
+        padding-bottom: 2rem;
+    }
+
+    .ex-workout-title {
+        font-size: 2.4rem;
+    }
+
+    .ex-list {
+        gap: 16px;
+    }
+
+    .ex-gif-wrap {
+        height: 220px;
+    }
+}

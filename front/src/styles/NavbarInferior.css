@@ -1,25 +1,116 @@
-/* NavbarInferior.css */
+/* =============================== */
+/* NAVBAR INFERIOR — OLYMPUS       */
+/* =============================== */
 
-.navbar-inferior {
+.nav-inferior {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
+    height: calc(60px + env(safe-area-inset-bottom));
     padding-bottom: env(safe-area-inset-bottom);
-    border-top: 1px solid #444;
-    background-color: #000;
-    z-index: 1000; /* Garante que ela fique no topo visualmente */
+    background: rgba(14, 17, 23, 0.97);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-left: 6px;
+    padding-right: 6px;
+    z-index: 1000;
 }
-.navbar-inferior .btn {
+
+/* ── ITEM COMUM ── */
+.nav-inf-item {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 4px;
+    padding: 6px 4px;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.nav-icon {
-    width: 28px;      /* 🔹 tamanho fixo para todos */
-    height: 28px;
-    object-fit: contain; /* garante que a imagem não deforme */
-    margin-bottom: 4px;
+.nav-inf-item:active {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-inf-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #3D4E6A;
+    transition: color 0.18s;
+    line-height: 1;
+}
+
+.nav-inf-item.active .nav-inf-label {
+    color: #4A90D9;
+}
+
+/* ── BOTÃO CENTRAL — HÉRCULES ── */
+.nav-inf-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    padding-bottom: 2px;
+}
+
+.nav-inf-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #151B26;
+    border: 1.5px solid rgba(74, 144, 217, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s;
+    box-shadow: 0 4px 16px rgba(74, 144, 217, 0.2);
+}
+
+.nav-inf-circle.active {
+    background: rgba(74, 144, 217, 0.15);
+    border-color: #4A90D9;
+    box-shadow: 0 4px 20px rgba(74, 144, 217, 0.4);
+}
+
+.nav-inf-center:active .nav-inf-circle {
+    transform: scale(0.93);
+    box-shadow: 0 2px 8px rgba(74, 144, 217, 0.15);
+}
+
+.nav-inf-hercules-img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+}
+
+.nav-inf-center-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #3D4E6A;
+    transition: color 0.18s;
+    line-height: 1;
+}
+
+.nav-inf-center-label.active {
+    color: #4A90D9;
 }

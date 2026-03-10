@@ -1,78 +1,158 @@
-/* Navbar.css */
-
+/* =============================== */
+/* NAVBAR SUPERIOR — OLYMPUS       */
+/* =============================== */
 
 .navbar {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1030; /* maior que o conteúdo */
+    z-index: 1030;
+    height: 60px;
+    padding: 0 !important;
 }
-
-
 
 .custom-navbar-bg {
-    background-color: #19222B !important;
-    color: #c8d1d0 !important;
+    background: rgba(14, 17, 23, 0.97) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+    color: #E8EDF5 !important;
 }
 
-/* Cor do texto para links e elementos de navegação */
-.custom-navbar-bg .navbar-brand,
-.custom-navbar-bg .nav-link,
-.custom-navbar-bg .navbar-text {
-    color: #c8d1d0 !important;
+.custom-navbar-bg .container-fluid {
+    height: 60px;
+    padding: 0 18px;
 }
 
-/* Para links quando hover e ativos */
+/* ── LOGO ── */
+.custom-navbar-bg .navbar-brand {
+    font-family: 'Bebas Neue', sans-serif !important;
+    font-size: 1.45rem !important;
+    letter-spacing: 0.14em !important;
+    color: #4A90D9 !important;
+    padding: 0 !important;
+    line-height: 1;
+}
+
+/* ── LINKS CENTRAIS (desktop) ── */
+.custom-navbar-bg .nav-link {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6B7A99 !important;
+    padding: 6px 10px !important;
+    border-radius: 8px;
+    transition: color 0.18s, background 0.18s !important;
+}
+
 .custom-navbar-bg .nav-link:hover,
 .custom-navbar-bg .nav-link.active {
-    color: #c8d1d0 !important; /* Ou qualquer tom de branco que preferir */
+    color: #E8EDF5 !important;
+    background: rgba(255, 255, 255, 0.06);
 }
 
-.navbar-toggler-custom {
-    border-color: #c8d1d0; /* Define a cor da borda do botão para branco */
+/* ── BOTÕES (desktop aluno) ── */
+.custom-navbar-bg .btn-outline-light {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6B7A99 !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    background: transparent !important;
+    border-radius: 8px !important;
+    padding: 5px 12px !important;
+    transition: all 0.18s !important;
 }
 
-.navbar-toggler-custom .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(255, 255, 255, 1)' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+.custom-navbar-bg .btn-outline-light:hover {
+    color: #E8EDF5 !important;
+    border-color: rgba(74,144,217,0.5) !important;
+    background: rgba(74,144,217,0.08) !important;
 }
 
-/* Centralizar o campo de pesquisa */
-.search-container {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
+/* ── AVATAR ── */
+.custom-navbar-bg .navbar-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid rgba(74, 144, 217, 0.4);
+    cursor: pointer;
+    transition: border-color 0.18s;
 }
 
-.navbar .nav-link {
-    color: #98BAD5; /* Cor inicial */
-    font-size: 1rem; /* Tamanho inicial da fonte */
-    transition: font-size 0.2s ease, color 0.2s ease; /* Transição suave */
+.custom-navbar-bg .navbar-avatar:hover {
+    border-color: #4A90D9;
 }
 
-.navbar .nav-link:hover {
-    font-size: 1.2rem; /* Tamanho da fonte ao passar o mouse */
+/* ── DROPDOWN MENU ── */
+.dropdown-menu {
+    background: #1C2436 !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+    padding: 6px !important;
+    min-width: 180px !important;
 }
 
+.dropdown-menu .dropdown-item {
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    color: #8A9AB8 !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    transition: all 0.15s !important;
+}
 
-/* Animação suave no dropdown */
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:active {
+    background: rgba(74, 144, 217, 0.12) !important;
+    color: #E8EDF5 !important;
+}
+
+.dropdown-menu .dropdown-item.text-danger {
+    color: #E84040 !important;
+}
+
+.dropdown-menu .dropdown-item.text-danger:hover {
+    background: rgba(232, 64, 64, 0.12) !important;
+    color: #ff6060 !important;
+}
+
+.dropdown-menu hr.dropdown-divider {
+    border-color: rgba(255,255,255,0.07) !important;
+    margin: 4px 0 !important;
+}
+
+/* Tema escuro label no dropdown */
+.dropdown-menu .dropdown-item.d-flex {
+    color: #8A9AB8 !important;
+}
+
+/* ── DROPDOWN ANIMATION ── */
 .animate-dropdown {
-    animation: fadeDown 0.25s ease-in-out;
+    animation: navDropDown 0.2s ease both;
     transform-origin: top right;
 }
 
-@keyframes fadeDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px) scale(0.98);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+@keyframes navDropDown {
+    from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Ajustar o switch dentro do menu */
-.dropdown-item .switch {
-    transform: scale(0.8); /* menorzinho pra caber bonito */
+/* ── TOGGLE (mobile collapse) ── */
+.navbar-toggler-custom {
+    border-color: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 4px 8px;
+}
+
+.navbar-toggler-custom .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(107,122,153,1)' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
 }

@@ -2,11 +2,9 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import ModalHistorico from '../components/ModalHistorico';
-import debounce from 'lodash/debounce';
-import ModalSucesso from "../components/ModalSucesso";
-import PageStateHandler from "../components/PageStateHandler";
-
-
+import ModalSucesso from '../components/ModalSucesso';
+import PageStateHandler from '../components/PageStateHandler';
+import '../../styles/ExerciciosIndex.css';
 
 function Exercicios_index() {
     const { treinoId } = useParams();
@@ -24,21 +22,24 @@ function Exercicios_index() {
     const [treinoRealizadoId, setTreinoRealizadoId] = useState(null);
     const [mostrarModalHistorico, setMostrarModalHistorico] = useState(false);
     const [modalFinalizado, setModalFinalizado] = useState(false);
+    const [treinoFinalizadoHoje, setTreinoFinalizadoHoje] = useState(false);
+
     const dataFormatada = (() => {
         if (!dataUltimoTreino) return '';
         const [data] = dataUltimoTreino.split('T');
         return new Date(`${data}T00:00:00`).toLocaleDateString('pt-BR');
     })();
-    const [treinoFinalizadoHoje, setTreinoFinalizadoHoje] = useState(false);
 
+    const isToday = dataUltimoTreino?.split('T')[0] === new Date().toISOString().split('T')[0];
 
-
-
-
+    // ── FETCH ──────────────────────────────────────────────────────────────
 
     const fetchExercicios = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, { credentials: 'include' });
+            const response = await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`,
+                { credentials: 'include' }
+            );
             if (!response.ok) throw new Error('Erro ao buscar os exercícios');
 
             const data = await response.json();
@@ -46,11 +47,12 @@ function Exercicios_index() {
             const exerciciosComSeries = await Promise.all(
                 data.map(async (exercicio) => {
                     try {
-                        const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicio.exercicio_id}/series`, { credentials: 'include' });
+                        const res = await fetch(
+                            `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicio.exercicio_id}/series`,
+                            { credentials: 'include' }
+                        );
                         let series = res.ok ? await res.json() : [];
                         const countExistente = series.length;
-
-                        // Se existirem menos de 3 séries, completa com vazias
                         if (countExistente < 3) {
                             const faltantes = Array.from({ length: 3 - countExistente }, (_, i) => ({
                                 numero_serie: countExistente + i + 1,
@@ -59,18 +61,14 @@ function Exercicios_index() {
                             }));
                             series = [...series, ...faltantes];
                         }
-
                         return { ...exercicio, series };
-
-                    } catch (err) {
-                        console.error(`Erro ao buscar séries do exercício ${exercicio.exercicio_id}:`, err);
+                    } catch {
                         return { ...exercicio, series: [] };
                     }
                 })
             );
 
             setExercicios(exerciciosComSeries);
-
         } catch (err) {
             setError(err.message);
         } finally {
@@ -78,115 +76,98 @@ function Exercicios_index() {
         }
     };
 
-
     useEffect(() => {
-
         const verificarTreinoAtivo = async () => {
             try {
-                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/ativo`, {
-                    credentials: 'include'
-                });
-                if (!res.ok) throw new Error('Erro ao verificar treino ativo');
+                const res = await fetch(
+                    `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/ativo`,
+                    { credentials: 'include' }
+                );
+                if (!res.ok) throw new Error();
                 const data = await res.json();
                 if (data.ativo) {
                     setModoEdicao(true);
-                    setTreinoRealizadoId(data.treinoRealizadoId); // 👈 salva o ID
+                    setTreinoRealizadoId(data.treinoRealizadoId);
                 }
-
-            } catch (err) {
-                console.error('Erro ao verificar treino ativo:', err);
+            } catch {
+                console.error('Erro ao verificar treino ativo');
             }
         };
-
-
-
-
-
-
 
         const fetchTreinoInfo = async () => {
             try {
                 const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`);
-                if (!res.ok) throw new Error('Erro ao buscar informações do treino');
+                if (!res.ok) throw new Error();
                 const data = await res.json();
                 setNomeTreino(data.nome_treino);
                 setDiaSemana(data.dia_semana);
-            } catch (err) {
-                console.error('Erro ao buscar treino:', err);
+            } catch {
+                console.error('Erro ao buscar treino');
             }
         };
 
         verificarTreinoAtivo();
-        buscarUltimoTreinoFinalizado(userId, treinoId); // ⬅ substitui o anterior
+        buscarUltimoTreinoFinalizado(userId, treinoId);
         fetchTreinoInfo();
         fetchExercicios();
     }, [treinoId, userId]);
 
+    // ── HANDLERS ──────────────────────────────────────────────────────────
 
     const handleAddSerie = (exercicioId) => {
         const listaAtual = formData[exercicioId] || exercicios.find(ex => ex.exercicio_id === exercicioId)?.series || [];
         const maxNumero = listaAtual.reduce((max, s) => Math.max(max, s.numero_serie), 0);
         const novaSerie = { numero_serie: maxNumero + 1, carga: '', repeticoes: '' };
         const novaLista = [...listaAtual, novaSerie];
-
         setFormData(prev => ({ ...prev, [exercicioId]: novaLista }));
         setEditingField({ exercicioId, numero_serie: novaSerie.numero_serie, campo: 'carga' });
-        console.log(`Adicionada série ${novaSerie.numero_serie} ao exercício ${exercicioId}`);
     };
 
     const handleRemoverSerie = async (numero_serie, exercicioId) => {
         const listaAtual = formData[exercicioId] || exercicios.find(ex => ex.exercicio_id === exercicioId)?.series || [];
-        const novaLista = listaAtual.filter(s => Number(s.numero_serie) !== Number(numero_serie));
+        const reorganizado = listaAtual
+            .filter(s => Number(s.numero_serie) !== Number(numero_serie))
+            .map((s, i) => ({ ...s, numero_serie: i + 1 }));
 
-        const reorganizado = novaLista.map((s, index) => ({
-            ...s,
-            numero_serie: index + 1
-        }));
-
-        // Atualiza local
         setFormData(prev => ({ ...prev, [exercicioId]: reorganizado }));
         setExercicios(prev => prev.map(ex =>
             ex.exercicio_id === exercicioId ? { ...ex, series: reorganizado } : ex
         ));
-
         if (editingField?.exercicioId === exercicioId && editingField?.numero_serie === numero_serie) {
             setEditingField(null);
         }
 
-        console.log(`Removida série ${numero_serie} do exercício ${exercicioId}`);
-
-        // ✅ Persistir no backend
         try {
-            await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicioId}/series`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ series: reorganizado,     treino_realizado_id: treinoRealizadoId
-                }),
-            });
-        } catch (err) {
-            console.error('Erro ao salvar exclusão de série:', err);
+            await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicioId}/series`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ series: reorganizado, treino_realizado_id: treinoRealizadoId }),
+                }
+            );
+        } catch {
+            console.error('Erro ao salvar exclusão de série');
         }
     };
 
     const handleNovoTreino = async () => {
         try {
-            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/iniciar`, {
-                method: 'POST',
-                credentials: 'include'
-            });
+            const res = await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/iniciar`,
+                { method: 'POST', credentials: 'include' }
+            );
             const data = await res.json();
-            if (!res.ok) throw new Error('Erro ao iniciar treino');
+            if (!res.ok) throw new Error();
 
             setModoEdicao(true);
-            setTreinoRealizadoId(data.treinoRealizado.id); // 👈 salva o novo ID
-            // Cria 3 séries por padrão para cada exercício
+            setTreinoRealizadoId(data.treinoRealizado.id);
+
             const novoFormData = {};
             const exerciciosComSeriesVazias = exercicios.map(ex => {
                 const seriesIniciais = Array.from({ length: 3 }, (_, i) => ({
-                    numero_serie: i + 1,
-                    carga: '',
-                    repeticoes: ''
+                    numero_serie: i + 1, carga: '', repeticoes: ''
                 }));
                 novoFormData[ex.exercicio_id] = seriesIniciais;
                 return { ...ex, series: seriesIniciais };
@@ -194,62 +175,26 @@ function Exercicios_index() {
 
             setFormData(novoFormData);
             setExercicios(exerciciosComSeriesVazias);
-
-        } catch (err) {
-            console.error('Erro ao iniciar novo treino:', err);
-            alert('Não foi possível iniciar o treino.');
-        }
-    };
-
-    const verificarTreinoFinalizadoHoje = async (userId, treinoId) => {
-        try {
-            const hoje = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-
-            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/finalizados`, {
-                credentials: 'include'
-            });
-
-            if (!res.ok) throw new Error('Erro ao buscar treinos finalizados');
-
-            const treinos = await res.json();
-
-            const treinoHoje = treinos.find(t => t.data?.split('T')[0] === hoje);
-
-            if (treinoHoje) {
-                setTreinoRealizadoId(treinoHoje.id);
-                setDataUltimoTreino(treinoHoje.data); // 💡 atualiza corretamente a data usada na renderização do botão
-            }
-        } catch (err) {
-            console.error('Erro ao verificar treino finalizado hoje:', err);
+        } catch {
+            console.error('Erro ao iniciar novo treino');
         }
     };
 
     const handleFinalizarTreino = async () => {
         if (!treinoRealizadoId) return;
-
         try {
-            await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos_realizados/${treinoRealizadoId}/finalizar`, {
-                method: 'POST',
-                credentials: 'include'
-            });
-
+            await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos_realizados/${treinoRealizadoId}/finalizar`,
+                { method: 'POST', credentials: 'include' }
+            );
             setModoEdicao(false);
             setTreinoRealizadoId(null);
-
-          // Atualiza os dados do treino como antes
-
-            await Promise.all([
-                fetchExercicios(),
-                buscarUltimoTreinoFinalizado(userId, treinoId)
-            ]);
-
+            await Promise.all([fetchExercicios(), buscarUltimoTreinoFinalizado(userId, treinoId)]);
             setFormData({});
             setModalFinalizado(true);
-            setTimeout(() => setModalFinalizado(false), 3000); // fecha após 3s
-
-
-        } catch (err) {
-            console.error('Erro ao finalizar treino:', err);
+            setTimeout(() => setModalFinalizado(false), 3000);
+        } catch {
+            console.error('Erro ao finalizar treino');
         } finally {
             setLoading(false);
         }
@@ -257,254 +202,270 @@ function Exercicios_index() {
 
     const salvarSerie = async (exercicioId, series) => {
         try {
-            await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicioId}/series`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    series: series.map(s => ({
-                        ...s,
-                        carga: s.carga === '' ? null : Number(s.carga),
-                        repeticoes: s.repeticoes === '' ? null : Number(s.repeticoes)
-                    })),
-                    treino_realizado_id: treinoRealizadoId
-                }),
-            });
-
-            console.log(`💾 Séries salvas para exercício ${exercicioId}`);
-        } catch (err) {
-            console.error('Erro ao salvar série:', err);
+            await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicioId}/series`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        series: series.map(s => ({
+                            ...s,
+                            carga: s.carga === '' ? null : Number(s.carga),
+                            repeticoes: s.repeticoes === '' ? null : Number(s.repeticoes)
+                        })),
+                        treino_realizado_id: treinoRealizadoId
+                    }),
+                }
+            );
+        } catch {
+            console.error('Erro ao salvar série');
         }
     };
-
-
 
     const buscarUltimoTreinoFinalizado = async (userId, treinoId) => {
         try {
-            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/finalizados`, {
-                credentials: 'include'
-            });
-
-            if (!res.ok) throw new Error('Erro ao buscar treinos finalizados');
+            const res = await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/finalizados`,
+                { credentials: 'include' }
+            );
+            if (!res.ok) throw new Error();
             const treinos = await res.json();
-
             if (treinos.length > 0) {
-                // Encontra o mais recente
-                const treinoMaisRecente = treinos.reduce((maisRecente, t) =>
-                    new Date(t.data) > new Date(maisRecente.data) ? t : maisRecente
+                const maisRecente = treinos.reduce((a, t) =>
+                    new Date(t.data) > new Date(a.data) ? t : a
                 );
-
-                setDataUltimoTreino(treinoMaisRecente.data); // ✅ exibição na tela
-                setTreinoRealizadoId(treinoMaisRecente.id);  // ✅ usado no fluxo
-
-                // Verifica se é hoje
-                const hoje = new Date().toISOString().split('T')[0];
-                const existeHoje = treinos.some(t => t.data?.split('T')[0] === hoje);
-
-                if (existeHoje) {
-                    console.log("✅ Treino finalizado hoje!");
-                    // Você pode setar um `setTreinoFinalizadoHoje(true)` se quiser
-                } else {
-                    console.log("⛔ Nenhum treino finalizado hoje.");
-                }
+                setDataUltimoTreino(maisRecente.data);
+                setTreinoRealizadoId(maisRecente.id);
             }
-        } catch (err) {
-            console.error('Erro ao buscar último treino finalizado:', err);
+        } catch {
+            console.error('Erro ao buscar último treino finalizado');
         }
     };
 
+    // ── HELPERS ───────────────────────────────────────────────────────────
 
+    const isEditing = (exercicioId, numero_serie, campo) =>
+        editingField?.exercicioId === exercicioId &&
+        editingField?.numero_serie === numero_serie &&
+        editingField?.campo === campo;
 
+    const handleValChange = (exercicioId, serie, campo, valor) => {
+        const currentSeries = formData[exercicioId] || exercicios.find(ex => ex.exercicio_id === exercicioId)?.series || [];
+        const novaLista = currentSeries.map(s =>
+            s.numero_serie === serie.numero_serie ? { ...s, [campo]: valor } : s
+        );
+        setFormData(prev => ({ ...prev, [exercicioId]: novaLista }));
+    };
 
-
+    // ── RENDER ────────────────────────────────────────────────────────────
 
     return (
         <PageStateHandler loading={loading} error={error}>
-            <div className="container mt-4 exercicios-container">
+            <div className="ex-page">
 
-                {/* ====== Cabeçalho com informações ====== */}
-                <div className="d-flex flex-wrap align-items-center justify-content-between mb-3 position-relative">
-
-                    {/* Informações do treino */}
-                    <div className="d-flex flex-wrap align-items-center gap-3">
-                        <h4 className="mb-0">
-                            Treino: <span className="fw-semibold">{nomeTreino}</span>
-                        </h4>
-                        <span className="text-muted small">
-                    Dia: <strong>{diaSemana}</strong>
-                </span>
-                        {dataFormatada && (
-                            <span className="text-muted small">
-                        Último: <strong>{dataFormatada}</strong>
-                    </span>
-                        )}
-                    </div>
-
-                    {/* Botão de histórico no topo direito */}
-                    <button
-                        className="btn btn-outline-secondary btn-sm position-absolute"
-                        style={{ top: 0, right: 0 }}
-                        onClick={() => setMostrarModalHistorico(true)}
-                        title="Ver histórico de treinos"
-                    >
-                        <i className="bi bi-clock-history"></i>
-                    </button>
-                </div>
-
-                {/* ====== Botão principal (centralizado e largo) ====== */}
-                <div className="d-flex justify-content-center mb-4">
-                    <div style={{ width: '100%', maxWidth: '400px' }}>
-                        {modoEdicao ? (
-                            <button className="btn-olympus danger w-100 sm" onClick={handleFinalizarTreino}>
-                                Finalizar Treino
-                            </button>
-                        ) : treinoRealizadoId && dataUltimoTreino?.split('T')[0] === new Date().toISOString().split('T')[0] ? (
-                            <button
-                                className="btn-olympus success w-100 sm"
-                                onClick={() => setModoEdicao(true)}
-                            >
-                                Editar treino de hoje
-                            </button>
-                        ) : (
-                            <button className="btn-olympus success w-100 sm" onClick={handleNovoTreino}>
-                                Iniciar Novo Treino
-                            </button>
-                        )}
+                {/* ── HEADER ── */}
+                <div className="ex-header">
+                    <div className="ex-header-row">
+                        <div>
+                            <div className="ex-day-badge">
+                                <span className="ex-badge-dot" />
+                                {diaSemana}
+                            </div>
+                            <h1 className="ex-workout-title">{nomeTreino}</h1>
+                            {dataFormatada && (
+                                <p className="ex-last-info">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                    Último treino: {dataFormatada}
+                                </p>
+                            )}
+                        </div>
+                        <button
+                            className="ex-history-btn"
+                            onClick={() => setMostrarModalHistorico(true)}
+                            title="Ver histórico"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="1 4 1 10 7 10"/>
+                                <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
-            <div className="d-flex flex-wrap justify-content-center gap-3">
-                {exercicios.map((exercicio) => {
-                    const series = formData[exercicio.exercicio_id] || exercicio.series || [];
-                    return (
-                        <div className="card shadow-sm p-2" style={{ width: '100%', maxWidth: '400px' }} key={exercicio.exercicio_id}>
-                                <img
-                                    src={exercicio.gif_url}
-                                    alt={`GIF do exercício ${exercicio.nome_exercicio}`}
-                                    className="card-img-top"
-                                    style={{ maxHeight: '200px', objectFit: 'contain' }}
-                                />
-                                <div className="card-body">
-                                    <h5 className="card-title">{exercicio.nome_exercicio}</h5>
 
-                                    {series.map((serie, index) => (
-                                        <div className="d-flex align-items-center justify-content-between mb-2" key={index}>
-                                            <div className="d-flex justify-content-between align-items-center mb-2" key={index}>
-                                                <strong className="me-2">{serie.numero_serie}ª:</strong>
+                {/* ── BOTÃO PRINCIPAL ── */}
+                <div className="ex-cta-wrap">
+                    {modoEdicao ? (
+                        <button className="ex-btn-finish" onClick={handleFinalizarTreino}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Finalizar Treino
+                        </button>
+                    ) : treinoRealizadoId && isToday ? (
+                        <button className="ex-btn-edit-today" onClick={() => setModoEdicao(true)}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            Editar Treino de Hoje
+                        </button>
+                    ) : (
+                        <button className="ex-btn-start" onClick={handleNovoTreino}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                                <polygon points="5,3 19,12 5,21"/>
+                            </svg>
+                            Iniciar Novo Treino
+                        </button>
+                    )}
+                </div>
 
-                                                {/* CARGA */}
-                                                {modoEdicao && editingField?.exercicioId === exercicio.exercicio_id && editingField?.numero_serie === serie.numero_serie && editingField?.campo === 'carga' ? (
-                                                    <input
-                                                        type="number"
-                                                        className="form-control form-control-sm me-2"
-                                                        style={{ width: '70px', fontSize: '0.9rem' }}
-                                                        value={serie.carga || ''}
-                                                        onChange={(e) => {
-                                                            const novaLista = series.map(s =>
-                                                                s.numero_serie === serie.numero_serie ? { ...s, carga: e.target.value } : s
-                                                            );
-                                                            setFormData(prev => ({ ...prev, [exercicio.exercicio_id]: novaLista }));
-                                                        }}
-                                                        onBlur={() => {
-                                                            salvarSerie(exercicio.exercicio_id, formData[exercicio.exercicio_id]);
-                                                            setEditingField(null);
-                                                        }}
-                                                        autoFocus
-                                                    />
+                {/* Barra de status modo edição */}
+                {modoEdicao && (
+                    <div className="ex-editing-bar">
+                        <span className="ex-editing-pulse" />
+                        Treino em andamento — toque nos valores para editar
+                    </div>
+                )}
 
+                {/* ── LISTA DE EXERCÍCIOS ── */}
+                <div className="ex-list">
+                    {exercicios.map((exercicio) => {
+                        const series = formData[exercicio.exercicio_id] || exercicio.series || [];
 
-                                                ) : (
-                                                    <span
-                                                        className="me-2"
-                                                        onClick={() => setEditingField({ exercicioId: exercicio.exercicio_id, numero_serie: serie.numero_serie, campo: 'carga' })}
-                                                        style={{ cursor: 'pointer' }}
-                                                    >
-          {serie.carga || '-'} kg
-<span className="icone-exercicio peso"></span>
-        </span>
-                                                )}
+                        return (
+                            <div className="ex-card" key={exercicio.exercicio_id}>
 
-                                                <span className="me-1">×</span>
-
-                                                {/* REPETIÇÕES */}
-                                                {modoEdicao && editingField?.exercicioId === exercicio.exercicio_id && editingField?.numero_serie === serie.numero_serie && editingField?.campo === 'repeticoes' ? (
-                                                    <input
-                                                        type="number"
-                                                        className="form-control form-control-sm me-2"
-                                                        style={{ width: '70px', fontSize: '0.9rem' }}
-                                                        value={serie.repeticoes || ''}
-                                                        onChange={(e) => {
-                                                            const novaLista = series.map(s =>
-                                                                s.numero_serie === serie.numero_serie ? { ...s, repeticoes: e.target.value } : s
-                                                            );
-                                                            setFormData(prev => ({ ...prev, [exercicio.exercicio_id]: novaLista }));
-                                                        }}
-                                                        onBlur={() => {
-                                                            salvarSerie(exercicio.exercicio_id, formData[exercicio.exercicio_id]);
-                                                            setEditingField(null);
-                                                        }}
-
-                                                        autoFocus
-                                                    />
-
-                                                ) : (
-                                                    <span
-                                                        onClick={() => setEditingField({ exercicioId: exercicio.exercicio_id, numero_serie: serie.numero_serie, campo: 'repeticoes' })}
-                                                        style={{ cursor: 'pointer' }}
-                                                    >
-          {serie.repeticoes || '-'} reps
-<span className="icone-exercicio reps"></span>
-        </span>
-                                                )}
-                                            </div>
-
-                                            {/* Botão de Remover */}
-                                            {/* Botão de Remover */}
-                                            {modoEdicao && (
-                                                <button
-                                                    className="btn p-0 m-0"
-                                                    style={{ color: 'red', fontSize: '1.4rem', lineHeight: '1', border: 'none', background: 'none' }}
-                                                    onClick={() => handleRemoverSerie(serie.numero_serie, exercicio.exercicio_id)}
-                                                    title="Remover série"
-                                                >
-                                                    &minus;
-                                                </button>
-                                            )}
-
-
-                                        </div>
-                                    ))}
-
-
-                                    {modoEdicao && (
-                                        <button
-                                            className="btn btn-outline-primary btn-sm mt-2"
-                                            onClick={() => handleAddSerie(exercicio.exercicio_id)}
-                                            type="button"
-                                        >
-                                            + Adicionar Série
-                                        </button>
-                                    )}
-
+                                {/* GIF */}
+                                <div className="ex-gif-wrap">
+                                    <img
+                                        src={exercicio.gif_url}
+                                        alt={exercicio.nome_exercicio}
+                                    />
                                 </div>
 
-                        </div>
-                    );
-                })}
+                                {/* Body */}
+                                <div className="ex-card-body">
+                                    <h2 className="ex-ex-name">{exercicio.nome_exercicio}</h2>
+
+                                    {/* Tabela de séries */}
+                                    <div className="ex-series-wrap">
+                                    <table className="ex-series-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Série</th>
+                                                <th>Carga</th>
+                                                <th></th>
+                                                <th>Reps</th>
+                                                {modoEdicao && <th></th>}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {series.map((serie, index) => (
+                                                <tr key={index}>
+
+                                                    {/* Número */}
+                                                    <td className="ex-serie-num">{serie.numero_serie}ª</td>
+
+                                                    {/* Carga */}
+                                                    <td>
+                                                        {modoEdicao && isEditing(exercicio.exercicio_id, serie.numero_serie, 'carga') ? (
+                                                            <input
+                                                                type="number"
+                                                                className="ex-inline-input"
+                                                                value={serie.carga || ''}
+                                                                onChange={e => handleValChange(exercicio.exercicio_id, serie, 'carga', e.target.value)}
+                                                                onBlur={() => {
+                                                                    salvarSerie(exercicio.exercicio_id, formData[exercicio.exercicio_id]);
+                                                                    setEditingField(null);
+                                                                }}
+                                                                autoFocus
+                                                            />
+                                                        ) : (
+                                                            <span
+                                                                className={`ex-val${!serie.carga ? ' empty' : ''}${modoEdicao ? ' editable' : ''}`}
+                                                                onClick={() => modoEdicao && setEditingField({ exercicioId: exercicio.exercicio_id, numero_serie: serie.numero_serie, campo: 'carga' })}
+                                                            >
+                                                                {serie.carga || '—'}<small>{serie.carga ? ' kg' : ''}</small>
+                                                            </span>
+                                                        )}
+                                                    </td>
+
+                                                    {/* Separador */}
+                                                    <td className="ex-sep">×</td>
+
+                                                    {/* Reps */}
+                                                    <td>
+                                                        {modoEdicao && isEditing(exercicio.exercicio_id, serie.numero_serie, 'repeticoes') ? (
+                                                            <input
+                                                                type="number"
+                                                                className="ex-inline-input"
+                                                                value={serie.repeticoes || ''}
+                                                                onChange={e => handleValChange(exercicio.exercicio_id, serie, 'repeticoes', e.target.value)}
+                                                                onBlur={() => {
+                                                                    salvarSerie(exercicio.exercicio_id, formData[exercicio.exercicio_id]);
+                                                                    setEditingField(null);
+                                                                }}
+                                                                autoFocus
+                                                            />
+                                                        ) : (
+                                                            <span
+                                                                className={`ex-val${!serie.repeticoes ? ' empty' : ''}${modoEdicao ? ' editable' : ''}`}
+                                                                onClick={() => modoEdicao && setEditingField({ exercicioId: exercicio.exercicio_id, numero_serie: serie.numero_serie, campo: 'repeticoes' })}
+                                                            >
+                                                                {serie.repeticoes || '—'}<small>{serie.repeticoes ? ' reps' : ''}</small>
+                                                            </span>
+                                                        )}
+                                                    </td>
+
+                                                    {/* Remover */}
+                                                    {modoEdicao && (
+                                                        <td>
+                                                            <button
+                                                                className="ex-rm-btn"
+                                                                onClick={() => handleRemoverSerie(serie.numero_serie, exercicio.exercicio_id)}
+                                                                title="Remover série"
+                                                            >
+                                                                −
+                                                            </button>
+                                                        </td>
+                                                    )}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                    </div>
+
+                                    {/* Adicionar série */}
+                                    {modoEdicao && (
+                                        <button
+                                            className="ex-add-serie-btn"
+                                            onClick={() => handleAddSerie(exercicio.exercicio_id)}
+                                        >
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                                            </svg>
+                                            Adicionar Série
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* ── MODAIS ── */}
+                {mostrarModalHistorico && (
+                    <ModalHistorico
+                        usuarioId={userId}
+                        treinoId={treinoId}
+                        onClose={() => setMostrarModalHistorico(false)}
+                    />
+                )}
+                <ModalSucesso show={modalFinalizado} mensagem="Treino finalizado com sucesso!" />
             </div>
-            {mostrarModalHistorico && (
-                <ModalHistorico
-                    usuarioId={userId}
-                    treinoId={treinoId}
-                    onClose={() => setMostrarModalHistorico(false)}
-                />
-            )}
-            <ModalSucesso show={modalFinalizado} mensagem="Treino finalizado com sucesso!" />
-
-
-
-
-
-        </div>
         </PageStateHandler>
     );
 }
