@@ -3,7 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
 import ModalCarregando from '../components/ModalCarregando';
-import '../../styles/UsuariosEdit.css';
+import '../../styles/TreinosForm.css';
+
+const GRUPOS = ['Peitoral', 'Bíceps', 'Tríceps', 'Costas', 'Ombros', 'Pernas', 'Abdômen', 'Panturrilha'];
 
 const TreinosEdit = () => {
     const { id, treinoId } = useParams();
@@ -18,67 +20,47 @@ const TreinosEdit = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [exercicioAtivo, setExercicioAtivo] = useState(null);
     const [campoEditando, setCampoEditando] = useState(null);
+    const [openGroups, setOpenGroups] = useState({});
 
     useEffect(() => {
-        const bloquearSeNaoAutorizado = () => {
-            if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
-                navigate(`/usuarios/view/${userId}`);
-                return true;
-            }
-            return false;
-        };
+        if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
+            navigate(`/usuarios/view/${userId}`);
+            return;
+        }
 
-        if (bloquearSeNaoAutorizado()) return;
-
-        const fetchTreino = async () => {
+        const fetchAll = async () => {
             try {
-                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`);
-                if (!res.ok) throw new Error(`Erro ao buscar treino (${res.status})`);
-                const data = await res.json();
-                setTreino(data);
+                const [treinoRes, savedRes, exRes] = await Promise.all([
+                    fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`),
+                    fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`),
+                    fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`),
+                ]);
+                if (!treinoRes.ok) throw new Error(`Erro ao buscar treino (${treinoRes.status})`);
+                setTreino(await treinoRes.json());
+                setExerciciosSalvos(await savedRes.json());
+                setExercicios(await exRes.json());
             } catch (err) {
-                console.error(err);
                 setError(err.message);
             } finally {
                 setLoading(false);
             }
         };
 
-        const fetchExerciciosSalvos = async () => {
-            try {
-                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`);
-                const data = await res.json();
-                setExerciciosSalvos(data);
-            } catch (err) {
-                console.error(err);
-            }
-        };
-
-        const fetchExercicios = async () => {
-            try {
-                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`);
-                const data = await res.json();
-                setExercicios(data);
-            } catch (err) {
-                console.error(err);
-            }
-        };
-
-        fetchTreino();
-        fetchExerciciosSalvos();
-        fetchExercicios();
+        fetchAll();
     }, [treinoId, id, userId, funcao, navigate]);
 
-    const handleSalvarCampo = async (campo, valor) => {
-        try {
-            setTreino(prev => ({ ...prev, [campo]: valor }));
+    const toggleGroup = (grupo) => {
+        setOpenGroups(prev => ({ ...prev, [grupo]: !prev[grupo] }));
+    };
 
+    const handleSalvarCampo = async (campo, valor) => {
+        setTreino(prev => ({ ...prev, [campo]: valor }));
+        try {
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ [campo]: valor }),
             });
-
             if (!res.ok) throw new Error('Erro ao atualizar treino');
         } catch (err) {
             console.error(err);
@@ -94,9 +76,8 @@ const TreinosEdit = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ exercicios: [ex.id] }),
             });
-
             if (res.ok) {
-                setExerciciosSalvos([...exerciciosSalvos, { ...ex, exercicio_id: ex.id }]);
+                setExerciciosSalvos(prev => [...prev, { ...ex, exercicio_id: ex.id }]);
                 setExercicioAtivo(null);
             } else {
                 alert('Erro ao adicionar exercício');
@@ -112,7 +93,6 @@ const TreinosEdit = () => {
             `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios/${exercicioId}`,
             { method: 'DELETE' }
         );
-
         if (res.ok) {
             setExerciciosSalvos(prev => prev.filter(ex => ex.exercicio_id !== exercicioId));
         } else {
@@ -121,179 +101,208 @@ const TreinosEdit = () => {
     };
 
     if (loading) return <ModalCarregando show={true} />;
-    if (error) return <div className="alert alert-danger mt-4">Erro: {error}</div>;
+    if (error) return <div style={{ color: 'red', padding: '2rem' }}>Erro: {error}</div>;
     if (!treino) return null;
 
     const camposTreino = [
         { name: 'nome_treino', label: 'Nome do Treino', tipo: 'text' },
         { name: 'descricao', label: 'Descrição', tipo: 'text' },
         {
-            name: 'dia_semana',
-            label: 'Dia da Semana',
-            tipo: 'select',
-            options: [
-                'Segunda-feira', 'Terça-feira', 'Quarta-feira',
-                'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'
-            ],
+            name: 'dia_semana', label: 'Dia da Semana', tipo: 'select',
+            options: ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'],
         },
         {
-            name: 'grupo_muscular',
-            label: 'Grupo Muscular Principal',
-            tipo: 'select',
-            options: [
-                'Peitoral', 'Costas', 'Ombros', 'Bíceps',
-                'Tríceps', 'Posterior', 'Frontal',
-                'Panturrilha', 'Abdômen',
-            ],
+            name: 'grupo_muscular', label: 'Grupo Muscular Principal', tipo: 'select',
+            options: ['Peitoral', 'Costas', 'Ombros', 'Bíceps', 'Tríceps', 'Posterior', 'Frontal', 'Panturrilha', 'Abdômen'],
         },
     ];
 
     return (
-        <div className="container mt-3 mb-5 usuarios-edit">
-            <h2 className="text-center mb-4">Editar Treino</h2>
+        <div className="tf-page">
 
-            {/* Card: Dados do Treino */}
-            <div className="card card-section">
-                <div className="card-header-custom">
-                    <i className="bi bi-pencil-square me-2"></i> Dados do Treino
-                </div>
-
-                {camposTreino.map(campo => (
-                    <div
-                        key={campo.name}
-                        className="field-row clickable"
-                        onClick={() => setCampoEditando(campo)}
-                    >
-                        <span className="fw-bold">{campo.label}</span>
-                        <span>{treino[campo.name] || 'Não informado'}</span>
+            {/* ── HEADER ── */}
+            <div className="tf-header">
+                <div className="tf-header-top">
+                    <button className="tf-back-btn" onClick={() => navigate(-1)}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                    </button>
+                    <div>
+                        <p className="tf-header-eyebrow">Editar Treino</p>
+                        <h1 className="tf-header-title">{treino.nome_treino || 'Treino'}</h1>
                     </div>
-                ))}
+                </div>
+                {treino.grupo_muscular && (
+                    <div className="tf-header-badge">{treino.grupo_muscular}</div>
+                )}
             </div>
 
-            {/* Card: Exercícios do Treino */}
-            <div className="card card-section mt-4">
-                <div className="card-header-custom">
-                    <i className="bi bi-dumbbell me-2"></i> Exercícios do Treino
+            <div className="tf-body">
+
+                {/* ── Dados do treino ── */}
+                <div className="tf-section">
+                    <div className="tf-section-header">
+                        <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        <span className="tf-section-title">Dados do Treino</span>
+                        <span className="tf-acc-count">Toque para editar</span>
+                    </div>
+                    <div className="tf-field-rows">
+                        {camposTreino.map(campo => (
+                            <div
+                                key={campo.name}
+                                className="tf-field-row"
+                                onClick={() => setCampoEditando(campo)}
+                            >
+                                <div className="tf-field-row-left">
+                                    <span className="tf-field-row-label">{campo.label}</span>
+                                    <span className={`tf-field-row-value${!treino[campo.name] ? ' empty' : ''}`}>
+                                        {treino[campo.name] || 'Não informado'}
+                                    </span>
+                                </div>
+                                <svg className="tf-field-row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
-                {exerciciosSalvos.length > 0 ? (
-                    <div className="row g-3 p-3">
-                        {exerciciosSalvos.map(ex => (
-                            <div key={ex.exercicio_id} className="col-6 col-md-3">
-                                <div className="card h-100 text-center shadow-sm p-2">
-                                    <img
-                                        src={ex.gif_url}
-                                        alt={ex.nome_exercicio}
-                                        className="card-img-top"
-                                        style={{ height: '80px', objectFit: 'contain' }}
-                                    />
-                                    <h6 className="mt-1" style={{ fontSize: '0.8rem' }}>{ex.nome_exercicio}</h6>
+                {/* ── Exercícios do treino ── */}
+                <div className="tf-section">
+                    <div className="tf-section-header">
+                        <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        <span className="tf-section-title">Exercícios do Treino</span>
+                        {exerciciosSalvos.length > 0 && (
+                            <span className="tf-acc-count">{exerciciosSalvos.length}</span>
+                        )}
+                    </div>
+
+                    {exerciciosSalvos.length > 0 ? (
+                        <div className="tf-saved-grid">
+                            {exerciciosSalvos.map(ex => (
+                                <div key={ex.exercicio_id} className="tf-selected-card">
+                                    <div className="tf-selected-gif">
+                                        <img src={ex.gif_url} alt={ex.nome_exercicio} />
+                                    </div>
+                                    <p className="tf-selected-name">{ex.nome_exercicio}</p>
                                     <button
                                         type="button"
-                                        className="btn btn-sm btn-danger mt-1"
+                                        className="tf-rm-btn"
                                         onClick={() => handleRemoveExercicio(ex.exercicio_id)}
                                     >
                                         Remover
                                     </button>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="tf-section-body">
+                            <p className="tf-empty-msg">Nenhum exercício vinculado ainda</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* ── Exercícios disponíveis ── */}
+                <div className="tf-section">
+                    <div className="tf-section-header">
+                        <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+                        </svg>
+                        <span className="tf-section-title">Adicionar Exercícios</span>
                     </div>
-                ) : (
-                    <p className="text-muted m-3">Nenhum exercício vinculado ainda.</p>
-                )}
-            </div>
 
-            {/* Card: Exercícios Disponíveis */}
-            <div className="card card-section mt-4">
-                <div className="card-header-custom">
-                    <i className="bi bi-list-ul me-2"></i> Exercícios Disponíveis
-                </div>
+                    {/* Busca */}
+                    <div className="tf-search-wrap">
+                        <svg className="tf-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input
+                            className="tf-search"
+                            type="text"
+                            placeholder="Buscar por nome ou grupo muscular..."
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                        />
+                    </div>
 
-                <div className="input-group p-3">
-                    <span className="input-group-text"><i className="bi bi-search"></i></span>
-                    <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Buscar por nome ou grupo muscular..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-
-                <div className="accordion" id="accordionExercicios">
-                    {["Peitoral", "Bíceps", "Tríceps", "Costas", "Ombros", "Pernas", "Abdômen", "Panturrilha"].map((grupo, idx) => {
-                        const exerciciosGrupo = exercicios.filter(
-                            (ex) =>
+                    {/* Accordion */}
+                    <div className="tf-accordion">
+                        {GRUPOS.map((grupo) => {
+                            const exerciciosGrupo = exercicios.filter(ex =>
                                 (ex.nome_exercicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                     ex.grupo_muscular?.toLowerCase().includes(searchTerm.toLowerCase())) &&
                                 ex.grupo_muscular === grupo &&
-                                !exerciciosSalvos.some((s) => s.exercicio_id === ex.id)
-                        );
+                                !exerciciosSalvos.some(s => s.exercicio_id === ex.id)
+                            );
+                            if (!exerciciosGrupo.length) return null;
 
-                        if (exerciciosGrupo.length === 0) return null;
-
-                        return (
-                            <div className="accordion-item" key={grupo}>
-                                <h2 className="accordion-header" id={`heading-${idx}`}>
+                            const isOpen = !!openGroups[grupo];
+                            return (
+                                <div className="tf-acc-item" key={grupo}>
                                     <button
-                                        className="accordion-button collapsed"
                                         type="button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target={`#collapse-${idx}`}
-                                        aria-expanded="false"
-                                        aria-controls={`collapse-${idx}`}
+                                        className="tf-acc-trigger"
+                                        onClick={() => toggleGroup(grupo)}
                                     >
-                                        {grupo}
+                                        <span className="tf-acc-label">{grupo}</span>
+                                        <span className="tf-acc-count">{exerciciosGrupo.length}</span>
+                                        <svg
+                                            className={`tf-acc-chevron${isOpen ? ' open' : ''}`}
+                                            width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                                        >
+                                            <polyline points="6 9 12 15 18 9"/>
+                                        </svg>
                                     </button>
-                                </h2>
-                                <div
-                                    id={`collapse-${idx}`}
-                                    className="accordion-collapse collapse"
-                                    aria-labelledby={`heading-${idx}`}
-                                    data-bs-parent="#accordionExercicios"
-                                >
-                                    <div className="accordion-body">
-                                        <div className="row g-2">
-                                            {exerciciosGrupo.map((ex) => (
-                                                <div key={ex.id} className="col-6 col-md-3">
-                                                    <div
-                                                        className="card h-100 text-center shadow-sm p-2"
-                                                        onClick={() => setExercicioAtivo(ex.id)}
-                                                    >
-                                                        <img
-                                                            src={ex.gif_url}
-                                                            alt={ex.nome_exercicio}
-                                                            className="card-img-top"
-                                                            style={{ height: '80px', objectFit: 'contain' }}
-                                                        />
-                                                        <h6 className="mt-1" style={{ fontSize: '0.8rem' }}>{ex.nome_exercicio}</h6>
 
+                                    {isOpen && (
+                                        <div className="tf-acc-body">
+                                            <div className="tf-ex-grid">
+                                                {exerciciosGrupo.map(ex => (
+                                                    <div
+                                                        key={ex.id}
+                                                        className={`tf-ex-card${exercicioAtivo === ex.id ? ' tf-ex-active' : ''}`}
+                                                        onClick={() => setExercicioAtivo(ex.id === exercicioAtivo ? null : ex.id)}
+                                                    >
+                                                        <div className="tf-ex-gif">
+                                                            <img src={ex.gif_url} alt={ex.nome_exercicio} />
+                                                        </div>
+                                                        <p className="tf-ex-name">{ex.nome_exercicio}</p>
                                                         {exercicioAtivo === ex.id && (
                                                             <button
                                                                 type="button"
-                                                                className="btn btn-sm btn-success mt-1"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleAdicionarExercicio(ex);
-                                                                }}
+                                                                className="tf-use-btn"
+                                                                onClick={e => { e.stopPropagation(); handleAdicionarExercicio(ex); }}
                                                             >
                                                                 Usar
                                                             </button>
                                                         )}
                                                     </div>
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
                 </div>
+
+                {/* ── Voltar ── */}
+                <div className="tf-actions">
+                    <button type="button" className="tf-btn-cancel" onClick={() => navigate(-1)}>
+                        Voltar
+                    </button>
+                </div>
+
             </div>
 
-            {/* Modal de edição */}
+            {/* Modal de edição de campo */}
             {campoEditando && (
                 <ModalEdicaoCampo
                     campo={campoEditando}
