@@ -1,0 +1,415 @@
+/* =============================== */
+/* USUARIOS VIEW — OLYMPUS         */
+/* =============================== */
+
+/* ── LIGHT MODE ── */
+:root {
+    --uv-accent: #4A90D9;
+    --uv-accent-dim: rgba(74, 144, 217, 0.12);
+    --uv-accent-border: rgba(74, 144, 217, 0.3);
+    --uv-bg: #F0F3F8;
+    --uv-surface: #FFFFFF;
+    --uv-surface-2: #EBF0F7;
+    --uv-surface-3: #DDE5F0;
+    --uv-text: #19222B;
+    --uv-text-muted: #5A6B82;
+    --uv-text-dim: #9CAAB8;
+    --uv-border: rgba(0, 0, 0, 0.08);
+    --uv-shadow: 0 2px 14px rgba(0, 0, 0, 0.07);
+    --uv-shadow-hover: 0 4px 22px rgba(0, 0, 0, 0.12);
+    --uv-red: #E84040;
+    --uv-green: #2ECC71;
+    --uv-radius-lg: 18px;
+    --uv-radius-md: 14px;
+    --uv-radius-sm: 8px;
+}
+
+/* ── DARK MODE ── */
+body.dark-mode {
+    --uv-bg: #0B0F14;
+    --uv-surface: #111720;
+    --uv-surface-2: #171E2A;
+    --uv-surface-3: #1D2535;
+    --uv-text: #E8EDF5;
+    --uv-text-muted: #6B7A99;
+    --uv-text-dim: #3D4E6A;
+    --uv-border: rgba(255, 255, 255, 0.06);
+    --uv-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+    --uv-shadow-hover: 0 4px 24px rgba(0, 0, 0, 0.7);
+}
+
+/* ── PÁGINA ── */
+.uv-page {
+    background: var(--uv-bg);
+    min-height: 100vh;
+    font-family: 'Barlow', sans-serif;
+    padding-bottom: 88px;
+}
+
+/* =============================== */
+/* HEADER — sempre escuro          */
+/* =============================== */
+.uv-header {
+    background: linear-gradient(135deg, #19222B 0%, #2c3e50 100%);
+    padding: 24px 20px 28px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.uv-header::before {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    right: -40px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(74,144,217,0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Avatar */
+.uv-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(74, 144, 217, 0.5);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    margin-bottom: 12px;
+}
+
+.uv-avatar-placeholder {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1C2436, #2c3e50);
+    border: 3px solid rgba(74, 144, 217, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+}
+
+.uv-user-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.9rem;
+    letter-spacing: 0.05em;
+    color: #ffffff;
+    margin: 0 0 10px;
+    line-height: 1;
+}
+
+/* Stats chips */
+.uv-stats-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.uv-stat-chip {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    padding: 5px 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.uv-stat-chip-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.uv-stat-chip-lbl {
+    font-size: 0.68rem;
+    color: rgba(200, 209, 208, 0.55);
+}
+
+/* Botão criar treino */
+.uv-btn-new {
+    background: var(--uv-accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.18s;
+    box-shadow: 0 4px 16px rgba(74, 144, 217, 0.3);
+}
+
+.uv-btn-new:active {
+    transform: scale(0.97);
+}
+
+/* =============================== */
+/* BOARD — dias da semana          */
+/* =============================== */
+.uv-board {
+    padding: 20px 16px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ── Bloco de um dia ── */
+.uv-day-block {
+    background: var(--uv-surface);
+    border: 1px solid var(--uv-border);
+    border-radius: var(--uv-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--uv-shadow);
+    transition: box-shadow 0.2s;
+}
+
+/* Header do dia */
+.uv-day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 16px 10px;
+    border-bottom: 1px solid var(--uv-border);
+    background: var(--uv-surface-2);
+}
+
+.uv-day-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    color: var(--uv-text);
+}
+
+.uv-day-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--uv-accent);
+    background: var(--uv-accent-dim);
+    border: 1px solid var(--uv-accent-border);
+    border-radius: 100px;
+    padding: 2px 9px;
+}
+
+/* Drop zone */
+.uv-droppable {
+    min-height: 64px;
+    padding: 10px 12px;
+}
+
+/* ── Card de treino (draggable) ── */
+.uv-workout-card {
+    background: var(--uv-surface);
+    border: 1px solid var(--uv-border);
+    border-radius: var(--uv-radius-md);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    cursor: grab;
+    transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Linha esquerda accent */
+.uv-workout-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--uv-accent);
+    border-radius: 3px 0 0 3px;
+}
+
+.uv-workout-card:hover {
+    box-shadow: var(--uv-shadow-hover);
+    border-color: var(--uv-accent-border);
+}
+
+.uv-workout-card.uv-dragging {
+    cursor: grabbing;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.25);
+    border-color: var(--uv-accent-border);
+    transform: rotate(1.5deg) scale(1.02);
+    z-index: 100;
+}
+
+/* Thumb da imagem */
+.uv-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--uv-radius-sm);
+    background: linear-gradient(135deg, #19222B, #2c3e50);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.uv-thumb img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* Info do treino */
+.uv-workout-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.uv-workout-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.03em;
+    color: var(--uv-text);
+    margin: 0 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.uv-workout-desc {
+    font-size: 0.74rem;
+    color: var(--uv-text-muted);
+    font-weight: 300;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+
+.uv-workout-group {
+    display: inline-block;
+    margin-top: 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--uv-accent);
+}
+
+/* Ações + drag handle */
+.uv-workout-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.uv-drag-handle {
+    color: var(--uv-text-dim);
+    line-height: 1;
+}
+
+.uv-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.uv-btn-edit {
+    background: var(--uv-accent-dim);
+    border: 1px solid var(--uv-accent-border);
+    color: var(--uv-accent);
+    border-radius: var(--uv-radius-sm);
+    padding: 4px 11px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.uv-btn-edit:active {
+    background: rgba(74, 144, 217, 0.2);
+    transform: scale(0.96);
+}
+
+.uv-btn-delete {
+    background: rgba(232, 64, 64, 0.08);
+    border: 1px solid rgba(232, 64, 64, 0.25);
+    color: var(--uv-red);
+    border-radius: var(--uv-radius-sm);
+    padding: 4px 11px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.uv-btn-delete:active {
+    background: rgba(232, 64, 64, 0.15);
+    transform: scale(0.96);
+}
+
+/* ── Empty state do dia ── */
+.uv-empty-day {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    border: 1.5px dashed var(--uv-border);
+    border-radius: var(--uv-radius-sm);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--uv-text-dim);
+    transition: border-color 0.2s, background 0.2s;
+}
+
+/* Feedback visual quando um card está sobre o droppable vazio */
+.uv-day-block.drag-over .uv-empty-day {
+    border-color: var(--uv-accent-border);
+    background: var(--uv-accent-dim);
+    color: var(--uv-accent);
+}
+
+/* ── DESKTOP ── */
+@media (min-width: 768px) {
+    .uv-page {
+        max-width: 700px;
+        margin: 0 auto;
+        padding-bottom: 2rem;
+    }
+
+    .uv-board {
+        padding: 20px 20px 10px;
+        gap: 12px;
+    }
+
+    .uv-workout-name {
+        font-size: 1.15rem;
+    }
+}

@@ -1,36 +1,38 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
-import {
-    DragDropContext,
-    Droppable,
-    Draggable
-} from "@hello-pangea/dnd";
-import '../../styles/Board.css';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import ModalCarregando from '../components/ModalCarregando';
+import '../../styles/UsuariosView.css';
 
 const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+
 const mapDiasBack = {
     'Segunda': 'Segunda-feira',
-    'Terça': 'Terça-feira',
-    'Quarta': 'Quarta-feira',
-    'Quinta': 'Quinta-feira',
-    'Sexta': 'Sexta-feira',
-    'Sábado': 'Sábado',
-    'Domingo': 'Domingo'
+    'Terça':   'Terça-feira',
+    'Quarta':  'Quarta-feira',
+    'Quinta':  'Quinta-feira',
+    'Sexta':   'Sexta-feira',
+    'Sábado':  'Sábado',
+    'Domingo': 'Domingo',
 };
+
 const mapDias = Object.fromEntries(
     Object.entries(mapDiasBack).map(([curto, longo]) => [longo, curto])
 );
 
+const treinoImagemUrl = (imagem) =>
+    `${process.env.REACT_APP_API_BASE_URL}/uploads/${imagem}`;
+
 const UsuariosView = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { userId, funcao } = useContext(AuthContext);
+
     const [usuario, setUsuario] = useState(null);
     const [treinos, setTreinos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const { userId, funcao } = useContext(AuthContext);
 
     useEffect(() => {
         const carregarDados = async () => {
@@ -38,71 +40,48 @@ const UsuariosView = () => {
                 navigate(`/usuarios/view/${userId}`);
                 return;
             }
-
             try {
                 const [usuarioRes, treinosRes] = await Promise.all([
                     fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`),
                     fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`)
                 ]);
-
                 if (!usuarioRes.ok || !treinosRes.ok) throw new Error('Erro ao carregar dados');
-
-                const usuarioData = await usuarioRes.json();
-                const treinosData = await treinosRes.json();
-
-                setUsuario(usuarioData);
-                setTreinos(treinosData);
+                setUsuario(await usuarioRes.json());
+                setTreinos(await treinosRes.json());
                 setLoading(false);
             } catch (err) {
                 setError(err.message);
                 setLoading(false);
             }
         };
-
         carregarDados();
     }, [id, userId, funcao, navigate]);
 
-    // Substituir apenas a função handleDragEnd no seu componente UsuariosView
+    // ── DRAG & DROP ──────────────────────────────────────────────────────
 
     const handleDragEnd = async (result) => {
         const { source, destination, draggableId } = result;
-
-        // Se não há destino ou moveu para o mesmo lugar, não faz nada
         if (!destination) return;
         if (source.droppableId === destination.droppableId) return;
 
-        const treinoArrastadoId = parseInt(draggableId.replace("treino-", ""));
-        const novoDiaCurto = destination.droppableId;
-        const novoDia = mapDiasBack[novoDiaCurto] || novoDiaCurto;
-        const diaOrigemCurto = source.droppableId;
-        const diaOrigem = mapDiasBack[diaOrigemCurto] || diaOrigemCurto;
+        const treinoArrastadoId  = parseInt(draggableId.replace('treino-', ''));
+        const novoDiaCurto       = destination.droppableId;
+        const novoDia            = mapDiasBack[novoDiaCurto] || novoDiaCurto;
+        const diaOrigemCurto     = source.droppableId;
+        const diaOrigem          = mapDiasBack[diaOrigemCurto] || diaOrigemCurto;
 
-        // Busca treino que está sendo arrastado
-        const treinoArrastado = treinos.find(t => t.id === treinoArrastadoId);
+        const treinoArrastado  = treinos.find(t => t.id === treinoArrastadoId);
         if (!treinoArrastado) return;
 
-        // Busca se já existe treino no dia de destino
-        const treinoNoDestino = treinos.find(t => mapDias[t.dia_semana] === novoDiaCurto);
-
-        // Guarda estado anterior para rollback
+        const treinoNoDestino  = treinos.find(t => mapDias[t.dia_semana] === novoDiaCurto);
         const treinosAnteriores = [...treinos];
 
         if (treinoNoDestino) {
-            // 🔄 SWAP: troca os dois treinos de lugar
-            console.log(`🔄 Fazendo swap: Treino ${treinoArrastadoId} (${diaOrigem}) ↔️ Treino ${treinoNoDestino.id} (${novoDia})`);
-
-            // Atualiza UI otimisticamente
-            setTreinos(prev =>
-                prev.map(t => {
-                    if (t.id === treinoArrastadoId) {
-                        return { ...t, dia_semana: novoDia };
-                    }
-                    if (t.id === treinoNoDestino.id) {
-                        return { ...t, dia_semana: diaOrigem };
-                    }
-                    return t;
-                })
-            );
+            setTreinos(prev => prev.map(t => {
+                if (t.id === treinoArrastadoId)  return { ...t, dia_semana: novoDia };
+                if (t.id === treinoNoDestino.id) return { ...t, dia_semana: diaOrigem };
+                return t;
+            }));
 
             try {
                 const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/swap`, {
@@ -115,30 +94,14 @@ const UsuariosView = () => {
                         dia2: novoDia
                     })
                 });
-
-                if (!res.ok) {
-                    const error = await res.json();
-                    console.error('❌ Erro ao fazer swap:', error);
-                    setTreinos(treinosAnteriores); // rollback
-                    alert('⚠️ Erro ao trocar treinos de lugar');
-                } else {
-                    const data = await res.json();
-                    console.log('✅ Swap realizado com sucesso:', data);
-                }
-            } catch (err) {
-                console.error('⚠️ Erro na requisição de swap:', err);
-                setTreinos(treinosAnteriores); // rollback
-                alert('⚠️ Erro ao trocar treinos de lugar');
+                if (!res.ok) setTreinos(treinosAnteriores);
+            } catch {
+                setTreinos(treinosAnteriores);
             }
         } else {
-            // 📍 Movimento simples para dia vazio
-            console.log(`📍 Movendo treino ${treinoArrastadoId} de ${diaOrigem} para ${novoDia}`);
-
-            setTreinos(prev =>
-                prev.map(t =>
-                    t.id === treinoArrastadoId ? { ...t, dia_semana: novoDia } : t
-                )
-            );
+            setTreinos(prev => prev.map(t =>
+                t.id === treinoArrastadoId ? { ...t, dia_semana: novoDia } : t
+            ));
 
             try {
                 const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/${treinoArrastadoId}/dia`, {
@@ -146,119 +109,186 @@ const UsuariosView = () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ dia_semana: novoDia })
                 });
-
-                if (!res.ok) {
-                    console.error(`❌ Erro ao atualizar treino ${treinoArrastadoId}`);
-                    setTreinos(treinosAnteriores); // rollback
-                    alert('⚠️ Erro ao mover treino');
-                } else {
-                    console.log('✅ Treino movido com sucesso');
-                }
-            } catch (err) {
-                console.error('⚠️ Erro na requisição:', err);
-                setTreinos(treinosAnteriores); // rollback
-                alert('⚠️ Erro ao mover treino');
+                if (!res.ok) setTreinos(treinosAnteriores);
+            } catch {
+                setTreinos(treinosAnteriores);
             }
         }
     };
 
     const handleDeleteTreino = async (treinoId) => {
-        if (!window.confirm("Tem certeza que deseja excluir este treino?")) return;
+        if (!window.confirm('Tem certeza que deseja excluir este treino?')) return;
         try {
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
-                method: 'DELETE',
+                method: 'DELETE'
             });
-            if (res.ok) {
-                setTreinos(treinos.filter(t => t.id !== treinoId));
-            }
+            if (res.ok) setTreinos(treinos.filter(t => t.id !== treinoId));
         } catch {
-            alert("Erro ao excluir treino.");
+            alert('Erro ao excluir treino.');
         }
     };
 
-    if (loading) return <ModalCarregando show={true} />;
-    if (error) return <div className="alert alert-danger text-center mt-5">Erro: {error}</div>;
-    if (!usuario) return <div className="text-center mt-5">Usuário não encontrado.</div>;
+    // ── RENDER ────────────────────────────────────────────────────────────
 
-    const avatarUrl = usuario.avatar || null;
+    if (loading) return <ModalCarregando show={true} />;
+    if (error)   return <div style={{ color: 'red', padding: '2rem' }}>Erro: {error}</div>;
+    if (!usuario) return <div style={{ padding: '2rem' }}>Usuário não encontrado.</div>;
 
     return (
-        <div className="container mt-5 mb-5">
-            <h2 className="text-center mb-4">Perfil do Aluno</h2>
+        <div className="uv-page">
 
-            <div className="d-flex flex-column align-items-center mb-4">
-                {avatarUrl && (
-                    <img src={avatarUrl} alt="Avatar"
-                         className="rounded-circle mb-3"
-                         style={{ width: 140, height: 140, objectFit: 'cover' }}
-                    />
+            {/* ── HEADER ── */}
+            <div className="uv-header">
+                {usuario.avatar ? (
+                    <img src={usuario.avatar} alt="Avatar" className="uv-avatar" />
+                ) : (
+                    <div className="uv-avatar-placeholder">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(74,144,217,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
                 )}
-                <h4 className="mb-1">{usuario.nome}</h4>
-                <p className="text-muted">Peso: {usuario.peso ? `${usuario.peso} kg` : '—'} |
-                    Altura: {usuario.altura ? `${usuario.altura} cm` : '—'}</p>
-                <p className="text-muted">Gênero: {usuario.genero}</p>
-            </div>
 
-            <div className="mb-3 text-end">
-                <button className="btn-olympus success sm" onClick={() => navigate(`/usuarios/${id}/treinos`)}>
-                    + Criar Novo Treino
+                <h1 className="uv-user-name">{usuario.nome}</h1>
+
+                <div className="uv-stats-row">
+                    {usuario.peso && (
+                        <div className="uv-stat-chip">
+                            <span className="uv-stat-chip-val">{usuario.peso} kg</span>
+                            <span className="uv-stat-chip-lbl">Peso</span>
+                        </div>
+                    )}
+                    {usuario.altura && (
+                        <div className="uv-stat-chip">
+                            <span className="uv-stat-chip-val">{usuario.altura} cm</span>
+                            <span className="uv-stat-chip-lbl">Altura</span>
+                        </div>
+                    )}
+                    {usuario.genero && (
+                        <div className="uv-stat-chip">
+                            <span className="uv-stat-chip-val">{usuario.genero}</span>
+                            <span className="uv-stat-chip-lbl">Gênero</span>
+                        </div>
+                    )}
+                </div>
+
+                <button
+                    className="uv-btn-new"
+                    onClick={() => navigate(`/usuarios/${id}/treinos`)}
+                >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Criar Novo Treino
                 </button>
             </div>
 
+            {/* ── BOARD ── */}
             <DragDropContext onDragEnd={handleDragEnd}>
-                <div className="d-flex flex-column gap-4">
-                    {diasSemana.map((dia) => (
-                        <Droppable key={dia} droppableId={dia}>
-                            {(provided) => (
-                                <div
-                                    ref={provided.innerRef}
-                                    {...provided.droppableProps}
-                                    className="border rounded p-3 droppable-day"
-                                    style={{ minHeight: 100 }}
-                                >
-                                    <h5 className="mb-3">{dia}</h5>
-                                    {treinos
-                                        .filter(t => mapDias[t.dia_semana] === dia)
-                                        .map((t, index) => (
-                                            <Draggable key={t.id} draggableId={`treino-${t.id}`} index={index}>
-                                                {(provided, snapshot) => (
-                                                    <div
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
-                                                        className={`card mb-2 shadow-sm ${snapshot.isDragging ? "dragging" : ""}`}
-                                                        style={{
-                                                            cursor: 'grab',
-                                                            ...provided.draggableProps.style
-                                                        }}
-                                                    >
-                                                        <div className="card-body p-2 d-flex flex-column">
-                                                            <h6 className="card-title mb-1">{t.nome_treino}</h6>
-                                                            <small className="text-muted mb-2">{t.descricao}</small>
-                                                            <div className="mt-auto d-flex justify-content-end gap-2">
-                                                                <button
-                                                                    className="btn-olympus success sm"
-                                                                    onClick={() => navigate(`/treinos/edit/${id}/${t.id}`)}
-                                                                >
-                                                                    Editar
-                                                                </button>
-                                                                <button
-                                                                    className="btn-olympus danger sm"
-                                                                    onClick={() => handleDeleteTreino(t.id)}
-                                                                >
-                                                                    Excluir
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                    {provided.placeholder}
+                <div className="uv-board">
+                    {diasSemana.map((dia) => {
+                        const treinosDoDia = treinos.filter(t => mapDias[t.dia_semana] === dia);
+                        const temTreino    = treinosDoDia.length > 0;
+
+                        return (
+                            <div className="uv-day-block" key={dia}>
+
+                                {/* Header do dia */}
+                                <div className="uv-day-header">
+                                    <span className="uv-day-name">{mapDiasBack[dia]}</span>
+                                    {temTreino && (
+                                        <span className="uv-day-badge">{treinosDoDia[0].grupo_muscular || 'Treino'}</span>
+                                    )}
                                 </div>
-                            )}
-                        </Droppable>
-                    ))}
+
+                                {/* Drop zone */}
+                                <Droppable droppableId={dia}>
+                                    {(provided, snapshot) => (
+                                        <div
+                                            className="uv-droppable"
+                                            ref={provided.innerRef}
+                                            {...provided.droppableProps}
+                                        >
+                                            {temTreino ? (
+                                                treinosDoDia.map((t, index) => (
+                                                    <Draggable
+                                                        key={t.id}
+                                                        draggableId={`treino-${t.id}`}
+                                                        index={index}
+                                                    >
+                                                        {(provided, snapshot) => (
+                                                            <div
+                                                                ref={provided.innerRef}
+                                                                {...provided.draggableProps}
+                                                                className={`uv-workout-card${snapshot.isDragging ? ' uv-dragging' : ''}`}
+                                                                style={provided.draggableProps.style}
+                                                            >
+                                                                {/* Thumbnail */}
+                                                                <div className="uv-thumb">
+                                                                    {t.imagem ? (
+                                                                        <img
+                                                                            src={treinoImagemUrl(t.imagem)}
+                                                                            alt={t.nome_treino}
+                                                                        />
+                                                                    ) : (
+                                                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(74,144,217,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                            <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
+                                                                        </svg>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Info */}
+                                                                <div className="uv-workout-info">
+                                                                    <p className="uv-workout-name">{t.nome_treino}</p>
+                                                                    {t.descricao && (
+                                                                        <p className="uv-workout-desc">{t.descricao}</p>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Ações + drag handle */}
+                                                                <div className="uv-workout-side">
+                                                                    <div {...provided.dragHandleProps} className="uv-drag-handle">
+                                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                                            <line x1="8" y1="6" x2="21" y2="6"/>
+                                                                            <line x1="8" y1="12" x2="21" y2="12"/>
+                                                                            <line x1="8" y1="18" x2="21" y2="18"/>
+                                                                            <line x1="3" y1="6" x2="3.01" y2="6"/>
+                                                                            <line x1="3" y1="12" x2="3.01" y2="12"/>
+                                                                            <line x1="3" y1="18" x2="3.01" y2="18"/>
+                                                                        </svg>
+                                                                    </div>
+                                                                    <div className="uv-actions">
+                                                                        <button
+                                                                            className="uv-btn-edit"
+                                                                            onClick={() => navigate(`/treinos/edit/${id}/${t.id}`)}
+                                                                        >
+                                                                            Editar
+                                                                        </button>
+                                                                        <button
+                                                                            className="uv-btn-delete"
+                                                                            onClick={() => handleDeleteTreino(t.id)}
+                                                                        >
+                                                                            Excluir
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </Draggable>
+                                                ))
+                                            ) : (
+                                                <div className={`uv-empty-day${snapshot.isDraggingOver ? ' drag-over' : ''}`}>
+                                                    Arraste um treino para cá
+                                                </div>
+                                            )}
+                                            {provided.placeholder}
+                                        </div>
+                                    )}
+                                </Droppable>
+                            </div>
+                        );
+                    })}
                 </div>
             </DragDropContext>
         </div>

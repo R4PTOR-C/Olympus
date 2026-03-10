@@ -112,14 +112,7 @@ Hércules                            </button>
                                     <img
                                         src={avatarUrl}
                                         alt="Avatar do usuário"
-                                        className="rounded-circle"
-                                        style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            objectFit: 'cover',
-                                            border: '2px solid #fff',
-                                            cursor: 'pointer'
-                                        }}
+                                        className="navbar-avatar"
                                     />
                                 </a>
 
