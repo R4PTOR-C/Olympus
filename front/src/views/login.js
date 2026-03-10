@@ -1,115 +1,113 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
-import '../styles/Login.css';
+import '../styles/Auth.css';
 
 function Login() {
-    const [email, setEmail] = useState('');
-    const [senha, setSenha] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [email,       setEmail]       = useState('');
+    const [senha,       setSenha]       = useState('');
+    const [senhaVis,    setSenhaVis]    = useState(false);
+    const [loading,     setLoading]     = useState(false);
+    const [erro,        setErro]        = useState(null);
     const navigate = useNavigate();
-    const { login } = useContext(AuthContext); // Pega a função de login do AuthContext
+    const { login } = useContext(AuthContext);
 
-    // login.js (ou outro componente de login)
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         setLoading(true);
+        setErro(null);
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/login`, {
+            const res  = await fetch(`${process.env.REACT_APP_API_BASE_URL}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, senha })
+                body: JSON.stringify({ email, senha }),
             });
-            const data = await response.json();
+            const data = await res.json();
 
-            if (response.ok) {
-                console.log('Login bem-sucedido:', data);
-                // Chama a função de login do contexto passando os dados do usuário e o token
-                login(
-                    { userName: data.userName, userId: data.userId, funcao: data.funcao, avatar: data.avatar },
-                    data.token
-                );
-
-                // Redireciona com base na função do usuário
-                if (data.funcao === 'Professor') {
-                    navigate(`/usuarios}`); // ✅ Redireciona com o ID garantido
-                } else if (data.funcao === 'Aluno') {
-                    navigate(`/home/${data.userId}`); // Exemplo de rota para alunos
-                } else {
-                    // Se a função do usuário não for especificada, redireciona para uma rota padrão
-                    navigate(`/home/${data.userId}`);
-                }
+            if (res.ok) {
+                login({ userName: data.userName, userId: data.userId, funcao: data.funcao, avatar: data.avatar }, data.token);
+                if (data.funcao === 'Professor') navigate('/usuarios');
+                else navigate(`/home/${data.userId}`);
             } else {
-                alert(data.error || 'Erro ao fazer login. Tente novamente.');
+                setErro(data.error || 'Email ou senha incorretos.');
             }
-        } catch (error) {
-            console.error('Erro de rede:', error);
-            alert('Erro de rede. Verifique sua conexão e tente novamente.');
+        } catch {
+            setErro('Erro de rede. Verifique sua conexão.');
         } finally {
             setLoading(false);
         }
     };
 
-
     return (
-        <div className="login-page-container">
-            <div className="login-container d-flex">
-                <div className="welcome-mobile">
-                    <img src="/logo1.png" alt="Logo" className="logo-mobile" />
-                </div>
-                <div className="col-md-6 login-form">
+        <div className="auth-page">
+            <div className="auth-card">
 
-                    <h3 className="mb-4 text-center" style={{fontFamily: 'delirium'}}>OLYMPUS</h3>
+                {/* ── HEADER ── */}
+                <div className="auth-header">
+                    <img src="/logo1.png" alt="Olympus" className="auth-logo" />
+                    <h1 className="auth-title">Olympus</h1>
+                </div>
+
+                {/* ── BODY ── */}
+                <div className="auth-body">
+                    {erro && (
+                        <div className="auth-msg error">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            {erro}
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit}>
-                        <div className="form-group">
-                            <label htmlFor="email">Email</label>
+                        <div className="auth-field">
+                            <label className="auth-label" htmlFor="email">Email</label>
                             <input
-                                type="email"
-                                className="form-control"
                                 id="email"
+                                type="email"
+                                className="auth-input"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Email"
+                                onChange={e => setEmail(e.target.value)}
+                                placeholder="seu@email.com"
+                                autoComplete="email"
                                 required
                             />
                         </div>
-                        <div className="form-group">
-                            <label htmlFor="senha">Senha</label>
-                            <input
-                                type="password"
-                                className="form-control"
-                                id="senha"
-                                value={senha}
-                                onChange={(e) => setSenha(e.target.value)}
-                                placeholder="Senha"
-                                autoComplete="off"
-                                required
-                            />
+
+                        <div className="auth-field">
+                            <label className="auth-label" htmlFor="senha">Senha</label>
+                            <div className="auth-input-wrap">
+                                <input
+                                    id="senha"
+                                    type={senhaVis ? 'text' : 'password'}
+                                    className="auth-input"
+                                    value={senha}
+                                    onChange={e => setSenha(e.target.value)}
+                                    placeholder="••••••••"
+                                    autoComplete="current-password"
+                                    required
+                                />
+                                <button type="button" className="auth-eye-btn" onClick={() => setSenhaVis(v => !v)} aria-label="Mostrar senha">
+                                    {senhaVis
+                                        ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                        : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    }
+                                </button>
+                            </div>
                         </div>
-                        <div className="form-group form-check">
-                            <label className="form-check-label remember-me" htmlFor="rememberMe"></label>
-                        </div>
-                        <button type="submit" className="btn btn-primary btn-block login-btn" disabled={loading}>
+
+                        <button type="submit" className="auth-btn" disabled={loading}>
                             {loading ? 'Entrando...' : 'Entrar'}
                         </button>
-                        <div className="d-flex justify-content-between mt-3">
-                            <Link to="/forgot-password" className="forgot-password">Esqueceu a senha?</Link>
-                        </div>
                     </form>
-                    <div className="social-icons mt-3">
-                        <a href="#"><i className="fab fa-facebook-f"></i></a>
-                        <a href="#"><i className="fab fa-twitter"></i></a>
-                    </div>
                 </div>
-                <div className="col-md-6 welcome-container">
-                    <img
-                        src="/logo1.png"
-                        alt="Logo"
-                        className="logo-image"
-                        style={{maxWidth: '100%', height: 'auto', marginBottom: '20px'}}
-                    />
-                    <p>Não tem uma conta?</p>
-                    <Link to="/sign-in" className="signin-btn" >Cadastrar-se</Link>
+
+                {/* ── FOOTER ── */}
+                <div className="auth-footer">
+                    <Link to="/forgot-password" className="auth-link-muted">Esqueceu a senha?</Link>
+                    <div className="auth-divider" />
+                    <p className="auth-footer-text">
+                        Não tem uma conta?{' '}
+                        <Link to="/sign-in">Cadastrar-se</Link>
+                    </p>
                 </div>
 
             </div>
