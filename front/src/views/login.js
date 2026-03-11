@@ -108,6 +108,10 @@ function Login() {
                         Não tem uma conta?{' '}
                         <Link to="/sign-in">Cadastrar-se</Link>
                     </p>
+                    <p className="auth-footer-text">
+                        É personal trainer?{' '}
+                        <Link to="/sign-in_professor">Cadastre-se aqui</Link>
+                    </p>
                 </div>
 
             </div>
