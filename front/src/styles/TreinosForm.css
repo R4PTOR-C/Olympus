@@ -35,6 +35,12 @@ body.dark-mode {
     --tf-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
 }
 
+body.dark-mode .tf-input,
+body.dark-mode .tf-textarea,
+body.dark-mode .tf-select {
+    background: var(--tf-surface-2);
+}
+
 /* ── PÁGINA ── */
 .tf-page {
     background: var(--tf-bg);
@@ -196,7 +202,7 @@ body.dark-mode {
 
 .tf-input,
 .tf-textarea {
-    background: var(--tf-surface-2);
+    background: var(--tf-surface);
     border: 1px solid var(--tf-border);
     border-radius: var(--tf-radius-sm);
     padding: 11px 14px;
@@ -213,7 +219,6 @@ body.dark-mode {
 .tf-textarea:focus {
     border-color: var(--tf-accent);
     box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
-    background: var(--tf-surface);
 }
 
 .tf-input::placeholder,
@@ -232,30 +237,27 @@ body.dark-mode {
     position: relative;
 }
 
-.tf-select-wrap::after {
-    content: '';
+.tf-select-arrow {
     position: absolute;
-    right: 14px;
+    right: 13px;
     top: 50%;
     transform: translateY(-50%);
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid var(--tf-text-dim);
     pointer-events: none;
+    color: var(--tf-text-dim);
+    display: flex;
+    align-items: center;
 }
 
 .tf-select {
     background: var(--tf-surface-2);
-    border: 1px solid var(--tf-border);
+    border: 1.5px solid var(--tf-border);
     border-radius: var(--tf-radius-sm);
-    padding: 11px 36px 11px 14px;
+    padding: 11px 38px 11px 14px;
     font-family: 'Barlow', sans-serif;
     font-size: 0.9rem;
     color: var(--tf-text);
     outline: none;
-    transition: border-color 0.18s, box-shadow 0.18s;
+    transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
     width: 100%;
     box-sizing: border-box;
     appearance: none;
@@ -264,13 +266,18 @@ body.dark-mode {
 }
 
 .tf-select:focus {
-    border-color: var(--tf-accent);
-    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
+    border-color: var(--tf-accent-border);
+    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.12);
+    background: var(--tf-surface);
 }
 
 .tf-select option {
     background: var(--tf-surface);
     color: var(--tf-text);
+}
+
+.tf-select-placeholder {
+    color: var(--tf-text-dim);
 }
 
 /* ── Exercícios selecionados ── */

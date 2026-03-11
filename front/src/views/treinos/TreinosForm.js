@@ -19,12 +19,19 @@ const TreinosForm = () => {
     const [exercicioAtivo, setExercicioAtivo] = useState(null);
     const [openGroups, setOpenGroups] = useState({});
     const [submitting, setSubmitting] = useState(false);
+    const [diasOcupados, setDiasOcupados] = useState([]);
+
+    const TODOS_DIAS = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
 
     useEffect(() => {
-        fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`)
-            .then(res => res.json())
-            .then(data => setExercicios(data));
-    }, []);
+        Promise.all([
+            fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`).then(r => r.json()),
+            fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`).then(r => r.json()),
+        ]).then(([exData, treinosData]) => {
+            setExercicios(exData);
+            setDiasOcupados(treinosData.map(t => t.dia_semana));
+        });
+    }, [id]);
 
     const toggleGroup = (grupo) => {
         setOpenGroups(prev => ({ ...prev, [grupo]: !prev[grupo] }));
@@ -144,14 +151,13 @@ const TreinosForm = () => {
                                         required
                                     >
                                         <option value="">Selecione o dia</option>
-                                        <option value="Segunda-feira">Segunda-feira</option>
-                                        <option value="Terça-feira">Terça-feira</option>
-                                        <option value="Quarta-feira">Quarta-feira</option>
-                                        <option value="Quinta-feira">Quinta-feira</option>
-                                        <option value="Sexta-feira">Sexta-feira</option>
-                                        <option value="Sábado">Sábado</option>
-                                        <option value="Domingo">Domingo</option>
+                                        {TODOS_DIAS.filter(d => !diasOcupados.includes(d)).map(d => (
+                                            <option key={d} value={d}>{d}</option>
+                                        ))}
                                     </select>
+                                    <svg className="tf-select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
                                 </div>
                             </div>
 
@@ -170,11 +176,12 @@ const TreinosForm = () => {
                                         <option value="Ombros">Ombros</option>
                                         <option value="Bíceps">Bíceps</option>
                                         <option value="Tríceps">Tríceps</option>
-                                        <option value="Posterior">Posterior</option>
-                                        <option value="Frontal">Frontal</option>
-                                        <option value="Panturrilha">Panturrilha</option>
+                                        <option value="Pernas">Pernas</option>
                                         <option value="Abdômen">Abdômen</option>
                                     </select>
+                                    <svg className="tf-select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
                                 </div>
                             </div>
                         </div>

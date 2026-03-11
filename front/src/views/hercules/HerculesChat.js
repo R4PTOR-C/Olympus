@@ -20,7 +20,7 @@ function HerculesChat() {
         return () => observer.disconnect();
     }, []);
 
-    const herculesImg = isDark ? '/hercules.png' : '/hercules2.png';
+    const herculesImg = isDark ? '/hercules.png' : '/hercules.png';
 
     // auto-scroll ao receber mensagem
     useEffect(() => {

@@ -21,6 +21,9 @@ const TreinosEdit = () => {
     const [exercicioAtivo, setExercicioAtivo] = useState(null);
     const [campoEditando, setCampoEditando] = useState(null);
     const [openGroups, setOpenGroups] = useState({});
+    const [diasOcupados, setDiasOcupados] = useState([]);
+
+    const TODOS_DIAS = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
 
     useEffect(() => {
         if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
@@ -30,15 +33,24 @@ const TreinosEdit = () => {
 
         const fetchAll = async () => {
             try {
-                const [treinoRes, savedRes, exRes] = await Promise.all([
+                const [treinoRes, savedRes, exRes, treinosRes] = await Promise.all([
                     fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`),
                     fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`),
                     fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`),
+                    fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`),
                 ]);
                 if (!treinoRes.ok) throw new Error(`Erro ao buscar treino (${treinoRes.status})`);
-                setTreino(await treinoRes.json());
+                const treinoData = await treinoRes.json();
+                const treinosList = await treinosRes.json();
+                setTreino(treinoData);
                 setExerciciosSalvos(await savedRes.json());
                 setExercicios(await exRes.json());
+                // dias ocupados = outros treinos (excluindo o atual)
+                setDiasOcupados(
+                    treinosList
+                        .filter(t => t.id !== parseInt(treinoId))
+                        .map(t => t.dia_semana)
+                );
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -104,16 +116,20 @@ const TreinosEdit = () => {
     if (error) return <div style={{ color: 'red', padding: '2rem' }}>Erro: {error}</div>;
     if (!treino) return null;
 
+    const diasDisponiveis = TODOS_DIAS.filter(
+        d => !diasOcupados.includes(d) || d === treino.dia_semana
+    );
+
     const camposTreino = [
         { name: 'nome_treino', label: 'Nome do Treino', tipo: 'text' },
         { name: 'descricao', label: 'Descrição', tipo: 'text' },
         {
             name: 'dia_semana', label: 'Dia da Semana', tipo: 'select',
-            options: ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'],
+            options: diasDisponiveis,
         },
         {
             name: 'grupo_muscular', label: 'Grupo Muscular Principal', tipo: 'select',
-            options: ['Peitoral', 'Costas', 'Ombros', 'Bíceps', 'Tríceps', 'Posterior', 'Frontal', 'Panturrilha', 'Abdômen'],
+            options: ['Peitoral', 'Costas', 'Ombros', 'Bíceps', 'Tríceps', 'Pernas', 'Abdômen'],
         },
     ];
 
