@@ -94,7 +94,8 @@
     flex-shrink: 0;
 }
 
-.hx-gif-wrap img {
+.hx-gif-wrap img,
+.hx-gif-wrap video {
     height: 120px;
     width: 100%;
     object-fit: contain;
@@ -166,7 +167,7 @@
 @media (min-width: 600px) {
     .hx-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 0 20px 14px; }
     .hx-gif-wrap { height: 160px; }
-    .hx-gif-wrap img { height: 140px; }
+    .hx-gif-wrap img, .hx-gif-wrap video { height: 140px; }
 }
 
 @media (min-width: 900px) {

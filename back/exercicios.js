@@ -10,11 +10,11 @@ const cloudinary = require('./config/cloudinary');
 // Configura o storage para Cloudinary
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
-    params: {
-        folder: 'olympus_exercicios', // Nome da pasta no Cloudinary
-        allowed_formats: ['gif'],
-        resource_type: 'image',
-    },
+    params: (req, file) => ({
+        folder: 'olympus_exercicios',
+        allowed_formats: ['gif', 'mp4', 'mov', 'webm'],
+        resource_type: file.mimetype.startsWith('video/') ? 'video' : 'image',
+    }),
 });
 
 const upload = multer({ storage });
@@ -39,8 +39,8 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Criar exercício (com upload opcional de gif)
-router.post('/', upload.single('gif'), async (req, res) => {
+// Criar exercício (com upload opcional de gif ou vídeo)
+router.post('/', upload.single('media'), async (req, res) => {
     let { nome_exercicio, grupo_muscular, nivel } = req.body;
     nome_exercicio = toTitleCase(nome_exercicio);
     const gifUrl = req.file?.path || null; // URL pública do Cloudinary
@@ -77,8 +77,8 @@ router.get('/exercicios/:id', async (req, res) => {
     }
 });
 
-// Atualizar exercício (com gif opcional)
-router.put('/:id', upload.single('gif'), async (req, res) => {
+// Atualizar exercício (com gif ou vídeo opcional)
+router.put('/:id', upload.single('media'), async (req, res) => {
     const { id } = req.params;
     let { nome_exercicio, grupo_muscular, nivel } = req.body;
     nome_exercicio = toTitleCase(nome_exercicio);

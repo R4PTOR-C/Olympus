@@ -245,6 +245,8 @@ function Exercicios_index() {
 
     // ── HELPERS ───────────────────────────────────────────────────────────
 
+    const isVideo = (url) => url && (url.includes('/video/') || /\.(mp4|mov|webm)(\?|$)/i.test(url));
+
     const isEditing = (exercicioId, numero_serie, campo) =>
         editingField?.exercicioId === exercicioId &&
         editingField?.numero_serie === numero_serie &&
@@ -338,12 +340,13 @@ function Exercicios_index() {
                         return (
                             <div className="ex-card" key={exercicio.exercicio_id}>
 
-                                {/* GIF */}
+                                {/* GIF / Vídeo */}
                                 <div className="ex-gif-wrap">
-                                    <img
-                                        src={exercicio.gif_url}
-                                        alt={exercicio.nome_exercicio}
-                                    />
+                                    {isVideo(exercicio.gif_url) ? (
+                                        <video src={exercicio.gif_url} autoPlay loop muted playsInline />
+                                    ) : (
+                                        <img src={exercicio.gif_url} alt={exercicio.nome_exercicio} />
+                                    )}
                                 </div>
 
                                 {/* Body */}

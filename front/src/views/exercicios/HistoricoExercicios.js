@@ -5,6 +5,8 @@ import ModalHistoricoExercicio from '../components/ModalHistoricoExercicios';
 import ModalCarregando from '../components/ModalCarregando';
 import '../../styles/HistoricoExercicios.css';
 
+const isVideo = (url) => url && (url.includes('/video/') || /\.(mp4|mov|webm)(\?|$)/i.test(url));
+
 function HistoricoExercicios() {
     const { userId } = useContext(AuthContext);
 
@@ -79,9 +81,13 @@ function HistoricoExercicios() {
                                 className="hx-card"
                                 onClick={() => setExercicioModal(ex)}
                             >
-                                {/* GIF no topo */}
+                                {/* GIF / Vídeo no topo */}
                                 <div className="hx-gif-wrap">
-                                    <img src={ex.gif_url} alt={ex.nome_exercicio} />
+                                    {isVideo(ex.gif_url) ? (
+                                        <video src={ex.gif_url} autoPlay loop muted playsInline />
+                                    ) : (
+                                        <img src={ex.gif_url} alt={ex.nome_exercicio} />
+                                    )}
                                 </div>
 
                                 {/* Info embaixo */}

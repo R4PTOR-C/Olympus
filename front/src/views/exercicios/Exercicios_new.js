@@ -4,7 +4,7 @@ function Exercicios_new() {
     const [nome_exercicio, setNome_exercicio] = useState('');
     const [grupo_muscular, setGrupo_muscular] = useState('');
     const [nivel, setNivel] = useState('');
-    const [gif, setGif] = useState(null);
+    const [media, setMedia] = useState(null);
 
     const GRUPOS_MUSCULARES = [
         "Peitoral",
@@ -24,7 +24,7 @@ function Exercicios_new() {
         formData.append('nome_exercicio', nome_exercicio);
         formData.append('grupo_muscular', grupo_muscular);
         formData.append('nivel', nivel);
-        formData.append('gif', gif);
+        formData.append('media', media);
 
         try {
             const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`, {
@@ -38,7 +38,7 @@ function Exercicios_new() {
                 setNome_exercicio('');
                 setGrupo_muscular('');
                 setNivel('');
-                setGif(null);
+                setMedia(null);
             } else {
                 alert('Falha ao adicionar exercício.');
             }
@@ -91,17 +91,17 @@ function Exercicios_new() {
                     </select>
                 </div>
                 <div className="form-group mt-3">
-                    <label>GIF do Exercício</label>
+                    <label>GIF ou Vídeo do Exercício</label>
                     <input
                         type="file"
                         className="form-control"
-                        accept=".gif"
-                        onChange={(e) => setGif(e.target.files[0])}
+                        accept=".gif,video/mp4,video/webm,video/quicktime"
+                        onChange={(e) => setMedia(e.target.files[0])}
                         required
                     />
-                    {gif && (
+                    {media && (
                         <small className="form-text text-muted">
-                            Arquivo selecionado: {gif.name}
+                            Arquivo selecionado: {media.name}
                         </small>
                     )}
                 </div>

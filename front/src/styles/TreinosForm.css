@@ -309,8 +309,10 @@ body.dark-mode .tf-select {
     overflow: hidden;
 }
 
-.tf-selected-gif img {
+.tf-selected-gif img,
+.tf-selected-gif video {
     height: 70px;
+    width: 100%;
     object-fit: contain;
 }
 
@@ -496,8 +498,10 @@ body.dark-mode .tf-select {
     overflow: hidden;
 }
 
-.tf-ex-gif img {
+.tf-ex-gif img,
+.tf-ex-gif video {
     height: 62px;
+    width: 100%;
     object-fit: contain;
 }
 

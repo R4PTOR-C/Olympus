@@ -7,8 +7,9 @@ function Exercicios_edit() {
     const [nome_exercicio, setNome_exercicio] = useState('');
     const [grupo_muscular, setGrupo_muscular] = useState('');
     const [nivel, setNivel] = useState('');
-    const [gifFile, setGifFile] = useState(null); // Novo estado para o arquivo GIF
-    const [gifPreview, setGifPreview] = useState(''); // Estado para exibir pré-visualização do GIF
+    const [mediaFile, setMediaFile] = useState(null);
+    const [mediaPreview, setMediaPreview] = useState('');
+    const [mediaIsVideo, setMediaIsVideo] = useState(false);
 
     // Buscar os dados do exercício existente
     useEffect(() => {
@@ -20,7 +21,8 @@ function Exercicios_edit() {
                     setNome_exercicio(data.nome_exercicio);
                     setGrupo_muscular(data.grupo_muscular);
                     setNivel(data.nivel);
-                    setGifPreview(data.gif_url); // Carregar pré-visualização do GIF existente
+                    setMediaPreview(data.gif_url);
+                    setMediaIsVideo(/\.(mp4|mov|webm)(\?|$)/i.test(data.gif_url) || data.gif_url?.includes('/video/'));
                 } else {
                     alert('Erro ao buscar os dados do exercício.');
                 }
@@ -33,14 +35,15 @@ function Exercicios_edit() {
         fetchExercicio();
     }, [id]);
 
-    const handleGifChange = (event) => {
+    const handleMediaChange = (event) => {
         const file = event.target.files[0];
-        setGifFile(file);
+        setMediaFile(file);
 
-        // Gerar pré-visualização do GIF
         if (file) {
+            const isVideo = file.type.startsWith('video/');
+            setMediaIsVideo(isVideo);
             const reader = new FileReader();
-            reader.onload = (e) => setGifPreview(e.target.result);
+            reader.onload = (e) => setMediaPreview(e.target.result);
             reader.readAsDataURL(file);
         }
     };
@@ -53,8 +56,8 @@ function Exercicios_edit() {
         formData.append('grupo_muscular', grupo_muscular);
         formData.append('nivel', nivel);
 
-        if (gifFile) {
-            formData.append('gif', gifFile); // Adiciona o arquivo GIF ao formulário
+        if (mediaFile) {
+            formData.append('media', mediaFile);
         }
 
         try {
@@ -114,17 +117,21 @@ function Exercicios_edit() {
                     </select>
                 </div>
                 <div className="form-group mt-3">
-                    <label>GIF do Exercício</label>
+                    <label>GIF ou Vídeo do Exercício</label>
                     <input
                         type="file"
                         className="form-control"
-                        accept="image/gif"
-                        onChange={handleGifChange}
+                        accept=".gif,video/mp4,video/webm,video/quicktime"
+                        onChange={handleMediaChange}
                     />
-                    {gifPreview && (
+                    {mediaPreview && (
                         <div className="mt-3">
                             <label>Pré-visualização:</label>
-                            <img src={gifPreview} alt="GIF Preview" style={{ maxWidth: '100%', height: 'auto' }} />
+                            {mediaIsVideo ? (
+                                <video src={mediaPreview} autoPlay loop muted playsInline style={{ maxWidth: '100%', height: 'auto' }} />
+                            ) : (
+                                <img src={mediaPreview} alt="Preview" style={{ maxWidth: '100%', height: 'auto' }} />
+                            )}
                         </div>
                     )}
                 </div>

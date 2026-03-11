@@ -106,10 +106,10 @@ const Exercicios_tabela = () => {
                             <td>
                                 {exercicio.gif_url ? (
                                     <a href={exercicio.gif_url} target="_blank" rel="noopener noreferrer">
-                                        Ver GIF
+                                        Ver mídia
                                     </a>
                                 ) : (
-                                    'Sem GIF'
+                                    'Sem mídia'
                                 )}
                             </td>
                             <td>
@@ -136,10 +136,10 @@ const Exercicios_tabela = () => {
                                 <strong>GIF:</strong>{" "}
                                 {exercicio.gif_url ? (
                                     <a href={exercicio.gif_url} target="_blank" rel="noopener noreferrer">
-                                        Ver GIF
+                                        Ver mídia
                                     </a>
                                 ) : (
-                                    'Sem GIF'
+                                    'Sem mídia'
                                 )}
                             </p>
                             <div className="mt-2">

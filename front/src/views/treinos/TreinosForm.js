@@ -5,6 +5,8 @@ import '../../styles/TreinosForm.css';
 
 const GRUPOS = ['Peitoral', 'Bíceps', 'Tríceps', 'Costas', 'Ombros', 'Pernas', 'Abdômen', 'Panturrilha'];
 
+const isVideo = (url) => url && (url.includes('/video/') || /\.(mp4|mov|webm)(\?|$)/i.test(url));
+
 const TreinosForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -204,7 +206,11 @@ const TreinosForm = () => {
                                     {exerciciosSelecionados.map(ex => (
                                         <div key={ex.id} className="tf-selected-card">
                                             <div className="tf-selected-gif">
-                                                <img src={ex.gif_url} alt={ex.nome_exercicio} />
+                                                {isVideo(ex.gif_url) ? (
+                                                    <video src={ex.gif_url} autoPlay loop muted playsInline />
+                                                ) : (
+                                                    <img src={ex.gif_url} alt={ex.nome_exercicio} />
+                                                )}
                                             </div>
                                             <p className="tf-selected-name">{ex.nome_exercicio}</p>
                                             <button
@@ -286,7 +292,11 @@ const TreinosForm = () => {
                                                             onClick={() => setExercicioAtivo(ex.id === exercicioAtivo ? null : ex.id)}
                                                         >
                                                             <div className="tf-ex-gif">
-                                                                <img src={ex.gif_url} alt={ex.nome_exercicio} />
+                                                                {isVideo(ex.gif_url) ? (
+                                                                    <video src={ex.gif_url} autoPlay loop muted playsInline />
+                                                                ) : (
+                                                                    <img src={ex.gif_url} alt={ex.nome_exercicio} />
+                                                                )}
                                                             </div>
                                                             <p className="tf-ex-name">{ex.nome_exercicio}</p>
                                                             {exercicioAtivo === ex.id && (
