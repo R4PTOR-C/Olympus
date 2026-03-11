@@ -37,7 +37,7 @@ import ChatsList from "./views/chat/ChatsList";
 // Componente para rotas protegidas
 function ProtectedRoute({ children }) {
     const { loggedIn, loading } = useContext(AuthContext);
-    if (loading) return <div>Verificando rota...</div>;
+    if (loading) return null;
     return loggedIn ? children : <Navigate to="/" />;
 }
 

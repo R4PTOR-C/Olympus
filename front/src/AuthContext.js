@@ -72,6 +72,11 @@ export const AuthProvider = ({ children }) => {
                 setUser({ loggedIn: false });
             }
             setLoading(false);
+            const splash = document.getElementById('splash');
+            if (splash) {
+                splash.classList.add('hide');
+                setTimeout(() => splash.remove(), 380);
+            }
         };
         checkSession();
     }, []);
@@ -102,9 +107,7 @@ export const AuthProvider = ({ children }) => {
         }));
     };
 
-    if (loading) {
-        return <div className="loading-indicator">Carregando...</div>;
-    }
+    if (loading) return null;
 
     return (
         <AuthContext.Provider
@@ -118,7 +121,7 @@ export const AuthProvider = ({ children }) => {
                 setDarkMode
             }}
         >
-            {!loading ? children : <div>Carregando...</div>}
+            {children}
         </AuthContext.Provider>
     );
 };

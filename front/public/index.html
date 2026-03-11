@@ -35,8 +35,41 @@
 
   <title>OLYMPUS</title>
 </head>
+<style>
+  #splash {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: #0E1117;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.35s ease;
+  }
+  #splash.hide {
+    opacity: 0;
+    pointer-events: none;
+  }
+  #splash img {
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+  }
+  #splash p {
+    margin-top: 20px;
+    font-family: 'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.12em;
+    color: #E8EDF5;
+  }
+</style>
 <body>
 <noscript>You need to enable JavaScript to run this app.</noscript>
+<div id="splash">
+  <img src="/logo1.png" alt="Olympus" />
+  <p>OLYMPUS</p>
+</div>
 <div id="root"></div>
 </body>
 </html>
