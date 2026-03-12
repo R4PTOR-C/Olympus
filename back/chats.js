@@ -46,6 +46,7 @@ router.get('/usuario/:id', async (req, res) => {
         const { rows } = await db.query(
             `SELECT
                  c.id AS chat_id,
+                 c.arquivado,
                  u.id AS parceiro_id,
                  u.nome AS parceiro_nome,
                  u.avatar AS parceiro_avatar,
@@ -58,17 +59,17 @@ router.get('/usuario/:id', async (req, res) => {
                      LIMIT 1
                  ) AS ultima_mensagem,
                 (
-                    SELECT criado_em 
-                    FROM mensagens m 
-                    WHERE m.chat_id = c.id 
-                    ORDER BY m.criado_em DESC 
+                    SELECT criado_em
+                    FROM mensagens m
+                    WHERE m.chat_id = c.id
+                    ORDER BY m.criado_em DESC
                     LIMIT 1
                 ) AS ultima_data
              FROM chats c
                  JOIN usuarios u
              ON (u.id = CASE WHEN c.usuario1_id = $1 THEN c.usuario2_id ELSE c.usuario1_id END)
              WHERE c.usuario1_id = $1 OR c.usuario2_id = $1
-             ORDER BY ultima_data DESC NULLS LAST`,
+             ORDER BY c.arquivado ASC, ultima_data DESC NULLS LAST`,
             [id]
         );
 

@@ -74,21 +74,46 @@ router.post('/', async (req, res) => {
     }
 });
 
-// PUT - atualiza perfil de professor
+// PUT - atualiza perfil de professor (upsert)
 router.put('/:usuario_id', async (req, res) => {
     const { usuario_id } = req.params;
-    const { cref, especialidade, experiencia, descricao, preco_hora, cidade, estado, contato } = req.body;
+    const permitidos = ['cref', 'especialidade', 'experiencia', 'descricao', 'preco_hora', 'cidade', 'estado', 'contato'];
+
+    const campos = [];
+    const values = [];
+    let idx = 1;
+
+    for (const campo of permitidos) {
+        if (req.body[campo] !== undefined) {
+            campos.push(`${campo} = $${idx}`);
+            values.push(req.body[campo]);
+            idx++;
+        }
+    }
+
+    if (campos.length === 0) {
+        return res.status(400).json({ error: 'Nenhum campo válido enviado.' });
+    }
 
     try {
-        const result = await db.query(`
-      UPDATE professores
-      SET cref = $1, especialidade = $2, experiencia = $3, descricao = $4, preco_hora = $5, cidade = $6, estado = $7, contato = $8
-      WHERE usuario_id = $9
-      RETURNING *;
-    `, [cref, especialidade, experiencia, descricao, preco_hora, cidade, estado, contato, usuario_id]);
+        // Verifica se já existe
+        const existe = await db.query('SELECT id FROM professores WHERE usuario_id = $1', [usuario_id]);
 
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: 'Professor não encontrado' });
+        let result;
+        if (existe.rowCount === 0) {
+            // Cria o registro se não existir
+            result = await db.query(
+                `INSERT INTO professores (usuario_id, ${permitidos.filter(c => req.body[c] !== undefined).join(', ')})
+                 VALUES ($1, ${values.map((_, i) => `$${i + 2}`).join(', ')})
+                 RETURNING *`,
+                [usuario_id, ...values]
+            );
+        } else {
+            values.push(usuario_id);
+            result = await db.query(
+                `UPDATE professores SET ${campos.join(', ')} WHERE usuario_id = $${idx} RETURNING *`,
+                values
+            );
         }
 
         res.json({ message: 'Perfil atualizado com sucesso', professor: result.rows[0] });

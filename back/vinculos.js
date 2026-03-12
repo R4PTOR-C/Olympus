@@ -184,11 +184,6 @@ router.patch('/:id/aceitar', async (req, res) => {
         const vinculo = rows[0];
 
         await db.query(
-            `UPDATE usuarios SET procurando = FALSE WHERE id = ANY($1)`,
-            [[vinculo.professor_id, vinculo.aluno_id]]
-        );
-
-        await db.query(
             `UPDATE vinculos SET status = 'encerrado'
              WHERE aluno_id = $1 AND status = 'pendente' AND id != $2`,
             [vinculo.aluno_id, id]
@@ -243,15 +238,33 @@ router.patch('/:id/recusar', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     try {
+        await db.query('BEGIN');
+
         const { rows } = await db.query(
             `UPDATE vinculos SET status = 'encerrado'
              WHERE id = $1 AND status = 'ativo'
              RETURNING *`,
             [id]
         );
-        if (!rows.length) return res.status(404).json({ error: 'Vínculo não encontrado.' });
+        if (!rows.length) {
+            await db.query('ROLLBACK');
+            return res.status(404).json({ error: 'Vínculo não encontrado.' });
+        }
+
+        const { professor_id, aluno_id } = rows[0];
+
+        // Arquiva o chat entre os dois
+        await db.query(
+            `UPDATE chats SET arquivado = TRUE
+             WHERE (usuario1_id = $1 AND usuario2_id = $2)
+                OR (usuario1_id = $2 AND usuario2_id = $1)`,
+            [professor_id, aluno_id]
+        );
+
+        await db.query('COMMIT');
         res.json({ message: 'Vínculo encerrado.' });
     } catch (err) {
+        await db.query('ROLLBACK').catch(() => {});
         console.error('Erro ao encerrar vínculo:', err);
         res.status(500).json({ error: 'Erro interno.' });
     }
@@ -314,6 +327,37 @@ router.get('/meus-alunos/:professorId', async (req, res) => {
         res.json(rows);
     } catch (err) {
         console.error('Erro ao buscar alunos:', err);
+        res.status(500).json({ error: 'Erro interno.' });
+    }
+});
+
+// ─────────────────────────────────────────
+// HISTÓRICO DE PROFESSORES (aluno)
+// GET /vinculos/historico-professor/:alunoId
+// ─────────────────────────────────────────
+router.get('/historico-professor/:alunoId', async (req, res) => {
+    const { alunoId } = req.params;
+    try {
+        const { rows } = await db.query(`
+            SELECT
+                v.id AS vinculo_id,
+                v.created_at,
+                u.id, u.nome, u.avatar,
+                p.especialidade, p.cidade, p.estado,
+                c.id AS chat_id
+            FROM vinculos v
+            JOIN usuarios u ON u.id = v.professor_id
+            LEFT JOIN professores p ON p.usuario_id = v.professor_id
+            LEFT JOIN chats c ON (
+                (c.usuario1_id = v.professor_id AND c.usuario2_id = v.aluno_id) OR
+                (c.usuario1_id = v.aluno_id     AND c.usuario2_id = v.professor_id)
+            )
+            WHERE v.aluno_id = $1 AND v.status = 'encerrado'
+            ORDER BY v.created_at DESC
+        `, [alunoId]);
+        res.json(rows);
+    } catch (err) {
+        console.error('Erro ao buscar histórico de professores:', err);
         res.status(500).json({ error: 'Erro interno.' });
     }
 });

@@ -28,32 +28,35 @@ export default function ProcurarProfessor() {
     const { userId } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const [aba,            setAba]            = useState('disponiveis'); // 'disponiveis' | 'pendentes'
+    const [aba,            setAba]            = useState('disponiveis'); // 'disponiveis' | 'pendentes' | 'historico'
     const [procurando,     setProcurando]     = useState(false);
     const [meuProfessor,   setMeuProfessor]   = useState(null);
     const [professores,    setProfessores]    = useState([]);
     const [pendentes,      setPendentes]      = useState([]);
+    const [historico,      setHistorico]      = useState([]);
     const [pedidosEnviados,setPedidosEnviados]= useState(new Set()); // IDs de professores com pedido enviado
     const [loading,        setLoading]        = useState(true);
 
     const carregar = useCallback(async () => {
         setLoading(true);
         try {
-            const [userRes, profRes, pendRes, vinculoRes] = await Promise.all([
+            const [userRes, profRes, pendRes, vinculoRes, histRes] = await Promise.all([
                 fetch(`${API}/usuarios/${userId}`),
                 fetch(`${API}/vinculos/professores-disponiveis`),
                 fetch(`${API}/vinculos/pendentes/${userId}`),
                 fetch(`${API}/vinculos/meu-professor/${userId}`),
+                fetch(`${API}/vinculos/historico-professor/${userId}`),
             ]);
 
-            const [userData, profsData, pendData, vinculoData] = await Promise.all([
-                userRes.json(), profRes.json(), pendRes.json(), vinculoRes.json(),
+            const [userData, profsData, pendData, vinculoData, histData] = await Promise.all([
+                userRes.json(), profRes.json(), pendRes.json(), vinculoRes.json(), histRes.json(),
             ]);
 
             setProcurando(userData.procurando || false);
             setProfessores(profsData);
             setPendentes(pendData);
             setMeuProfessor(vinculoData);
+            setHistorico(histData);
 
             // Marca professores que já têm pedido enviado por mim
             const enviados = new Set(
@@ -72,12 +75,15 @@ export default function ProcurarProfessor() {
     useEffect(() => { carregar(); }, [carregar]);
 
     const toggleProcurando = async () => {
+        const novoValor = !procurando;
+        setProcurando(novoValor);
         try {
-            const res  = await fetch(`${API}/vinculos/procurando/${userId}`, { method: 'PATCH' });
+            const res = await fetch(`${API}/vinculos/procurando/${userId}`, { method: 'PATCH' });
             const data = await res.json();
             setProcurando(data.procurando);
         } catch (err) {
             console.error('Erro ao atualizar procurando:', err);
+            setProcurando(!novoValor); // reverte em caso de erro
         }
     };
 
@@ -188,8 +194,8 @@ export default function ProcurarProfessor() {
                 </div>
             )}
 
-            {/* ── TABS (só se não tiver professor) ── */}
-            {!meuProfessor && (
+            {/* ── TABS ── */}
+            {(
                 <>
                     <div className="vk-tabs">
                         <button
@@ -208,6 +214,15 @@ export default function ProcurarProfessor() {
                             Pedidos
                             {pendentesRecebidos.length > 0 && (
                                 <span className="vk-tab-badge">{pendentesRecebidos.length}</span>
+                            )}
+                        </button>
+                        <button
+                            className={`vk-tab${aba === 'historico' ? ' active' : ''}`}
+                            onClick={() => setAba('historico')}
+                        >
+                            Histórico
+                            {historico.length > 0 && (
+                                <span className="vk-tab-badge neutral">{historico.length}</span>
                             )}
                         </button>
                     </div>
@@ -261,7 +276,9 @@ export default function ProcurarProfessor() {
                                             {prof.experiencia && <span>{prof.experiencia} anos exp.</span>}
                                             {prof.preco_hora && <><span className="vk-meta-sep" /><span>R$ {prof.preco_hora}/h</span></>}
                                         </div>
-                                        {pedidosEnviados.has(prof.id) ? (
+                                        {meuProfessor ? (
+                                            <button className="vk-btn-pending" disabled>Já vinculado</button>
+                                        ) : pedidosEnviados.has(prof.id) ? (
                                             <button className="vk-btn-pending" disabled>Enviado</button>
                                         ) : (
                                             <button className="vk-btn-connect" onClick={() => enviarPedido(prof.id)}>
@@ -271,6 +288,54 @@ export default function ProcurarProfessor() {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    )}
+
+                    {/* ── ABA: HISTÓRICO ── */}
+                    {!loading && aba === 'historico' && (
+                        <div className="vk-list">
+                            {historico.length === 0 ? (
+                                <div className="vk-empty">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                    Nenhum professor anterior.
+                                </div>
+                            ) : historico.map(h => {
+                                const avatarUrl = h.avatar?.startsWith('http') ? h.avatar : h.avatar ? `${API}/${h.avatar}` : null;
+                                return (
+                                    <div key={h.vinculo_id} className="vk-prof-card">
+                                        <div className="vk-prof-hero">
+                                            <div className="vk-prof-avatar" style={{ opacity: 0.7 }}>
+                                                {avatarUrl
+                                                    ? <img src={avatarUrl} alt={h.nome} />
+                                                    : <AvatarPlaceholder size={58} />}
+                                            </div>
+                                            <div className="vk-prof-info">
+                                                <p className="vk-prof-name" style={{ color: 'var(--h-text-muted)' }}>{h.nome}</p>
+                                                <div className="vk-prof-tags">
+                                                    {h.especialidade && <span className="vk-tag neutral">{h.especialidade}</span>}
+                                                    {h.cidade && <span className="vk-tag neutral">{h.cidade} – {h.estado}</span>}
+                                                </div>
+                                                <p style={{ fontSize: '0.65rem', color: 'var(--h-text-dim)', marginTop: 4 }}>
+                                                    Vínculo encerrado em {formatarDataExibicao(h.created_at?.split('T')[0])}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {h.chat_id && (
+                                            <div className="vk-prof-body">
+                                                <div />
+                                                <button
+                                                    className="vk-btn-connect"
+                                                    onClick={() => navigate(`/chat/${h.chat_id}`)}
+                                                >
+                                                    Ver mensagens
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
 

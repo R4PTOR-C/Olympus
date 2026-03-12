@@ -131,6 +131,11 @@
     color: var(--h-text-dim);
 }
 
+.vk-tab-badge.neutral {
+    background: var(--h-surface-3);
+    color: var(--h-text-dim);
+}
+
 /* ── LISTA DE CARDS ── */
 .vk-list {
     display: flex;

@@ -32,6 +32,7 @@ import './imgs/muscle.gif';
 import HerculesChat from "./views/hercules/HerculesChat";
 import ProfessoresList from "./views/professores/ProfessoresList";
 import ProcurarProfessor from "./views/professores/ProcurarProfessor";
+import ProfessoresEdit from "./views/professores/Professores_edit";
 import ChatView from "./views/chat/ChatView";
 import ChatsList from "./views/chat/ChatsList";
 
@@ -112,6 +113,7 @@ function AppContent() {
                 <Route path="/hercules" element={<HerculesChat />} />
                 <Route path="/professores" element={<ProfessoresList />} />
                 <Route path="/procurar-professor" element={<ProtectedRoute><ProcurarProfessor /></ProtectedRoute>} />
+                <Route path="/professores/edit/:id" element={<ProtectedRoute><ProfessoresEdit /></ProtectedRoute>} />
                 <Route path="/chat/:chatId" element={<ChatView />} />
                 <Route path="/meus-chats" element={<ChatsList />} />
 

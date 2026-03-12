@@ -65,12 +65,15 @@ const Usuarios_index = () => {
     useEffect(() => { carregar(); }, [carregar]);
 
     const toggleProcurando = async () => {
+        const novoValor = !procurando;
+        setProcurando(novoValor);
         try {
-            const res  = await fetch(`${API}/vinculos/procurando/${userId}`, { method: 'PATCH' });
+            const res = await fetch(`${API}/vinculos/procurando/${userId}`, { method: 'PATCH' });
             const data = await res.json();
             setProcurando(data.procurando);
         } catch (err) {
             console.error('Erro ao atualizar procurando:', err);
+            setProcurando(!novoValor); // reverte em caso de erro
         }
     };
 
