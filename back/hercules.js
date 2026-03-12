@@ -185,10 +185,10 @@ async function buscarDiasLivres(usuarioId) {
     return diasSemana.filter((dia) => !diasOcupados.has(dia));
 }
 
-async function salvarTreinoDoHercules({ usuarioId, tipos, exerciciosIds, dia }) {
+async function salvarTreinoDoHercules({ usuarioId, tipos, exerciciosIds, dia, nome }) {
     const grupoPrincipal   = tipos[0] || "Geral";
     const gruposAuxiliares = tipos.slice(1);
-    const nomeTreino = tipos.length > 0 ? `Treino de ${tipos.join(" + ")}` : "Treino sugerido pelo Hércules";
+    const nomeTreino = nome || (tipos.length > 0 ? `Treino de ${tipos.join(" + ")}` : "Treino sugerido pelo Hércules");
     const descricaoCurta = montarDescricaoTreino(tipos);
     const diaBanco = formatarDiaParaBanco(dia);
     const imagemSelecionada = grupoParaImagem[grupoPrincipal] || "default.png";
@@ -232,6 +232,7 @@ router.post("/chat", async (req, res) => {
             const tiposPendentes = Array.isArray(req.body.tipo) ? req.body.tipo : [];
             const exerciciosPendentes = Array.isArray(req.body.exercicios_ids) ? req.body.exercicios_ids : [];
             const descricaoTreino = req.body.texto_treino || req.body.texto || "";
+            const nomePendente = req.body.nome_treino || null;
             const mensagemNormalizada = (mensagem || "")
                 .trim()
                 .toLowerCase()
@@ -272,7 +273,8 @@ router.post("/chat", async (req, res) => {
                     usuarioId,
                     tipos: tiposPendentes,
                     exerciciosIds: exerciciosPendentes,
-                    dia: diaPreConfirmado
+                    dia: diaPreConfirmado,
+                    nome: nomePendente
                 });
 
                 return res.json({
@@ -357,7 +359,8 @@ router.post("/chat", async (req, res) => {
                 usuarioId,
                 tipos: tiposPendentes,
                 exerciciosIds: exerciciosPendentes,
-                dia: diaEscolhido
+                dia: diaEscolhido,
+                nome: nomePendente
             });
 
             return res.json({
@@ -392,8 +395,8 @@ Mas depois disso, deve sempre **redirecionar a conversa** para o tema de treinos
 Se o usuário pedir algo totalmente fora de escopo, responda:
 {"acao":"outro","tipo":[],"dia":null,"texto":"⚠️ Só posso responder sobre treinos e exercícios."}
 
-⚠️ Se a intenção não mencionar nenhum grupo muscular (ex: Peitoral, Bíceps, etc.), 
-NUNCA use "acao": "criar_treino". 
+⚠️ Se a intenção não mencionar nenhum grupo muscular (ex: Peitoral, Bíceps, etc.),
+NUNCA use "acao": "criar_treino".
 Nesse caso, use:
 {
   "acao": "outro",
@@ -401,6 +404,12 @@ Nesse caso, use:
   "dia": null,
   "texto": "mensagem amigável ou de saudação"
 }
+
+⚠️ FULL BODY / CORPO TODO / TODOS OS GRUPOS:
+Quando o usuário pedir treino "full body", "corpo todo", "completo", "todos os grupos", "todos os músculos" ou qualquer variação, use TODOS os grupos principais:
+"tipo": ["Peitoral", "Costas", "Ombros", "Bíceps", "Tríceps", "Pernas", "Abdômen"]
+E distribua as quantidades para que o total não ultrapasse 9 exercícios (ex: 1 ou 2 por grupo).
+Exemplo: {"Peitoral": 2, "Costas": 2, "Ombros": 1, "Bíceps": 1, "Tríceps": 1, "Pernas": 1, "Abdômen": 1}
 
 
 O usuário pode pedir:
@@ -438,6 +447,7 @@ Formato fixo SEMPRE:
   "acao": "criar_treino" | "consultar_treino" | "editar_treino" | "dicas_exercicio" | "outro",
   "tipo": ["Peitoral", "Bíceps"] | [],
   "quantidade": {"Peitoral": 3, "Bíceps": 2},
+  "nome": "Treino Full Body",
   "dia": "domingo" | "segunda" | "terça" | "quarta" | "quinta" | "sexta" | "sábado" | null,
   "texto": "string amigável"
 }
@@ -445,6 +455,17 @@ Formato fixo SEMPRE:
 ⚠️ O campo "quantidade" é obrigatório quando "acao" = "criar_treino".
 ⚠️ "quantidade" deve ter uma chave para cada grupo em "tipo", com o número de exercícios pedidos.
 ⚠️ Se o usuário não especificou quantidade, use 4 como padrão por grupo.
+
+⚠️ O campo "nome" é obrigatório quando "acao" = "criar_treino". É o nome do treino, curto e descritivo.
+Exemplos de nomes inteligentes:
+- Todos os grupos → "Treino Full Body"
+- Peitoral + Costas + Ombros + Bíceps + Tríceps → "Treino Superior Completo"
+- Pernas + Panturrilha → "Treino Inferior Completo"
+- Pernas sozinho → "Treino de Pernas"
+- Peitoral + Tríceps → "Treino de Peitoral e Tríceps"
+- Costas + Bíceps → "Treino de Costas e Bíceps"
+- Abdômen sozinho → "Treino de Abdômen"
+- Se o usuário sugeriu um nome, use esse nome.
 
 ⚠️ Sempre responda em **JSON válido** no formato especificado abaixo.
 ⚠️ Nunca responda em texto livre, apenas JSON.
@@ -454,6 +475,7 @@ Formato fixo de resposta (sempre JSON):
   "acao": "criar_treino" | "consultar_treino" | "editar_treino" | "outro",
   "tipo": ["Peitoral", "Bíceps"] | [],
   "quantidade": {"Peitoral": 3, "Bíceps": 2},
+  "nome": "Treino Full Body",
   "dia": "domingo" | "segunda" | "terça" | "quarta" | "quinta" | "sexta" | "sábado" | null,
   "texto": "string amigável"
 }
@@ -521,6 +543,16 @@ Resposta: {"dia": "sábado"}  ✅
 
         // 🔹 2. Tratar ações
         if (dados.acao === "criar_treino") {
+            // Expandir "Full Body" / "Corpo Todo" / "Geral" para todos os grupos
+            const FULL_BODY_ALIASES = ["full body", "fullbody", "corpo todo", "completo", "geral", "todos", "todos os grupos"];
+            const isFullBody = dados.tipo.some(g =>
+                FULL_BODY_ALIASES.includes(g.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+            );
+            if (isFullBody) {
+                dados.tipo = ["Peitoral", "Costas", "Ombros", "Bíceps", "Tríceps", "Pernas", "Abdômen"];
+                dados.quantidade = { Peitoral: 2, Costas: 2, Ombros: 1, Bíceps: 1, Tríceps: 1, Pernas: 1, "Abdômen": 1 };
+            }
+
             const tiposNormalizados = dados.tipo
                 .map((g) => normalizarGrupoMuscular(g))
                 .filter(Boolean);
@@ -577,6 +609,7 @@ Resposta: {"dia": "sábado"}  ✅
                         ...dados,
                         tipo: tiposNormalizados,
                         exercicios_ids,
+                        nome_treino: dados.nome || null,
                         texto_treino: dados.texto,
                         aguardando_agendamento_treino: diasLivres.length > 0,
                         dias_livres: diasLivresFormatados,
@@ -590,6 +623,7 @@ Resposta: {"dia": "sábado"}  ✅
                     ...dados,
                     tipo: tiposNormalizados,
                     exercicios_ids,
+                    nome_treino: dados.nome || null,
                     texto_treino: dados.texto,
                     aguardando_agendamento_treino: true,
                     dia_confirmado: diaDoGPT,
@@ -608,6 +642,7 @@ Resposta: {"dia": "sábado"}  ✅
                 ...dados,
                 tipo: tiposNormalizados,
                 exercicios_ids,
+                nome_treino: dados.nome || null,
                 texto_treino: dados.texto,
                 aguardando_agendamento_treino: diasLivres.length > 0,
                 dias_livres: diasLivresFormatados,
