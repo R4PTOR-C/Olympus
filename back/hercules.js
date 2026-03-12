@@ -440,13 +440,14 @@ Limite de exercícios por treino: 9 no máximo. Só ultrapasse se o usuário exp
 ⚠️ Regras para formatação de treino:
 - Cada grupo muscular deve ser título em maiúscula
 - Cada exercício deve ser listado com hífen (-)
-- Pode incluir séries/reps se fizer sentido
+- SEMPRE inclua séries e repetições recomendadas por grupo muscular no campo "series_repeticoes"
 
 Formato fixo SEMPRE:
 {
   "acao": "criar_treino" | "consultar_treino" | "editar_treino" | "dicas_exercicio" | "outro",
   "tipo": ["Peitoral", "Bíceps"] | [],
   "quantidade": {"Peitoral": 3, "Bíceps": 2},
+  "series_repeticoes": {"Peitoral": "4x10", "Bíceps": "3x12"},
   "nome": "Treino Full Body",
   "dia": "domingo" | "segunda" | "terça" | "quarta" | "quinta" | "sexta" | "sábado" | null,
   "texto": "string amigável"
@@ -456,6 +457,15 @@ Formato fixo SEMPRE:
 ⚠️ "quantidade" deve ter uma chave para cada grupo em "tipo", com o número de exercícios pedidos.
 ⚠️ Se o usuário não especificou quantidade, use 4 como padrão por grupo.
 
+⚠️ O campo "series_repeticoes" é obrigatório quando "acao" = "criar_treino".
+⚠️ "series_repeticoes" deve ter uma chave para cada grupo em "tipo" com a recomendação no formato "SxR" (ex: "4x10").
+⚠️ Use referências baseadas no grupo muscular:
+- Peitoral, Costas, Ombros, Pernas: 4x10 a 4x12
+- Bíceps, Tríceps, Panturrilha: 3x12 a 3x15
+- Abdômen: 3x20 a 4x20
+⚠️ Se o usuário não especificou séries/reps, use valores padrão adequados ao grupo.
+
+⚠️ O campo "series_repeticoes" também deve ser incluído no segundo bloco de formato abaixo.
 ⚠️ O campo "nome" é obrigatório quando "acao" = "criar_treino". É o nome do treino, curto e descritivo.
 Exemplos de nomes inteligentes:
 - Todos os grupos → "Treino Full Body"
@@ -475,6 +485,7 @@ Formato fixo de resposta (sempre JSON):
   "acao": "criar_treino" | "consultar_treino" | "editar_treino" | "outro",
   "tipo": ["Peitoral", "Bíceps"] | [],
   "quantidade": {"Peitoral": 3, "Bíceps": 2},
+  "series_repeticoes": {"Peitoral": "4x10", "Bíceps": "3x12"},
   "nome": "Treino Full Body",
   "dia": "domingo" | "segunda" | "terça" | "quarta" | "quinta" | "sexta" | "sábado" | null,
   "texto": "string amigável"
@@ -551,6 +562,7 @@ Resposta: {"dia": "sábado"}  ✅
             if (isFullBody) {
                 dados.tipo = ["Peitoral", "Costas", "Ombros", "Bíceps", "Tríceps", "Pernas", "Abdômen"];
                 dados.quantidade = { Peitoral: 2, Costas: 2, Ombros: 1, Bíceps: 1, Tríceps: 1, Pernas: 1, "Abdômen": 1 };
+                dados.series_repeticoes = { Peitoral: "4x10", Costas: "4x10", Ombros: "3x12", Bíceps: "3x12", Tríceps: "3x12", Pernas: "4x12", "Abdômen": "3x20" };
             }
 
             const tiposNormalizados = dados.tipo
@@ -595,9 +607,15 @@ Resposta: {"dia": "sábado"}  ✅
             const diaDoGPT = dados.dia ? normalizarDia(dados.dia) : null;
 
             // Monta lista de exercícios reais para todos os casos
-            const listaExerciciosReais = todosExercicios.map(g =>
-                `**${g.grupo.charAt(0).toUpperCase() + g.grupo.slice(1)}**\n${g.exercicios.map(e => `- ${e}`).join('\n')}`
-            ).join('\n\n');
+            const seriesRepeticoes = dados.series_repeticoes || {};
+            const listaExerciciosReais = todosExercicios.map(g => {
+                const grupoCapitalizado = g.grupo.charAt(0).toUpperCase() + g.grupo.slice(1);
+                // Busca séries/reps pelo grupo capitalizado ou original
+                const srKey = Object.keys(seriesRepeticoes).find(k => k.toLowerCase() === g.grupo.toLowerCase());
+                const sr = srKey ? seriesRepeticoes[srKey] : null;
+                const header = sr ? `**${grupoCapitalizado}** _(${sr})_` : `**${grupoCapitalizado}**`;
+                return `${header}\n${g.exercicios.map(e => `- ${e}`).join('\n')}`;
+            }).join('\n\n');
             const textoComExercicios = listaExerciciosReais
                 ? `Aqui está o treino montado:\n\n${listaExerciciosReais}`
                 : dados.texto;
