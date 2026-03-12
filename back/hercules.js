@@ -437,17 +437,23 @@ Formato fixo SEMPRE:
 {
   "acao": "criar_treino" | "consultar_treino" | "editar_treino" | "dicas_exercicio" | "outro",
   "tipo": ["Peitoral", "Bíceps"] | [],
+  "quantidade": {"Peitoral": 3, "Bíceps": 2},
   "dia": "domingo" | "segunda" | "terça" | "quarta" | "quinta" | "sexta" | "sábado" | null,
   "texto": "string amigável"
 }
 
-⚠️ Sempre responda em **JSON válido** no formato especificado abaixo. 
+⚠️ O campo "quantidade" é obrigatório quando "acao" = "criar_treino".
+⚠️ "quantidade" deve ter uma chave para cada grupo em "tipo", com o número de exercícios pedidos.
+⚠️ Se o usuário não especificou quantidade, use 4 como padrão por grupo.
+
+⚠️ Sempre responda em **JSON válido** no formato especificado abaixo.
 ⚠️ Nunca responda em texto livre, apenas JSON.
 
 Formato fixo de resposta (sempre JSON):
 {
   "acao": "criar_treino" | "consultar_treino" | "editar_treino" | "outro",
   "tipo": ["Peitoral", "Bíceps"] | [],
+  "quantidade": {"Peitoral": 3, "Bíceps": 2},
   "dia": "domingo" | "segunda" | "terça" | "quarta" | "quinta" | "sexta" | "sábado" | null,
   "texto": "string amigável"
 }
@@ -524,9 +530,12 @@ Resposta: {"dia": "sábado"}  ✅
             let exercicios_ids = [];
 
             for (const grupo of grupos) {
+                const tipoOriginal = tiposNormalizados[grupos.indexOf(grupo)];
+                const qtd = (dados.quantidade && dados.quantidade[tipoOriginal]) || 4;
+
                 const exerciciosRes = await pool.query(
-                    "SELECT id, nome_exercicio FROM exercicios WHERE LOWER(grupo_muscular) = LOWER($1) LIMIT 5",
-                    [grupo]
+                    "SELECT id, nome_exercicio FROM exercicios WHERE LOWER(grupo_muscular) = LOWER($1) ORDER BY RANDOM() LIMIT $2",
+                    [grupo, qtd]
                 );
 
                 if (exerciciosRes.rows.length > 0) {
@@ -553,6 +562,14 @@ Resposta: {"dia": "sábado"}  ✅
             // Se o GPT já retornou um dia específico, tenta usá-lo direto
             const diaDoGPT = dados.dia ? normalizarDia(dados.dia) : null;
 
+            // Monta lista de exercícios reais para todos os casos
+            const listaExerciciosReais = todosExercicios.map(g =>
+                `**${g.grupo.charAt(0).toUpperCase() + g.grupo.slice(1)}**\n${g.exercicios.map(e => `- ${e}`).join('\n')}`
+            ).join('\n\n');
+            const textoComExercicios = listaExerciciosReais
+                ? `Aqui está o treino montado:\n\n${listaExerciciosReais}`
+                : dados.texto;
+
             if (diaDoGPT && diasSemana.includes(diaDoGPT)) {
                 if (!diasLivres.includes(diaDoGPT)) {
                     // Dia ocupado — alerta e mostra dias livres
@@ -563,7 +580,7 @@ Resposta: {"dia": "sábado"}  ✅
                         texto_treino: dados.texto,
                         aguardando_agendamento_treino: diasLivres.length > 0,
                         dias_livres: diasLivresFormatados,
-                        texto: `⚠️ ${nomeUsuario}, ${formatarDiaParaBanco(diaDoGPT)} já está ocupado.${diasLivres.length > 0 ? ` Dias livres: ${diasLivresFormatados.join(", ")}.` : " Você não tem dias livres no momento."}`,
+                        texto: `${textoComExercicios}\n\n⚠️ ${nomeUsuario}, ${formatarDiaParaBanco(diaDoGPT)} já está ocupado.${diasLivres.length > 0 ? ` Dias livres: ${diasLivresFormatados.join(", ")}.` : " Você não tem dias livres no momento."}`,
                         raw
                     });
                 }
@@ -577,15 +594,15 @@ Resposta: {"dia": "sábado"}  ✅
                     aguardando_agendamento_treino: true,
                     dia_confirmado: diaDoGPT,
                     confirmado: false,
-                    texto: `${dados.texto}\n\n📅 Vou salvar esse treino em ${formatarDiaParaBanco(diaDoGPT)}. Confirma?`,
+                    texto: `${textoComExercicios}\n\n📅 Vou salvar esse treino em ${formatarDiaParaBanco(diaDoGPT)}. Confirma?`,
                     raw
                 });
             }
 
             // Sem dia especificado — pede para o usuário escolher
             const textoAgendamento = diasLivres.length > 0
-                ? `${dados.texto}\n\n📅 Se quiser que eu salve esse treino, me diga um destes dias livres: ${diasLivresFormatados.join(", ")}.`
-                : `${dados.texto}\n\n⚠️ Você não tem dias livres no momento para eu salvar esse treino.`;
+                ? `${textoComExercicios}\n\n📅 Se quiser que eu salve esse treino, me diga um destes dias livres: ${diasLivresFormatados.join(", ")}.`
+                : `${textoComExercicios}\n\n⚠️ Você não tem dias livres no momento para eu salvar esse treino.`;
 
             return res.json({
                 ...dados,
