@@ -2,7 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import CropAvatar from '../components/CropAvatar';
 import ModalSucesso from '../components/ModalSucesso';
+import CalendarioData, { normalizarData } from '../components/CalendarioData';
 import '../../styles/Auth.css';
+import '../../styles/ModalEdicaoCampo.css';
+
+const formatarDataExibicao = (iso) => {
+    if (!iso) return null;
+    return new Date(iso + 'T12:00:00').toLocaleDateString('pt-BR', {
+        day: '2-digit', month: 'long', year: 'numeric',
+    });
+};
 
 function Professor_new() {
     const navigate = useNavigate();
@@ -32,6 +41,7 @@ function Professor_new() {
     const [showCropper,  setShowCropper]  = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [showModal,    setShowModal]    = useState(false);
+    const [calAberto,    setCalAberto]    = useState(false);
 
     const [estadosIBGE, setEstadosIBGE] = useState([]);
     const [cidadesIBGE, setCidadesIBGE] = useState([]);
@@ -275,14 +285,23 @@ function Professor_new() {
                             </div>
 
                             <div className="auth-field">
-                                <label className="auth-label" htmlFor="nascimento-prof">Nascimento</label>
-                                <input
-                                    id="nascimento-prof"
-                                    type="date"
+                                <label className="auth-label">Nascimento</label>
+                                <button
+                                    type="button"
                                     className="auth-input"
-                                    value={dataNascimento}
-                                    onChange={e => setDataNascimento(e.target.value)}
-                                />
+                                    style={{ textAlign: 'left', cursor: 'pointer', color: dataNascimento ? 'inherit' : 'rgba(200,209,208,0.2)' }}
+                                    onClick={() => setCalAberto(v => !v)}
+                                >
+                                    {dataNascimento ? formatarDataExibicao(normalizarData(dataNascimento)) : 'Selecionar data'}
+                                </button>
+                                {calAberto && (
+                                    <div style={{ marginTop: 8 }}>
+                                        <CalendarioData
+                                            value={normalizarData(dataNascimento)}
+                                            onChange={v => { setDataNascimento(v); setCalAberto(false); }}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
