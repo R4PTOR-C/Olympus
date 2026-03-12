@@ -24,9 +24,8 @@ router.get('/treinos/:id', async (req, res) => {
 // Rota para criar um treino para um aluno
 router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
     const { usuarioId } = req.params;
-    const { nome_treino, descricao, dia_semana, grupo_muscular } = req.body;
+    const { nome_treino, descricao, dia_semana, grupo_muscular, grupos_auxiliares } = req.body;
 
-    // Mapeamento de grupos musculares para imagens
     const grupoParaImagem = {
         Peitoral: 'peito.png',
         Costas: 'costas.png',
@@ -39,14 +38,14 @@ router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
     };
 
     try {
-        // Obter a imagem correspondente ou usar a padrão
         const imagemSelecionada = grupoParaImagem[grupo_muscular] || 'default.png';
+        const auxiliares = Array.isArray(grupos_auxiliares) ? grupos_auxiliares : [];
 
         const result = await db.query(
-            'INSERT INTO treinos (usuario_id, nome_treino, descricao, dia_semana, grupo_muscular, imagem) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [usuarioId, nome_treino, descricao, dia_semana, grupo_muscular, imagemSelecionada]
+            `INSERT INTO treinos (usuario_id, nome_treino, descricao, dia_semana, grupo_muscular, imagem, grupos_auxiliares)
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+            [usuarioId, nome_treino, descricao, dia_semana, grupo_muscular, imagemSelecionada, auxiliares]
         );
-
 
         res.status(201).json(result.rows[0]);
     } catch (error) {
@@ -57,15 +56,25 @@ router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
 
 router.put('/treinos/:treinoId', async (req, res) => {
     const { treinoId } = req.params;
-    const { nome_treino, descricao, dia_semana, grupo_muscular } = req.body;
+    const { nome_treino, descricao, dia_semana, grupo_muscular, grupos_auxiliares } = req.body;
+
+    const grupoParaImagem = {
+        Peitoral: 'peito.png', Costas: 'costas.png', Ombros: 'ombros.png',
+        Bíceps: 'biceps.png', Tríceps: 'triceps.png', Pernas: 'perna.png',
+        Panturrilha: 'panturrilha.png', Abdômen: 'abdomen.png',
+    };
 
     try {
+        const imagemSelecionada = grupoParaImagem[grupo_muscular] || 'default.png';
+        const auxiliares = Array.isArray(grupos_auxiliares) ? grupos_auxiliares : [];
+
         const result = await db.query(
             `UPDATE treinos
-             SET nome_treino = $1, descricao = $2, dia_semana = $3, grupo_muscular = $4
-             WHERE id = $5
-                 RETURNING *`,
-            [nome_treino, descricao, dia_semana, grupo_muscular, treinoId]
+             SET nome_treino = $1, descricao = $2, dia_semana = $3, grupo_muscular = $4,
+                 imagem = $5, grupos_auxiliares = $6
+             WHERE id = $7
+             RETURNING *`,
+            [nome_treino, descricao, dia_semana, grupo_muscular, imagemSelecionada, auxiliares, treinoId]
         );
 
         if (result.rowCount === 0) {

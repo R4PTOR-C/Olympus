@@ -191,15 +191,16 @@ function Home() {
                                                 </div>
                                             </div>
 
-                                            {exerciciosTreinoDoDia.length > 0 && (
-                                                <div className="h-ex-tags">
-                                                    {exerciciosTreinoDoDia.map(ex => (
-                                                        <span className="h-ex-tag" key={ex.exercicio_id}>
-                                                            {ex.nome_exercicio}
+                                            {Array.isArray(treinoDoDia.grupos_auxiliares) && treinoDoDia.grupos_auxiliares.length > 0 && (
+                                                <div className="h-ex-tags" style={{ marginTop: 8 }}>
+                                                    {treinoDoDia.grupos_auxiliares.map(g => (
+                                                        <span key={g} className="h-ex-tag" style={{ opacity: 0.75 }}>
+                                                            {g}
                                                         </span>
                                                     ))}
                                                 </div>
                                             )}
+
 
                                             <div className="h-cta-row">
                                                 <button className="h-btn-primary">

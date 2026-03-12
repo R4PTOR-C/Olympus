@@ -186,7 +186,8 @@ async function buscarDiasLivres(usuarioId) {
 }
 
 async function salvarTreinoDoHercules({ usuarioId, tipos, exerciciosIds, dia }) {
-    const grupoPrincipal = tipos[0] || "Geral";
+    const grupoPrincipal   = tipos[0] || "Geral";
+    const gruposAuxiliares = tipos.slice(1);
     const nomeTreino = tipos.length > 0 ? `Treino de ${tipos.join(" + ")}` : "Treino sugerido pelo Hércules";
     const descricaoCurta = montarDescricaoTreino(tipos);
     const diaBanco = formatarDiaParaBanco(dia);
@@ -196,10 +197,10 @@ async function salvarTreinoDoHercules({ usuarioId, tipos, exerciciosIds, dia }) 
 
     try {
         const treinoRes = await pool.query(
-            `INSERT INTO treinos (usuario_id, nome_treino, descricao, dia_semana, grupo_muscular, imagem)
-             VALUES ($1, $2, $3, $4, $5, $6)
+            `INSERT INTO treinos (usuario_id, nome_treino, descricao, dia_semana, grupo_muscular, imagem, grupos_auxiliares)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
              RETURNING *`,
-            [usuarioId, nomeTreino, descricaoCurta, diaBanco, grupoPrincipal, imagemSelecionada]
+            [usuarioId, nomeTreino, descricaoCurta, diaBanco, grupoPrincipal, imagemSelecionada, gruposAuxiliares]
         );
 
         const treino = treinoRes.rows[0];
@@ -236,6 +237,54 @@ router.post("/chat", async (req, res) => {
                 .toLowerCase()
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "");
+
+            // Dia já estava pré-confirmado (usuário especificou na mensagem original)
+            if (req.body.confirmado && req.body.dia_confirmado) {
+                const diaPreConfirmado = req.body.dia_confirmado;
+                const diasLivres = await buscarDiasLivres(usuarioId);
+
+                if (!diasLivres.includes(diaPreConfirmado)) {
+                    const diasLivresFormatados = formatarListaDias(diasLivres);
+                    return res.json({
+                        acao: "criar_treino",
+                        tipo: tiposPendentes,
+                        dia: null,
+                        exercicios_ids: exerciciosPendentes,
+                        aguardando_agendamento_treino: diasLivres.length > 0,
+                        dias_livres: diasLivresFormatados,
+                        texto: `⚠️ ${nomeUsuario}, ${formatarDiaParaBanco(diaPreConfirmado)} não está mais disponível. Escolha um: ${diasLivresFormatados.join(", ")}.`,
+                        raw: null
+                    });
+                }
+
+                if (exerciciosPendentes.length === 0) {
+                    return res.json({
+                        acao: "outro",
+                        tipo: tiposPendentes,
+                        dia: null,
+                        aguardando_agendamento_treino: false,
+                        texto: `⚠️ ${nomeUsuario}, não encontrei exercícios suficientes para salvar esse treino.`,
+                        raw: null
+                    });
+                }
+
+                const treinoSalvo = await salvarTreinoDoHercules({
+                    usuarioId,
+                    tipos: tiposPendentes,
+                    exerciciosIds: exerciciosPendentes,
+                    dia: diaPreConfirmado
+                });
+
+                return res.json({
+                    acao: "criar_treino",
+                    tipo: tiposPendentes,
+                    dia: diaPreConfirmado,
+                    treino_id: treinoSalvo.id,
+                    aguardando_agendamento_treino: false,
+                    texto: `✅ ${nomeUsuario}, salvei o treino "${treinoSalvo.nome_treino}" em ${treinoSalvo.dia_semana}.`,
+                    raw: null
+                });
+            }
 
             if (["nao", "não", "cancelar", "depois", "agora nao", "agora não"].includes(mensagemNormalizada)) {
                 return res.json({
@@ -498,10 +547,42 @@ Resposta: {"dia": "sábado"}  ✅
                 });
             }
 
-            // 👉 agora devolve direto a resposta bruta do GPT (dados)
             const diasLivres = await buscarDiasLivres(usuarioId);
             const diasLivresFormatados = formatarListaDias(diasLivres);
 
+            // Se o GPT já retornou um dia específico, tenta usá-lo direto
+            const diaDoGPT = dados.dia ? normalizarDia(dados.dia) : null;
+
+            if (diaDoGPT && diasSemana.includes(diaDoGPT)) {
+                if (!diasLivres.includes(diaDoGPT)) {
+                    // Dia ocupado — alerta e mostra dias livres
+                    return res.json({
+                        ...dados,
+                        tipo: tiposNormalizados,
+                        exercicios_ids,
+                        texto_treino: dados.texto,
+                        aguardando_agendamento_treino: diasLivres.length > 0,
+                        dias_livres: diasLivresFormatados,
+                        texto: `⚠️ ${nomeUsuario}, ${formatarDiaParaBanco(diaDoGPT)} já está ocupado.${diasLivres.length > 0 ? ` Dias livres: ${diasLivresFormatados.join(", ")}.` : " Você não tem dias livres no momento."}`,
+                        raw
+                    });
+                }
+
+                // Dia livre — pula a etapa de perguntar, vai direto pra confirmação
+                return res.json({
+                    ...dados,
+                    tipo: tiposNormalizados,
+                    exercicios_ids,
+                    texto_treino: dados.texto,
+                    aguardando_agendamento_treino: true,
+                    dia_confirmado: diaDoGPT,
+                    confirmado: false,
+                    texto: `${dados.texto}\n\n📅 Vou salvar esse treino em ${formatarDiaParaBanco(diaDoGPT)}. Confirma?`,
+                    raw
+                });
+            }
+
+            // Sem dia especificado — pede para o usuário escolher
             const textoAgendamento = diasLivres.length > 0
                 ? `${dados.texto}\n\n📅 Se quiser que eu salve esse treino, me diga um destes dias livres: ${diasLivresFormatados.join(", ")}.`
                 : `${dados.texto}\n\n⚠️ Você não tem dias livres no momento para eu salvar esse treino.`;

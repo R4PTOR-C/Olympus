@@ -15,6 +15,7 @@ const TreinosForm = () => {
     const [descricao, setDescricao] = useState('');
     const [diaSemana, setDiaSemana] = useState('');
     const [grupoMuscular, setGrupoMuscular] = useState('');
+    const [gruposAuxiliares, setGruposAuxiliares] = useState([]);
     const [exercicios, setExercicios] = useState([]);
     const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -62,7 +63,7 @@ const TreinosForm = () => {
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome_treino: nomeTreino, descricao, dia_semana: diaSemana, grupo_muscular: grupoMuscular }),
+                body: JSON.stringify({ nome_treino: nomeTreino, descricao, dia_semana: diaSemana, grupo_muscular: grupoMuscular, grupos_auxiliares: gruposAuxiliares }),
             });
             if (!res.ok) { alert('Erro ao criar treino.'); return; }
             const novoTreino = await res.json();
@@ -169,21 +170,60 @@ const TreinosForm = () => {
                                     <select
                                         className="tf-select"
                                         value={grupoMuscular}
-                                        onChange={e => setGrupoMuscular(e.target.value)}
+                                        onChange={e => {
+                                            setGrupoMuscular(e.target.value);
+                                            setGruposAuxiliares(prev => prev.filter(g => g !== e.target.value));
+                                        }}
                                         required
                                     >
                                         <option value="">Selecione o grupo muscular</option>
-                                        <option value="Peitoral">Peitoral</option>
-                                        <option value="Costas">Costas</option>
-                                        <option value="Ombros">Ombros</option>
-                                        <option value="Bíceps">Bíceps</option>
-                                        <option value="Tríceps">Tríceps</option>
-                                        <option value="Pernas">Pernas</option>
-                                        <option value="Abdômen">Abdômen</option>
+                                        {GRUPOS.map(g => <option key={g} value={g}>{g}</option>)}
                                     </select>
                                     <svg className="tf-select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                         <polyline points="6 9 12 15 18 9"/>
                                     </svg>
+                                </div>
+                            </div>
+
+                            <div className="tf-field">
+                                <label className="tf-label">Grupos Auxiliares</label>
+                                <p style={{ fontSize: '0.72rem', color: 'var(--tf-text-dim, #6b7a99)', marginBottom: 8, marginTop: -4 }}>
+                                    Toque para adicionar ou remover
+                                </p>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                    {GRUPOS.filter(g => g !== grupoMuscular).map(g => {
+                                        const ativo = gruposAuxiliares.includes(g);
+                                        return (
+                                            <button
+                                                key={g}
+                                                type="button"
+                                                onClick={() => setGruposAuxiliares(prev =>
+                                                    ativo ? prev.filter(x => x !== g) : [...prev, g]
+                                                )}
+                                                style={{
+                                                    padding: '6px 14px',
+                                                    borderRadius: 20,
+                                                    border: ativo ? '1.5px solid var(--tf-accent, #4A90D9)' : '1.5px solid var(--tf-border, #2a3550)',
+                                                    background: ativo ? 'rgba(74,144,217,0.15)' : 'var(--tf-surface-2, #151f35)',
+                                                    color: ativo ? 'var(--tf-accent, #4A90D9)' : 'var(--tf-text-muted, #8892aa)',
+                                                    fontSize: '0.8rem',
+                                                    fontFamily: "'Barlow Condensed', sans-serif",
+                                                    fontWeight: 700,
+                                                    letterSpacing: '0.06em',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.15s',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 5,
+                                                }}
+                                            >
+                                                {ativo && (
+                                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                                )}
+                                                {g}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>

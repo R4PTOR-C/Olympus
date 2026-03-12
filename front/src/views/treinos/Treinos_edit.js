@@ -186,6 +186,54 @@ const TreinosEdit = () => {
                             </div>
                         ))}
                     </div>
+
+                    {/* ── Grupos Auxiliares ── */}
+                    <div style={{ padding: '12px 16px 4px' }}>
+                        <span className="tf-field-row-label" style={{ display: 'block', marginBottom: 6 }}>Grupos Auxiliares</span>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                            {GRUPOS.filter(g => g !== treino.grupo_muscular).map(g => {
+                                const auxiliares = Array.isArray(treino.grupos_auxiliares) ? treino.grupos_auxiliares : [];
+                                const ativo = auxiliares.includes(g);
+                                return (
+                                    <button
+                                        key={g}
+                                        type="button"
+                                        onClick={async () => {
+                                            const novos = ativo
+                                                ? auxiliares.filter(x => x !== g)
+                                                : [...auxiliares, g];
+                                            setTreino(prev => ({ ...prev, grupos_auxiliares: novos }));
+                                            await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
+                                                method: 'PUT',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    nome_treino: treino.nome_treino,
+                                                    descricao: treino.descricao,
+                                                    dia_semana: treino.dia_semana,
+                                                    grupo_muscular: treino.grupo_muscular,
+                                                    grupos_auxiliares: novos,
+                                                }),
+                                            });
+                                        }}
+                                        style={{
+                                            padding: '6px 14px', borderRadius: 20,
+                                            border: ativo ? '1.5px solid var(--tf-accent, #4A90D9)' : '1.5px solid var(--tf-border, #2a3550)',
+                                            background: ativo ? 'rgba(74,144,217,0.15)' : 'var(--tf-surface-2, #151f35)',
+                                            color: ativo ? 'var(--tf-accent, #4A90D9)' : 'var(--tf-text-muted, #8892aa)',
+                                            fontSize: '0.8rem', fontFamily: "'Barlow Condensed', sans-serif",
+                                            fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer',
+                                            transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 5,
+                                        }}
+                                    >
+                                        {ativo && (
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                        )}
+                                        {g}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
 
                 {/* ── Exercícios do treino ── */}
