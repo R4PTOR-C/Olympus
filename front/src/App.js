@@ -1,5 +1,6 @@
 // App.js
 import React, { useContext, useEffect } from 'react';
+import { useSwipeNavigation } from './hooks/useSwipeNavigation';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Usuarios_index from './views/usuarios/Usuarios_index';
 import Usuarios_new from "./views/usuarios/Usuarios_new";
@@ -57,6 +58,8 @@ function App() {
 function AppContent() {
     const location = useLocation();
     const { loggedIn, loading, userId, darkMode } = useContext(AuthContext);
+
+    useSwipeNavigation();
 
     // aplica classes no body sempre que mudar rota ou tema
     useEffect(() => {

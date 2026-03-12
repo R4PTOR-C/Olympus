@@ -34,36 +34,36 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
   <title>OLYMPUS</title>
+  <style>
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: #E8EDF5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.35s ease;
+    }
+    #splash.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #splash img {
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
+    }
+    #splash p {
+      margin-top: 20px;
+      font-family: 'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.12em;
+      color: #19222B;
+    }
+  </style>
 </head>
-<style>
-  #splash {
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    background: #E8EDF5;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.35s ease;
-  }
-  #splash.hide {
-    opacity: 0;
-    pointer-events: none;
-  }
-  #splash img {
-    width: 110px;
-    height: 110px;
-    object-fit: contain;
-  }
-  #splash p {
-    margin-top: 20px;
-    font-family: 'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
-    font-size: 2rem;
-    letter-spacing: 0.12em;
-    color: #19222B;
-  }
-</style>
 <body>
 <noscript>You need to enable JavaScript to run this app.</noscript>
 <div id="splash">
