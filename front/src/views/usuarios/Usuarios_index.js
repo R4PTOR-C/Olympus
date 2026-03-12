@@ -1,50 +1,124 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../AuthContext';
 import '../../styles/home.css';
 import '../../styles/AlunosIndex.css';
+import '../../styles/Vinculos.css';
+
+const API = process.env.REACT_APP_API_BASE_URL;
+
+function AvatarPlaceholder({ size = 48 }) {
+    return (
+        <div style={{ color: 'var(--h-text-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width={size * 0.45} height={size * 0.45} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+        </div>
+    );
+}
 
 const Usuarios_index = () => {
-    const [usuarios,         setUsuarios]         = useState([]);
-    const [filteredUsuarios, setFilteredUsuarios] = useState([]);
-    const [loading,          setLoading]          = useState(false);
-    const [error,            setError]            = useState(null);
-    const [searchTerm,       setSearchTerm]       = useState('');
+    const { userId } = useContext(AuthContext);
+    const navigate = useNavigate();
 
-    const apiUrl = process.env.REACT_APP_API_BASE_URL;
+    const [aba,             setAba]             = useState('meus');   // 'meus' | 'disponiveis' | 'pendentes'
+    const [procurando,      setProcurando]      = useState(false);
+    const [meusAlunos,      setMeusAlunos]      = useState([]);
+    const [alunosDisp,      setAlunosDisp]      = useState([]);
+    const [pendentes,       setPendentes]       = useState([]);
+    const [pedidosEnviados, setPedidosEnviados] = useState(new Set());
+    const [searchTerm,      setSearchTerm]      = useState('');
+    const [loading,         setLoading]         = useState(true);
 
-    useEffect(() => {
+    const carregar = useCallback(async () => {
         setLoading(true);
-        fetch(`${apiUrl}/usuarios`)
-            .then(r => {
-                if (!r.ok) throw new Error('Erro na resposta do servidor');
-                return r.json();
-            })
-            .then(data => {
-                const alunos = data.filter(u => u.funcao === 'Aluno');
-                setUsuarios(alunos);
-                setFilteredUsuarios(alunos);
-                setLoading(false);
-            })
-            .catch(() => {
-                setError('Erro ao carregar alunos. Tente novamente.');
-                setLoading(false);
-            });
-    }, [apiUrl]);
+        try {
+            const [userRes, meusRes, dispRes, pendRes] = await Promise.all([
+                fetch(`${API}/usuarios/${userId}`),
+                fetch(`${API}/vinculos/meus-alunos/${userId}`),
+                fetch(`${API}/vinculos/alunos-disponiveis`),
+                fetch(`${API}/vinculos/pendentes/${userId}`),
+            ]);
 
-    const handleSearch = (e) => {
-        const term = e.target.value;
-        setSearchTerm(term);
-        if (term) {
-            setFilteredUsuarios(
-                usuarios.filter(u =>
-                    u.nome.toLowerCase().includes(term.toLowerCase()) ||
-                    u.email.toLowerCase().includes(term.toLowerCase())
-                )
+            const [userData, meusData, dispData, pendData] = await Promise.all([
+                userRes.json(), meusRes.json(), dispRes.json(), pendRes.json(),
+            ]);
+
+            setProcurando(userData.procurando || false);
+            setMeusAlunos(meusData);
+            setAlunosDisp(dispData);
+            setPendentes(pendData);
+
+            const enviados = new Set(
+                pendData
+                    .filter(p => p.iniciado_por === userId)
+                    .map(p => p.aluno_id)
             );
-        } else {
-            setFilteredUsuarios(usuarios);
+            setPedidosEnviados(enviados);
+        } catch (err) {
+            console.error('Erro ao carregar dados:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [userId]);
+
+    useEffect(() => { carregar(); }, [carregar]);
+
+    const toggleProcurando = async () => {
+        try {
+            const res  = await fetch(`${API}/vinculos/procurando/${userId}`, { method: 'PATCH' });
+            const data = await res.json();
+            setProcurando(data.procurando);
+        } catch (err) {
+            console.error('Erro ao atualizar procurando:', err);
         }
     };
+
+    const enviarPedido = async (alunoId) => {
+        try {
+            const res = await fetch(`${API}/vinculos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ professor_id: userId, aluno_id: alunoId, iniciado_por: userId }),
+            });
+            if (res.ok) setPedidosEnviados(prev => new Set([...prev, alunoId]));
+        } catch (err) {
+            console.error('Erro ao enviar pedido:', err);
+        }
+    };
+
+    const aceitarPedido = async (vinculoId) => {
+        try {
+            const res = await fetch(`${API}/vinculos/${vinculoId}/aceitar`, { method: 'PATCH' });
+            if (res.ok) carregar();
+        } catch (err) {
+            console.error('Erro ao aceitar pedido:', err);
+        }
+    };
+
+    const recusarPedido = async (vinculoId) => {
+        try {
+            const res = await fetch(`${API}/vinculos/${vinculoId}/recusar`, { method: 'PATCH' });
+            if (res.ok) setPendentes(prev => prev.filter(p => p.id !== vinculoId));
+        } catch (err) {
+            console.error('Erro ao recusar pedido:', err);
+        }
+    };
+
+    const encerrarVinculo = async (vinculoId) => {
+        try {
+            const res = await fetch(`${API}/vinculos/${vinculoId}`, { method: 'DELETE' });
+            if (res.ok) carregar();
+        } catch (err) {
+            console.error('Erro ao encerrar vínculo:', err);
+        }
+    };
+
+    const pendentesRecebidos = pendentes.filter(p => p.iniciado_por !== userId);
+
+    const meusAlunosFiltrados = meusAlunos.filter(a =>
+        a.nome.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="home-wrapper">
@@ -54,118 +128,214 @@ const Usuarios_index = () => {
                 <p className="h-greeting-date">Olympus</p>
                 <h1 className="h-greeting-title">Alunos</h1>
                 <p className="h-greeting-sub">
-                    {loading ? 'Carregando...' : `${filteredUsuarios.length} aluno${filteredUsuarios.length !== 1 ? 's' : ''} cadastrado${filteredUsuarios.length !== 1 ? 's' : ''}`}
+                    {loading ? 'Carregando...' : `${meusAlunos.length} aluno${meusAlunos.length !== 1 ? 's' : ''} vinculado${meusAlunos.length !== 1 ? 's' : ''}`}
                 </p>
             </div>
 
-            {/* ── BUSCA ── */}
-            <div className="al-search-wrap">
-                <span className="al-search-icon">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    </svg>
-                </span>
-                <input
-                    type="text"
-                    className="al-search-input"
-                    placeholder="Buscar por nome ou email..."
-                    value={searchTerm}
-                    onChange={handleSearch}
-                />
+            {/* ── TOGGLE PROCURANDO ── */}
+            <div className={`vk-toggle-bar${procurando ? ' active' : ''}`}>
+                <div className="vk-toggle-info">
+                    <p className="vk-toggle-title">Estou procurando alunos</p>
+                    <p className="vk-toggle-sub">
+                        {procurando ? 'Você aparece para alunos disponíveis' : 'Ative para aparecer na busca de alunos'}
+                    </p>
+                </div>
+                <label className="vk-switch">
+                    <input type="checkbox" checked={procurando} onChange={toggleProcurando} />
+                    <span className="vk-switch-track" />
+                </label>
             </div>
 
-            {/* ── ERRO ── */}
-            {error && (
-                <div style={{ margin: '0 20px 16px', padding: '12px 16px', background: 'rgba(232,64,64,0.08)', border: '1px solid rgba(232,64,64,0.2)', borderRadius: '12px', color: '#E84040', fontSize: '0.82rem' }}>
-                    {error}
-                </div>
-            )}
+            {/* ── TABS ── */}
+            <div className="vk-tabs">
+                <button
+                    className={`vk-tab${aba === 'meus' ? ' active' : ''}`}
+                    onClick={() => setAba('meus')}
+                >
+                    Meus Alunos
+                    {meusAlunos.length > 0 && <span className="vk-tab-badge">{meusAlunos.length}</span>}
+                </button>
+                <button
+                    className={`vk-tab${aba === 'disponiveis' ? ' active' : ''}`}
+                    onClick={() => setAba('disponiveis')}
+                >
+                    Disponíveis
+                    {alunosDisp.length > 0 && <span className="vk-tab-badge">{alunosDisp.length}</span>}
+                </button>
+                <button
+                    className={`vk-tab${aba === 'pendentes' ? ' active' : ''}`}
+                    onClick={() => setAba('pendentes')}
+                >
+                    Pedidos
+                    {pendentesRecebidos.length > 0 && <span className="vk-tab-badge">{pendentesRecebidos.length}</span>}
+                </button>
+            </div>
 
-            {/* ── LOADING SKELETONS ── */}
+            {/* ── LOADING ── */}
             {loading && (
-                <div className="al-list">
-                    {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="al-skeleton">
-                            <div className="al-skel-circle" />
-                            <div className="al-skel-lines">
-                                <div className="al-skel-line" />
-                                <div className="al-skel-line short" />
+                <div className="vk-list">
+                    {[1,2,3].map(i => (
+                        <div key={i} className="vk-skeleton">
+                            <div className="vk-skel-circle" />
+                            <div className="vk-skel-lines">
+                                <div className="vk-skel-line" />
+                                <div className="vk-skel-line short" />
                             </div>
                         </div>
                     ))}
                 </div>
             )}
 
-            {/* ── LISTA ── */}
-            {!loading && !error && (
-                filteredUsuarios.length === 0 ? (
-                    <div className="al-empty">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" display="block" style={{ margin: '0 auto 10px' }}>
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                        </svg>
-                        {searchTerm ? 'Nenhum aluno encontrado.' : 'Nenhum aluno cadastrado ainda.'}
-                    </div>
-                ) : (
-                    <div className="al-list">
-                        {filteredUsuarios.map(usuario => (
-                            <div key={usuario.id} className="al-card">
-
-                                {/* Avatar */}
+            {/* ── ABA: MEUS ALUNOS ── */}
+            {!loading && aba === 'meus' && (
+                <>
+                    {meusAlunos.length > 0 && (
+                        <div className="al-search-wrap">
+                            <span className="al-search-icon">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                            </span>
+                            <input
+                                type="text"
+                                className="al-search-input"
+                                placeholder="Buscar aluno..."
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                    )}
+                    <div className="vk-list">
+                        {meusAlunosFiltrados.length === 0 ? (
+                            <div className="vk-empty">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
+                                {searchTerm ? 'Nenhum aluno encontrado.' : 'Você ainda não tem alunos vinculados.'}
+                            </div>
+                        ) : meusAlunosFiltrados.map(aluno => (
+                            <div key={aluno.id} className="al-card">
                                 <div className="al-avatar">
-                                    {usuario.avatar ? (
-                                        <img src={usuario.avatar} alt={usuario.nome} />
-                                    ) : (
-                                        <div className="al-avatar-placeholder">
-                                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                                <circle cx="12" cy="7" r="4"/>
-                                            </svg>
-                                        </div>
-                                    )}
+                                    {aluno.avatar
+                                        ? <img src={aluno.avatar} alt={aluno.nome} />
+                                        : <div className="al-avatar-placeholder"><AvatarPlaceholder size={48} /></div>}
                                 </div>
-
-                                {/* Info */}
                                 <div className="al-info">
-                                    <p className="al-name">{usuario.nome}</p>
+                                    <p className="al-name">{aluno.nome}</p>
                                     <p className="al-meta">
-                                        {usuario.objetivo && <span>{usuario.objetivo}</span>}
-                                        {usuario.objetivo && usuario.idade && <span className="al-meta-dot" />}
-                                        {usuario.idade && <span>{usuario.idade} anos</span>}
-                                        {!usuario.objetivo && !usuario.idade && <span>{usuario.email}</span>}
+                                        {aluno.objetivo && <span>{aluno.objetivo}</span>}
+                                        {aluno.objetivo && aluno.idade && <span className="al-meta-dot" />}
+                                        {aluno.idade && <span>{aluno.idade} anos</span>}
                                     </p>
                                 </div>
-
-                                {/* Ações */}
                                 <div className="al-actions">
-                                    <Link
-                                        to={`/usuarios/view/${usuario.id}`}
+                                    {aluno.chat_id && (
+                                        <button
+                                            className="al-btn-ghost"
+                                            title="Mensagem"
+                                            onClick={() => navigate(`/chat/${aluno.chat_id}`)}
+                                        >
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                            </svg>
+                                        </button>
+                                    )}
+                                    <Link to={`/usuarios/view/${aluno.id}`} className="al-btn-ghost" title="Ver perfil">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                                        </svg>
+                                    </Link>
+                                    <Link to={`/usuarios/${aluno.id}/treinos`} className="al-btn-primary" title="Criar treino">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                                        </svg>
+                                    </Link>
+                                    <button
                                         className="al-btn-ghost"
-                                        title="Ver perfil"
+                                        title="Encerrar vínculo"
+                                        style={{ color: 'rgba(232,64,64,0.6)' }}
+                                        onClick={() => encerrarVinculo(aluno.vinculo_id)}
                                     >
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                            <circle cx="12" cy="12" r="3"/>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                                         </svg>
-                                    </Link>
-                                    <Link
-                                        to={`/usuarios/${usuario.id}/treinos`}
-                                        className="al-btn-primary"
-                                        title="Criar treino"
-                                    >
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <line x1="12" y1="5" x2="12" y2="19"/>
-                                            <line x1="5" y1="12" x2="19" y2="12"/>
-                                        </svg>
-                                    </Link>
+                                    </button>
                                 </div>
-
                             </div>
                         ))}
                     </div>
-                )
+                </>
+            )}
+
+            {/* ── ABA: ALUNOS DISPONÍVEIS ── */}
+            {!loading && aba === 'disponiveis' && (
+                <div className="vk-list">
+                    {alunosDisp.length === 0 ? (
+                        <div className="vk-empty">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            Nenhum aluno procurando professor no momento.
+                        </div>
+                    ) : alunosDisp.map(aluno => (
+                        <div key={aluno.id} className="vk-aluno-card">
+                            <div className="al-avatar">
+                                {aluno.avatar
+                                    ? <img src={aluno.avatar} alt={aluno.nome} />
+                                    : <div className="al-avatar-placeholder"><AvatarPlaceholder size={48} /></div>}
+                            </div>
+                            <div className="al-info">
+                                <p className="al-name">{aluno.nome}</p>
+                                <p className="al-meta">
+                                    {aluno.objetivo && <span>{aluno.objetivo}</span>}
+                                    {aluno.objetivo && aluno.idade && <span className="al-meta-dot" />}
+                                    {aluno.idade && <span>{aluno.idade} anos</span>}
+                                    {aluno.peso && <><span className="al-meta-dot" /><span>{aluno.peso} kg</span></>}
+                                </p>
+                            </div>
+                            {pedidosEnviados.has(aluno.id) ? (
+                                <button className="vk-btn-pending" disabled>Enviado</button>
+                            ) : (
+                                <button className="vk-btn-connect" onClick={() => enviarPedido(aluno.id)}>
+                                    Conectar
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* ── ABA: PEDIDOS RECEBIDOS ── */}
+            {!loading && aba === 'pendentes' && (
+                <div className="vk-list">
+                    {pendentesRecebidos.length === 0 ? (
+                        <div className="vk-empty">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                            </svg>
+                            Nenhum pedido recebido.
+                        </div>
+                    ) : pendentesRecebidos.map(p => (
+                        <div key={p.id} className="vk-request-card">
+                            <div className="vk-request-body">
+                                <div className="al-avatar">
+                                    {p.aluno_avatar
+                                        ? <img src={p.aluno_avatar} alt={p.aluno_nome} />
+                                        : <div className="al-avatar-placeholder"><AvatarPlaceholder size={48} /></div>}
+                                </div>
+                                <div className="al-info">
+                                    <p className="al-name">{p.aluno_nome}</p>
+                                    <p className="al-meta">Pedido de conexão</p>
+                                </div>
+                            </div>
+                            <div className="vk-request-actions">
+                                <button className="vk-btn-accept" onClick={() => aceitarPedido(p.id)}>Aceitar</button>
+                                <button className="vk-btn-reject" onClick={() => recusarPedido(p.id)}>Recusar</button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             )}
 
         </div>

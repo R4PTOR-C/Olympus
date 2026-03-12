@@ -18,7 +18,8 @@ const treinosRouter = require("./treinos");
 const avaliacoesRouter = require("./avaliacoes");
 const herculesRouter = require("./hercules");
 const professoresRouter = require("./professores");
-const chatsRouter = require("./chats");
+const chatsRouter   = require("./chats");
+const vinculosRouter = require("./vinculos");
 
 // 🔹 Módulo separado para eventos de chat em tempo real
 const chatSocket = require("./socket/chatSocket");
@@ -81,7 +82,8 @@ app.use("/treinos", treinosRouter);
 app.use("/avaliacoes", avaliacoesRouter);
 app.use("/hercules", herculesRouter);
 app.use("/professores", professoresRouter);
-app.use("/chat", chatsRouter);
+app.use("/chat",    chatsRouter);
+app.use("/vinculos", vinculosRouter);
 
 // ------------------- ROTAS PROTEGIDAS -------------------
 

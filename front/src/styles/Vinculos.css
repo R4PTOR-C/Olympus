@@ -1,0 +1,500 @@
+/* =============================== */
+/* VÍNCULOS — OLYMPUS              */
+/* Professor ↔ Aluno matching      */
+/* =============================== */
+
+/* ── TOGGLE PROCURANDO ── */
+.vk-toggle-bar {
+    margin: 0 20px 20px;
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-md);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: var(--h-shadow);
+}
+
+.vk-toggle-bar.active {
+    border-color: rgba(74, 144, 217, 0.35);
+    background: rgba(74, 144, 217, 0.05);
+}
+
+.vk-toggle-info { flex: 1; min-width: 0; }
+
+.vk-toggle-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--h-text);
+    margin-bottom: 2px;
+}
+
+.vk-toggle-sub {
+    font-size: 0.72rem;
+    color: var(--h-text-muted);
+}
+
+/* Switch */
+.vk-switch {
+    position: relative;
+    width: 46px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.vk-switch input { opacity: 0; width: 0; height: 0; }
+
+.vk-switch-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 13px;
+    background: var(--h-surface-3);
+    border: 1px solid var(--h-border);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.vk-switch input:checked + .vk-switch-track {
+    background: var(--h-accent);
+    border-color: var(--h-accent);
+}
+
+.vk-switch-track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    transition: transform 0.2s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+.vk-switch input:checked + .vk-switch-track::after {
+    transform: translateX(20px);
+}
+
+/* ── TABS ── */
+.vk-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 0 20px 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.vk-tabs::-webkit-scrollbar { display: none; }
+
+.vk-tab {
+    flex-shrink: 0;
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--h-border);
+    background: var(--h-surface);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--h-text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vk-tab.active {
+    background: var(--h-accent);
+    border-color: var(--h-accent);
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(74, 144, 217, 0.35);
+}
+
+.vk-tab:active:not(.active) { background: var(--h-surface-2); transform: scale(0.96); }
+
+.vk-tab-badge {
+    background: rgba(255,255,255,0.25);
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-size: 0.68rem;
+}
+
+.vk-tab:not(.active) .vk-tab-badge {
+    background: var(--h-surface-3);
+    color: var(--h-text-dim);
+}
+
+/* ── LISTA DE CARDS ── */
+.vk-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 20px 14px;
+}
+
+/* ── CARD DE PROFESSOR ── */
+.vk-prof-card {
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--h-shadow);
+    animation: h-fadeUp 0.35s ease both;
+}
+
+.vk-prof-card:nth-child(2) { animation-delay: 0.05s; }
+.vk-prof-card:nth-child(3) { animation-delay: 0.10s; }
+.vk-prof-card:nth-child(4) { animation-delay: 0.15s; }
+
+.vk-prof-hero {
+    background: var(--h-surface-2);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+}
+
+.vk-prof-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 100% at 90% 50%, rgba(74,144,217,0.05), transparent 70%);
+    pointer-events: none;
+}
+
+.vk-prof-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: var(--h-surface-3);
+    border: 2px solid rgba(74,144,217,0.25);
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vk-prof-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.vk-prof-info { flex: 1; min-width: 0; }
+
+.vk-prof-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--h-text);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vk-prof-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.vk-tag {
+    background: var(--h-accent-dim);
+    border: 1px solid rgba(74,144,217,0.2);
+    border-radius: 8px;
+    padding: 2px 8px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--h-accent);
+}
+
+.vk-tag.neutral {
+    background: var(--h-surface-3);
+    border-color: var(--h-border);
+    color: var(--h-text-muted);
+}
+
+.vk-prof-body {
+    padding: 12px 16px 14px;
+    border-top: 1px solid var(--h-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.vk-prof-meta {
+    font-size: 0.78rem;
+    color: var(--h-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.vk-meta-sep {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--h-text-dim);
+    flex-shrink: 0;
+}
+
+/* ── CARD DE ALUNO (disponível) ── */
+.vk-aluno-card {
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-md);
+    padding: 14px 15px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    box-shadow: var(--h-shadow);
+    animation: h-fadeUp 0.35s ease both;
+}
+
+.vk-aluno-card:nth-child(2) { animation-delay: 0.05s; }
+.vk-aluno-card:nth-child(3) { animation-delay: 0.10s; }
+.vk-aluno-card:nth-child(4) { animation-delay: 0.15s; }
+
+/* ── BOTÕES DE AÇÃO ── */
+.vk-btn-connect {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: var(--h-accent);
+    border: none;
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 3px 10px rgba(74,144,217,0.3);
+    white-space: nowrap;
+}
+
+.vk-btn-connect:active { transform: scale(0.95); box-shadow: none; }
+.vk-btn-connect:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.vk-btn-pending {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: transparent;
+    border: 1px solid rgba(74,144,217,0.3);
+    color: var(--h-accent);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: default;
+    white-space: nowrap;
+}
+
+/* ── CARD MEU PROFESSOR / MEU ALUNO (vínculo ativo) ── */
+.vk-active-card {
+    margin: 0 20px 20px;
+    background: var(--h-surface);
+    border: 1.5px solid rgba(74,144,217,0.3);
+    border-radius: var(--h-radius-lg);
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(74,144,217,0.12);
+    position: relative;
+}
+
+.vk-active-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--h-accent), transparent);
+}
+
+.vk-active-hero {
+    background: var(--h-surface-2);
+    padding: 18px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.vk-active-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--h-surface-3);
+    border: 2.5px solid rgba(74,144,217,0.4);
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vk-active-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.vk-active-info { flex: 1; min-width: 0; }
+
+.vk-active-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--h-accent);
+    margin-bottom: 4px;
+}
+
+.vk-active-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--h-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.vk-active-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--h-border);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.vk-btn-disconnect {
+    padding: 7px 14px;
+    border-radius: 9px;
+    background: transparent;
+    border: 1px solid rgba(232,64,64,0.25);
+    color: #E84040;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.vk-btn-disconnect:active { background: rgba(232,64,64,0.08); transform: scale(0.96); }
+
+/* ── CARD DE PEDIDO PENDENTE ── */
+.vk-request-card {
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-md);
+    overflow: hidden;
+    box-shadow: var(--h-shadow);
+    animation: h-fadeUp 0.35s ease both;
+}
+
+.vk-request-body {
+    padding: 14px 15px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.vk-request-actions {
+    padding: 10px 15px 13px;
+    border-top: 1px solid var(--h-border);
+    display: flex;
+    gap: 8px;
+}
+
+.vk-btn-accept {
+    flex: 2;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--h-accent);
+    border: none;
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 3px 10px rgba(74,144,217,0.3);
+}
+
+.vk-btn-accept:active { transform: scale(0.97); box-shadow: none; }
+
+.vk-btn-reject {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    background: var(--h-surface-2);
+    border: 1px solid var(--h-border);
+    color: var(--h-text-muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.vk-btn-reject:active { background: rgba(232,64,64,0.08); color: #E84040; transform: scale(0.97); }
+
+/* ── EMPTY STATE ── */
+.vk-empty {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-md);
+    color: var(--h-text-dim);
+    font-size: 0.85rem;
+}
+
+.vk-empty svg { margin-bottom: 10px; opacity: 0.4; display: block; margin-left: auto; margin-right: auto; }
+
+/* ── SKELETONS ── */
+.vk-skeleton {
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-md);
+    padding: 14px 15px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    box-shadow: var(--h-shadow);
+}
+
+.vk-skel-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--h-surface-3);
+    flex-shrink: 0;
+    animation: al-pulse 1.4s ease-in-out infinite;
+}
+
+.vk-skel-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+
+.vk-skel-line {
+    height: 10px;
+    border-radius: 6px;
+    background: var(--h-surface-3);
+    animation: al-pulse 1.4s ease-in-out infinite;
+}
+
+.vk-skel-line.short { width: 60%; }
+.vk-skel-line.xshort { width: 40%; }
