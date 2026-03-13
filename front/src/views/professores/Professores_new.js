@@ -151,7 +151,6 @@ function Professor_new() {
 
                 {/* ── HEADER ── */}
                 <div className="auth-header">
-                    <img src="/logo1.png" alt="Olympus" className="auth-logo" />
                     <h1 className="auth-title">Cadastro de Professor</h1>
                     <p className="auth-subtitle">Preencha seus dados profissionais</p>
                 </div>

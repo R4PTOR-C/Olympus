@@ -9,7 +9,7 @@ import usePWAInstall from "../../hooks/usePWAInstall";
 function Navbar() {
     const user = useContext(AuthContext);
     const navigate = useNavigate();
-    const { userId, avatar, funcao, loggedIn } = useContext(AuthContext);
+    const { userId, avatar, funcao, loggedIn, darkMode } = useContext(AuthContext);
 
     const { isInstallable, installApp } = usePWAInstall(); // 👈 AQUI
 
@@ -123,8 +123,8 @@ Hércules                            </button>
 
 
 
-                                    <li className="dropdown-item d-flex justify-content-between align-items-center">
-                                        <span>Tema escuro</span>
+                                    <li className="dropdown-item d-flex justify-content-between align-items-center" style={{ cursor: 'default' }}>
+                                        <span>{darkMode ? 'Modo claro' : 'Modo escuro'}</span>
                                         <DarkModeSwitch />
                                     </li>
 

@@ -105,7 +105,6 @@ function Usuarios_new() {
 
                 {/* ── HEADER ── */}
                 <div className="auth-header">
-                    <img src="/logo1.png" alt="Olympus" className="auth-logo" />
                     <h1 className="auth-title">Criar Conta</h1>
                     <p className="auth-subtitle">Preencha seus dados para começar</p>
                 </div>
