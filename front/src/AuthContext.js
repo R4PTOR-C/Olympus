@@ -1,5 +1,6 @@
 // AuthContext.js
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
 
 export const AuthContext = createContext();
 
@@ -11,6 +12,8 @@ export const AuthProvider = ({ children }) => {
         avatar: null
     });
     const [loading, setLoading] = useState(true);
+    const [socket, setSocket] = useState(null);
+    const socketRef = useRef(null);
 
     // ✅ Estado de dark mode
     const [darkMode, setDarkMode] = useState(() => {
@@ -61,6 +64,8 @@ export const AuthProvider = ({ children }) => {
                             funcao: data.userFuncao,
                             avatar: data.userAvatar
                         });
+                        conectarSocket(data.userId);
+                        subscribeParaPush(data.userId);
                     } else {
                         setUser({ loggedIn: false });
                     }
@@ -82,6 +87,37 @@ export const AuthProvider = ({ children }) => {
         checkSession();
     }, []);
 
+    const conectarSocket = (userId) => {
+        if (socketRef.current) socketRef.current.disconnect();
+        const s = io(process.env.REACT_APP_API_BASE_URL, { transports: ['websocket'] });
+        s.on('connect', () => s.emit('entrar_sala_usuario', userId));
+        socketRef.current = s;
+        setSocket(s);
+    };
+
+    const subscribeParaPush = async (userId) => {
+        try {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') return;
+            const reg = await navigator.serviceWorker.ready;
+            const keyRes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/push/vapid-public-key`);
+            const { publicKey } = await keyRes.json();
+            if (!publicKey) return;
+            const sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: publicKey
+            });
+            await fetch(`${process.env.REACT_APP_API_BASE_URL}/push/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuarioId: userId, subscription: sub })
+            });
+        } catch (err) {
+            console.log('[Push] Não foi possível assinar:', err.message);
+        }
+    };
+
     const login = (userData, token) => {
         console.log("[AuthContext] Login chamado →", userData);
         localStorage.setItem('token', token);
@@ -92,12 +128,15 @@ export const AuthProvider = ({ children }) => {
             funcao: userData.funcao,
             avatar: userData.avatar
         });
+        conectarSocket(userData.userId);
+        subscribeParaPush(userData.userId);
     };
 
     const logout = () => {
         console.log("[AuthContext] Logout chamado");
         localStorage.removeItem('token');
         setUser({ loggedIn: false, userName: '', userId: null, avatar: null });
+        if (socketRef.current) { socketRef.current.disconnect(); socketRef.current = null; setSocket(null); }
     };
 
     const updateUser = (updates) => {
@@ -119,7 +158,8 @@ export const AuthProvider = ({ children }) => {
                 updateUser,
                 loading,
                 darkMode,
-                setDarkMode
+                setDarkMode,
+                socket
             }}
         >
             {children}

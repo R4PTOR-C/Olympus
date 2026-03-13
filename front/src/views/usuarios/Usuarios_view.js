@@ -4,6 +4,7 @@ import { AuthContext } from '../../AuthContext';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import ModalCarregando from '../components/ModalCarregando';
 import PullToRefresh from '../components/PullToRefresh';
+import useSocketRefresh from '../../hooks/useSocketRefresh';
 import '../../styles/UsuariosView.css';
 
 const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
@@ -56,6 +57,7 @@ const UsuariosView = () => {
     }, [id, userId, funcao, navigate]);
 
     useEffect(() => { carregarDados(); }, [carregarDados]);
+    useSocketRefresh(carregarDados);
 
     // ── DRAG & DROP ──────────────────────────────────────────────────────
 

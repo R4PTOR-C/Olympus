@@ -20,6 +20,7 @@ const herculesRouter = require("./hercules");
 const professoresRouter = require("./professores");
 const chatsRouter   = require("./chats");
 const vinculosRouter = require("./vinculos");
+const pushRouter    = require("./push");
 
 // 🔹 Módulo separado para eventos de chat em tempo real
 const chatSocket = require("./socket/chatSocket");
@@ -44,6 +45,9 @@ const io = new Server(server, {
 chatSocket(io, db);
 
 // ------------------- MIDDLEWARES -------------------
+
+// Disponibiliza io em todas as rotas via req.io
+app.use((req, res, next) => { req.io = io; next(); });
 
 app.use(cors({
     credentials: true,
@@ -84,6 +88,7 @@ app.use("/hercules", herculesRouter);
 app.use("/professores", professoresRouter);
 app.use("/chat",    chatsRouter);
 app.use("/vinculos", vinculosRouter);
+app.use("/push",    pushRouter);
 
 // ------------------- ROTAS PROTEGIDAS -------------------
 

@@ -1,6 +1,7 @@
 // vinculos.js — Conexões professor ↔ aluno
 const express = require('express');
 const db      = require('./db');
+const { enviarPush } = require('./push');
 const router  = express.Router();
 
 // ─────────────────────────────────────────
@@ -126,7 +127,21 @@ router.post('/', async (req, res) => {
             );
             rows = ins.rows;
         }
-        res.status(201).json(rows[0]);
+        const vinculo = rows[0];
+
+        // notifica o destinatário do pedido
+        const destinatarioId = vinculo.iniciado_por === professor_id ? aluno_id : professor_id;
+        req.io?.to(`user_${destinatarioId}`).emit('atualizar_tela', { tipo: 'vinculos' });
+
+        const remetenteRes = await db.query('SELECT nome FROM usuarios WHERE id = $1', [vinculo.iniciado_por]);
+        const remetenteNome = remetenteRes.rows[0]?.nome || 'Alguém';
+        await enviarPush(destinatarioId, {
+            title: 'Novo pedido de conexão',
+            body: `${remetenteNome} quer se conectar com você.`,
+            url: '/professores'
+        });
+
+        res.status(201).json(vinculo);
     } catch (err) {
         console.error('Erro ao criar vínculo:', err);
         res.status(500).json({ error: 'Erro interno.' });
@@ -202,6 +217,22 @@ router.patch('/:id/aceitar', async (req, res) => {
         );
 
         await db.query('COMMIT');
+
+        // notifica ambos em tempo real
+        req.io?.to(`user_${vinculo.professor_id}`).emit('atualizar_tela', { tipo: 'vinculos' });
+        req.io?.to(`user_${vinculo.aluno_id}`).emit('atualizar_tela', { tipo: 'vinculos' });
+
+        // push para quem iniciou o pedido (recebe a confirmação)
+        const nomeRes = await db.query('SELECT nome FROM usuarios WHERE id = $1', [
+            vinculo.iniciado_por === vinculo.professor_id ? vinculo.aluno_id : vinculo.professor_id
+        ]);
+        const outroNome = nomeRes.rows[0]?.nome || 'Alguém';
+        await enviarPush(vinculo.iniciado_por, {
+            title: 'Pedido aceito!',
+            body: `${outroNome} aceitou seu pedido de conexão.`,
+            url: '/professores'
+        });
+
         res.json(vinculo);
     } catch (err) {
         await db.query('ROLLBACK').catch(() => {});
@@ -224,7 +255,18 @@ router.patch('/:id/recusar', async (req, res) => {
             [id]
         );
         if (!rows.length) return res.status(404).json({ error: 'Pedido não encontrado ou já processado.' });
-        res.json(rows[0]);
+        const vinculo = rows[0];
+
+        req.io?.to(`user_${vinculo.professor_id}`).emit('atualizar_tela', { tipo: 'vinculos' });
+        req.io?.to(`user_${vinculo.aluno_id}`).emit('atualizar_tela', { tipo: 'vinculos' });
+
+        await enviarPush(vinculo.iniciado_por, {
+            title: 'Pedido recusado',
+            body: 'Seu pedido de conexão foi recusado.',
+            url: '/professores'
+        });
+
+        res.json(vinculo);
     } catch (err) {
         console.error('Erro ao recusar vínculo:', err);
         res.status(500).json({ error: 'Erro interno.' });

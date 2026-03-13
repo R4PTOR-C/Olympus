@@ -1,5 +1,6 @@
 const express = require('express');
-const db = require('./db'); // Importa a configuração do banco de dados
+const db = require('./db');
+const { enviarPush } = require('./push');
 
 const router = express.Router();
 
@@ -47,7 +48,14 @@ router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
             [usuarioId, nome_treino, descricao, dia_semana, grupo_muscular, imagemSelecionada, auxiliares]
         );
 
-        res.status(201).json(result.rows[0]);
+        const treino = result.rows[0];
+        req.io?.to(`user_${usuarioId}`).emit('atualizar_tela', { tipo: 'treinos' });
+        await enviarPush(usuarioId, {
+            title: 'Novo treino criado!',
+            body: treino.nome_treino,
+            url: `/usuarios/view/${usuarioId}`
+        });
+        res.status(201).json(treino);
     } catch (error) {
         console.error('Erro ao criar o treino:', error);
         res.status(500).json({ error: 'Erro ao criar o treino' });
@@ -81,7 +89,14 @@ router.put('/treinos/:treinoId', async (req, res) => {
             return res.status(404).json({ error: 'Treino não encontrado' });
         }
 
-        res.json(result.rows[0]);
+        const treino = result.rows[0];
+        req.io?.to(`user_${treino.usuario_id}`).emit('atualizar_tela', { tipo: 'treinos' });
+        await enviarPush(treino.usuario_id, {
+            title: 'Treino atualizado',
+            body: treino.nome_treino,
+            url: `/usuarios/view/${treino.usuario_id}`
+        });
+        res.json(treino);
     } catch (error) {
         console.error('Erro ao atualizar treino:', error);
         res.status(500).json({ error: 'Erro ao atualizar treino' });
@@ -317,6 +332,8 @@ router.delete('/treinos/:id', async (req, res) => {
             return res.status(404).json({ error: 'Treino não encontrado' });
         }
 
+        const usuarioId = result.rows[0].usuario_id;
+        req.io?.to(`user_${usuarioId}`).emit('atualizar_tela', { tipo: 'treinos' });
         res.json({ message: 'Treino excluído com sucesso', treino: result.rows[0] });
     } catch (error) {
         console.error('Erro ao excluir treino:', error);

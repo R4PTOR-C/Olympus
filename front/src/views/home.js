@@ -5,6 +5,7 @@ import { AuthContext } from "../AuthContext";
 import '../styles/home.css';
 import ModalCarregando from './components/ModalCarregando';
 import PullToRefresh from './components/PullToRefresh';
+import useSocketRefresh from '../hooks/useSocketRefresh';
 
 const WEEK = [
     { short: 'Seg', full: 'Segunda-feira', jsDay: 1 },
@@ -62,6 +63,8 @@ function Home() {
         const token = localStorage.getItem('token');
         if (user.userId && token) await fetchTreinos(user.userId, token);
     }, [user.userId]);
+
+    useSocketRefresh(refresh);
 
     const fetchTreinos = async (userId, token) => {
         try {

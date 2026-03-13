@@ -5,6 +5,7 @@ import '../../styles/home.css';
 import '../../styles/AlunosIndex.css';
 import '../../styles/Vinculos.css';
 import PullToRefresh from '../components/PullToRefresh';
+import useSocketRefresh from '../../hooks/useSocketRefresh';
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
@@ -74,6 +75,7 @@ export default function ProcurarProfessor() {
     }, [userId]);
 
     useEffect(() => { carregar(); }, [carregar]);
+    useSocketRefresh(carregar);
 
     const toggleProcurando = async () => {
         const novoValor = !procurando;
