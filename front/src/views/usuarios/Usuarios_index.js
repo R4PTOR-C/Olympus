@@ -49,11 +49,8 @@ const Usuarios_index = () => {
             setAlunosDisp(dispData);
             setPendentes(pendData);
 
-            const enviados = new Set(
-                pendData
-                    .filter(p => p.iniciado_por === userId)
-                    .map(p => p.aluno_id)
-            );
+            // Inclui todos os pedidos pendentes (meus ou deles)
+            const enviados = new Set(pendData.map(p => p.aluno_id));
             setPedidosEnviados(enviados);
         } catch (err) {
             console.error('Erro ao carregar dados:', err);
@@ -300,7 +297,9 @@ const Usuarios_index = () => {
                             {meusAlunos.some(a => a.id === aluno.id) ? (
                                 <button className="vk-btn-pending" disabled>Já vinculado</button>
                             ) : pedidosEnviados.has(aluno.id) ? (
-                                <button className="vk-btn-pending" disabled>Enviado</button>
+                                <button className="vk-btn-pending" disabled>
+                                    {pendentes.find(p => p.aluno_id === aluno.id && p.iniciado_por === userId) ? 'Enviado' : 'Pedido recebido'}
+                                </button>
                             ) : (
                                 <button className="vk-btn-connect" onClick={() => enviarPedido(aluno.id)}>
                                     Conectar

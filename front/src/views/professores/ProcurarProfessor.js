@@ -60,12 +60,8 @@ export default function ProcurarProfessor() {
             setMeuProfessor(vinculoData);
             setHistorico(histData);
 
-            // Marca professores que já têm pedido enviado por mim
-            const enviados = new Set(
-                pendData
-                    .filter(p => p.iniciado_por === userId)
-                    .map(p => p.professor_id)
-            );
+            // Marca professores com qualquer pedido pendente (meu ou deles)
+            const enviados = new Set(pendData.map(p => p.professor_id));
             setPedidosEnviados(enviados);
         } catch (err) {
             console.error('Erro ao carregar dados:', err);
@@ -283,7 +279,9 @@ export default function ProcurarProfessor() {
                                         {meuProfessor ? (
                                             <button className="vk-btn-pending" disabled>Já vinculado</button>
                                         ) : pedidosEnviados.has(prof.id) ? (
-                                            <button className="vk-btn-pending" disabled>Enviado</button>
+                                            <button className="vk-btn-pending" disabled>
+                                                {pendentes.find(p => p.professor_id === prof.id && p.iniciado_por === userId) ? 'Enviado' : 'Pedido recebido'}
+                                            </button>
                                         ) : (
                                             <button className="vk-btn-connect" onClick={() => enviarPedido(prof.id)}>
                                                 Conectar
