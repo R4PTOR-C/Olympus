@@ -297,7 +297,9 @@ const Usuarios_index = () => {
                                     {aluno.peso && <><span className="al-meta-dot" /><span>{aluno.peso} kg</span></>}
                                 </p>
                             </div>
-                            {pedidosEnviados.has(aluno.id) ? (
+                            {meusAlunos.some(a => a.id === aluno.id) ? (
+                                <button className="vk-btn-pending" disabled>Já vinculado</button>
+                            ) : pedidosEnviados.has(aluno.id) ? (
                                 <button className="vk-btn-pending" disabled>Enviado</button>
                             ) : (
                                 <button className="vk-btn-connect" onClick={() => enviarPedido(aluno.id)}>

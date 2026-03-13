@@ -133,12 +133,18 @@ router.post('/', async (req, res) => {
         const destinatarioId = vinculo.iniciado_por === professor_id ? aluno_id : professor_id;
         req.io?.to(`user_${destinatarioId}`).emit('atualizar_tela', { tipo: 'vinculos' });
 
-        const remetenteRes = await db.query('SELECT nome FROM usuarios WHERE id = $1', [vinculo.iniciado_por]);
+        const remetenteRes = await db.query(
+            'SELECT nome FROM usuarios WHERE id = $1', [vinculo.iniciado_por]
+        );
+        const destFuncaoRes = await db.query(
+            'SELECT funcao FROM usuarios WHERE id = $1', [destinatarioId]
+        );
         const remetenteNome = remetenteRes.rows[0]?.nome || 'Alguém';
+        const destUrl = destFuncaoRes.rows[0]?.funcao === 'Professor' ? '/usuarios' : '/procurar-professor';
         await enviarPush(destinatarioId, {
             title: 'Novo pedido de conexão',
             body: `${remetenteNome} quer se conectar com você.`,
-            url: '/professores'
+            url: destUrl
         });
 
         res.status(201).json(vinculo);
@@ -223,14 +229,15 @@ router.patch('/:id/aceitar', async (req, res) => {
         req.io?.to(`user_${vinculo.aluno_id}`).emit('atualizar_tela', { tipo: 'vinculos' });
 
         // push para quem iniciou o pedido (recebe a confirmação)
-        const nomeRes = await db.query('SELECT nome FROM usuarios WHERE id = $1', [
-            vinculo.iniciado_por === vinculo.professor_id ? vinculo.aluno_id : vinculo.professor_id
-        ]);
+        const outroId = vinculo.iniciado_por === vinculo.professor_id ? vinculo.aluno_id : vinculo.professor_id;
+        const nomeRes = await db.query('SELECT nome FROM usuarios WHERE id = $1', [outroId]);
+        const funcaoRes = await db.query('SELECT funcao FROM usuarios WHERE id = $1', [vinculo.iniciado_por]);
         const outroNome = nomeRes.rows[0]?.nome || 'Alguém';
+        const iniciadorUrl = funcaoRes.rows[0]?.funcao === 'Professor' ? '/usuarios' : '/procurar-professor';
         await enviarPush(vinculo.iniciado_por, {
             title: 'Pedido aceito!',
             body: `${outroNome} aceitou seu pedido de conexão.`,
-            url: '/professores'
+            url: iniciadorUrl
         });
 
         res.json(vinculo);
@@ -260,10 +267,12 @@ router.patch('/:id/recusar', async (req, res) => {
         req.io?.to(`user_${vinculo.professor_id}`).emit('atualizar_tela', { tipo: 'vinculos' });
         req.io?.to(`user_${vinculo.aluno_id}`).emit('atualizar_tela', { tipo: 'vinculos' });
 
+        const funcaoInicRes = await db.query('SELECT funcao FROM usuarios WHERE id = $1', [vinculo.iniciado_por]);
+        const recusadoUrl = funcaoInicRes.rows[0]?.funcao === 'Professor' ? '/usuarios' : '/procurar-professor';
         await enviarPush(vinculo.iniciado_por, {
             title: 'Pedido recusado',
             body: 'Seu pedido de conexão foi recusado.',
-            url: '/professores'
+            url: recusadoUrl
         });
 
         res.json(vinculo);

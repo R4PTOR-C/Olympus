@@ -9,7 +9,7 @@ import usePWAInstall from "../../hooks/usePWAInstall";
 function Navbar() {
     const user = useContext(AuthContext);
     const navigate = useNavigate();
-    const { userId, avatar, funcao, loggedIn, darkMode } = useContext(AuthContext);
+    const { userId, avatar, funcao, loggedIn, darkMode, mensagensNaoLidas } = useContext(AuthContext);
 
     const { isInstallable, installApp } = usePWAInstall(); // 👈 AQUI
 
@@ -42,7 +42,12 @@ function Navbar() {
                     {funcao === 'Professor' ? (
                         <>
                             <Link className="nav-link" to="/usuarios">Alunos</Link>
-                            <Link className="nav-link" to="/meus-chats">Mensagens</Link>
+                            <Link className="nav-link position-relative" to="/meus-chats">
+                                Mensagens
+                                {mensagensNaoLidas > 0 && (
+                                    <span className="navbar-badge">{mensagensNaoLidas > 9 ? '9+' : mensagensNaoLidas}</span>
+                                )}
+                            </Link>
                             <div className="nav-item dropdown">
                                 <a
                                     className="nav-link dropdown-toggle"
@@ -64,6 +69,14 @@ function Navbar() {
                         <>
                             <img src="/dumbbell2.png" alt="Repetições" style={{ width: '20px', height: '20px' }} />
                             <Link className="nav-link" to={`/home/${userId}`}>Treinos</Link>
+                            <Link className="nav-link position-relative" to="/meus-chats" title="Mensagens">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                {mensagensNaoLidas > 0 && (
+                                    <span className="navbar-badge">{mensagensNaoLidas > 9 ? '9+' : mensagensNaoLidas}</span>
+                                )}
+                            </Link>
                             <button
                                 className="btn btn-outline-light"
                                 onClick={() => navigate(`/usuarios/view/${userId}`)}

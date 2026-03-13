@@ -41,10 +41,12 @@ module.exports = (io, db) => {
                             'SELECT nome FROM usuarios WHERE id = $1', [msg.remetente_id]
                         );
                         const senderName = senderRes.rows[0]?.nome || 'Mensagem';
+                        // notifica sala pessoal (badge na navbar)
+                        io.to(`user_${destinatarioId}`).emit('nova_mensagem_notif', { chatId: msg.chat_id });
                         await enviarPush(destinatarioId, {
                             title: senderName,
                             body: msg.conteudo.substring(0, 100),
-                            url: `/chat`
+                            url: `/chat/${msg.chat_id}`
                         });
                     }
                 } catch (_) { /* push é opcional */ }

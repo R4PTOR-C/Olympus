@@ -119,10 +119,12 @@ function ChatCard({ chat, onClick }) {
 }
 
 function ChatsList() {
-    const { userId }    = useContext(AuthContext);
+    const { userId, clearMensagensNaoLidas } = useContext(AuthContext);
     const navigate      = useNavigate();
     const [chats,       setChats]       = useState([]);
     const [loading,     setLoading]     = useState(true);
+
+    useEffect(() => { clearMensagensNaoLidas(); }, []);
     const [arquivadosAbertos, setArquivadosAbertos] = useState(false);
 
     useEffect(() => {

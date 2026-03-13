@@ -160,6 +160,26 @@
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* ── BADGE MENSAGENS ── */
+.navbar-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    background: #E84040;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    line-height: 1;
+    pointer-events: none;
+}
+
 /* ── TOGGLE (mobile collapse) ── */
 .navbar-toggler-custom {
     border-color: rgba(255,255,255,0.15);

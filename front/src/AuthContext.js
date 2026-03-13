@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
     });
     const [loading, setLoading] = useState(true);
     const [socket, setSocket] = useState(null);
+    const [mensagensNaoLidas, setMensagensNaoLidas] = useState(0);
     const socketRef = useRef(null);
 
     // ✅ Estado de dark mode
@@ -91,6 +92,7 @@ export const AuthProvider = ({ children }) => {
         if (socketRef.current) socketRef.current.disconnect();
         const s = io(process.env.REACT_APP_API_BASE_URL, { transports: ['websocket'] });
         s.on('connect', () => s.emit('entrar_sala_usuario', userId));
+        s.on('nova_mensagem_notif', () => setMensagensNaoLidas(prev => prev + 1));
         socketRef.current = s;
         setSocket(s);
     };
@@ -159,7 +161,9 @@ export const AuthProvider = ({ children }) => {
                 loading,
                 darkMode,
                 setDarkMode,
-                socket
+                socket,
+                mensagensNaoLidas,
+                clearMensagensNaoLidas: () => setMensagensNaoLidas(0)
             }}
         >
             {children}
