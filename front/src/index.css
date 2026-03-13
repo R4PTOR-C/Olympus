@@ -1,5 +1,11 @@
 html {
   background: #0E1117;
+  /* Impede o Android de forçar dark mode pelo sistema */
+  color-scheme: only light;
+}
+
+body.dark-mode {
+  color-scheme: dark;
 }
 
 body {

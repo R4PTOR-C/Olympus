@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageStateHandler from "./components/PageStateHandler";
 import { AuthContext } from "../AuthContext";
 import '../styles/home.css';
 import ModalCarregando from './components/ModalCarregando';
+import PullToRefresh from './components/PullToRefresh';
 
 const WEEK = [
     { short: 'Seg', full: 'Segunda-feira', jsDay: 1 },
@@ -56,6 +57,11 @@ function Home() {
                 setLoading(false);
             });
     }, [navigate, darkMode]);
+
+    const refresh = useCallback(async () => {
+        const token = localStorage.getItem('token');
+        if (user.userId && token) await fetchTreinos(user.userId, token);
+    }, [user.userId]);
 
     const fetchTreinos = async (userId, token) => {
         try {
@@ -110,6 +116,7 @@ function Home() {
 
     return (
         <PageStateHandler>
+            <PullToRefresh onRefresh={refresh} />
             <div className="home-wrapper">
                 {user.loggedIn ? (
                     <>

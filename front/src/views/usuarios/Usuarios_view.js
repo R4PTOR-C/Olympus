@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import ModalCarregando from '../components/ModalCarregando';
+import PullToRefresh from '../components/PullToRefresh';
 import '../../styles/UsuariosView.css';
 
 const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
@@ -34,28 +35,27 @@ const UsuariosView = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const carregarDados = async () => {
-            if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
-                navigate(`/usuarios/view/${userId}`);
-                return;
-            }
-            try {
-                const [usuarioRes, treinosRes] = await Promise.all([
-                    fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`),
-                    fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`)
-                ]);
-                if (!usuarioRes.ok || !treinosRes.ok) throw new Error('Erro ao carregar dados');
-                setUsuario(await usuarioRes.json());
-                setTreinos(await treinosRes.json());
-                setLoading(false);
-            } catch (err) {
-                setError(err.message);
-                setLoading(false);
-            }
-        };
-        carregarDados();
+    const carregarDados = useCallback(async () => {
+        if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
+            navigate(`/usuarios/view/${userId}`);
+            return;
+        }
+        try {
+            const [usuarioRes, treinosRes] = await Promise.all([
+                fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`),
+                fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`)
+            ]);
+            if (!usuarioRes.ok || !treinosRes.ok) throw new Error('Erro ao carregar dados');
+            setUsuario(await usuarioRes.json());
+            setTreinos(await treinosRes.json());
+            setLoading(false);
+        } catch (err) {
+            setError(err.message);
+            setLoading(false);
+        }
     }, [id, userId, funcao, navigate]);
+
+    useEffect(() => { carregarDados(); }, [carregarDados]);
 
     // ── DRAG & DROP ──────────────────────────────────────────────────────
 
@@ -136,6 +136,7 @@ const UsuariosView = () => {
 
     return (
         <div className="uv-page">
+            <PullToRefresh onRefresh={carregarDados} />
 
             {/* ── HEADER ── */}
             <div className="uv-header">

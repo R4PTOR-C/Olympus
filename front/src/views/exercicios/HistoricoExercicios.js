@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../../AuthContext';
 import PageStateHandler from '../components/PageStateHandler';
 import ModalHistoricoExercicio from '../components/ModalHistoricoExercicios';
 import ModalCarregando from '../components/ModalCarregando';
+import PullToRefresh from '../components/PullToRefresh';
 import '../../styles/HistoricoExercicios.css';
 
 const isVideo = (url) => url && (url.includes('/video/') || /\.(mp4|mov|webm)(\?|$)/i.test(url));
@@ -14,29 +15,28 @@ function HistoricoExercicios() {
     const [exercicioModal, setExercicioModal] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchExercicios = async () => {
-            try {
-                const res = await fetch(
-                    `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/exercicios_realizados`,
-                    { credentials: 'include' }
-                );
-                const data = await res.json();
-                setExercicios(data);
-            } catch (err) {
-                console.error('Erro ao buscar exercícios realizados:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchExercicios();
+    const fetchExercicios = useCallback(async () => {
+        try {
+            const res = await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/exercicios_realizados`,
+                { credentials: 'include' }
+            );
+            const data = await res.json();
+            setExercicios(data);
+        } catch (err) {
+            console.error('Erro ao buscar exercícios realizados:', err);
+        } finally {
+            setLoading(false);
+        }
     }, [userId]);
+
+    useEffect(() => { fetchExercicios(); }, [fetchExercicios]);
 
     if (loading) return <ModalCarregando show={true} />;
 
     return (
         <PageStateHandler>
+            <PullToRefresh onRefresh={fetchExercicios} />
             <div className="hx-wrapper">
 
                 {/* ── PAGE HEADER ── */}
