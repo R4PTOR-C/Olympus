@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
+import useSocketRefresh from '../../hooks/useSocketRefresh';
 import '../../styles/home.css';
 import '../../styles/AlunosIndex.css';
 import '../../styles/Vinculos.css';
@@ -60,6 +61,7 @@ const Usuarios_index = () => {
     }, [userId]);
 
     useEffect(() => { carregar(); }, [carregar]);
+    useSocketRefresh(carregar);
 
     const toggleProcurando = async () => {
         const novoValor = !procurando;
