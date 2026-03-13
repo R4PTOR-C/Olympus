@@ -22,20 +22,27 @@ function agruparParaGrafico(rows) {
     return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
 }
 
-/* Agrupa rows por data para exibição de sessões */
+/* Agrupa rows por sessão (treino_realizado_id) para exibição de cards separados */
 function agruparPorData(rows) {
     const acc = {};
     for (const r of rows) {
-        const key = (r.data_treino || '').split('T')[0];
-        if (!acc[key]) acc[key] = { nomeTreino: r.nome_treino || '', series: [] };
+        const key = r.treino_realizado_id != null
+            ? `tr_${r.treino_realizado_id}`
+            : (r.data_treino || '').split('T')[0];
+        if (!acc[key]) acc[key] = { nomeTreino: r.nome_treino || '', data: (r.data_treino || '').split('T')[0], series: [] };
         acc[key].series.push(r);
     }
-    /* Ordena séries dentro de cada data */
     for (const key of Object.keys(acc)) {
         acc[key].series.sort((a, b) => a.numero_serie - b.numero_serie);
     }
-    /* Retorna datas mais recentes primeiro */
-    return Object.entries(acc).sort(([a], [b]) => b.localeCompare(a));
+    /* Ordena por data mais recente, depois por treino_realizado_id decrescente */
+    return Object.entries(acc).sort(([, a], [, b]) => {
+        const dataDiff = b.data.localeCompare(a.data);
+        if (dataDiff !== 0) return dataDiff;
+        const idA = a.series[0]?.treino_realizado_id ?? 0;
+        const idB = b.series[0]?.treino_realizado_id ?? 0;
+        return idB - idA;
+    });
 }
 
 function formatDate(iso) {
@@ -127,8 +134,8 @@ function ModalHistoricoExercicio({ exercicio, userId, onClose }) {
                         <div className="mh-empty">Nenhuma série registrada para este exercício.</div>
                     )}
 
-                    {!loading && !erro && sessoes.map(([data, { nomeTreino, series }], idx) => (
-                        <div key={data} className="mh-session-card">
+                    {!loading && !erro && sessoes.map(([key, { nomeTreino, data, series }], idx) => (
+                        <div key={key} className="mh-session-card">
                             {/* Cabeçalho da sessão */}
                             <div className="mh-session-header">
                                 <div className="mh-session-num">

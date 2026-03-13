@@ -599,11 +599,12 @@ router.get('/usuarios/:usuarioId/exercicios/:exercicioId/historico', async (req,
         s.numero_serie,
         s.carga,
         s.repeticoes,
-        t.nome_treino
+        s.treino_realizado_id,
+        COALESCE(t.nome_treino, 'Treino removido') AS nome_treino
       FROM series_usuario s
-      JOIN treinos t ON t.id = s.treino_id
+      LEFT JOIN treinos t ON t.id = s.treino_id
       WHERE s.usuario_id = $1 AND s.exercicio_id = $2
-      ORDER BY s.data_treino DESC, s.numero_serie;
+      ORDER BY s.data_treino DESC, s.treino_realizado_id, s.numero_serie;
     `, [usuarioId, exercicioId]);
 
         res.json(result.rows);
