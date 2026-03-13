@@ -73,6 +73,26 @@ body.dark-mode {
     pointer-events: none;
 }
 
+.hc-menu-btn {
+    background: none;
+    border: none;
+    color: rgba(200, 209, 208, 0.6);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
+    margin-right: 4px;
+}
+
+.hc-menu-btn:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+}
+
 .hc-header-avatar {
     width: 44px;
     height: 44px;

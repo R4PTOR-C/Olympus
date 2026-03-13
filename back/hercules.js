@@ -791,4 +791,77 @@ Resposta: {"dia": "sábado"}  ✅
     }
 });
 
+// 🔹 Salvar mensagem no histórico
+router.post("/historico", async (req, res) => {
+    try {
+        const { usuarioId, autor, texto, meta, conversaId } = req.body;
+        await pool.query(
+            "INSERT INTO hercules_mensagens (usuario_id, autor, texto, meta, conversa_id) VALUES ($1, $2, $3, $4, $5)",
+            [usuarioId, autor, texto, meta || null, conversaId || null]
+        );
+        res.json({ ok: true });
+    } catch (err) {
+        console.error("Erro ao salvar histórico Hércules:", err);
+        res.status(500).json({ erro: "Falha ao salvar mensagem" });
+    }
+});
+
+// 🔹 Buscar mensagens de uma conversa
+router.get("/historico/:conversaId", async (req, res) => {
+    try {
+        const { conversaId } = req.params;
+        const { rows } = await pool.query(
+            "SELECT autor, texto, meta FROM hercules_mensagens WHERE conversa_id = $1 ORDER BY criado_em ASC",
+            [conversaId]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error("Erro ao buscar histórico Hércules:", err);
+        res.status(500).json({ erro: "Falha ao buscar histórico" });
+    }
+});
+
+// 🔹 Listar conversas do usuário
+router.get("/conversas/:usuarioId", async (req, res) => {
+    try {
+        const { usuarioId } = req.params;
+        const { rows } = await pool.query(
+            "SELECT id, titulo, criado_em FROM hercules_conversas WHERE usuario_id = $1 ORDER BY criado_em DESC",
+            [usuarioId]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error("Erro ao listar conversas Hércules:", err);
+        res.status(500).json({ erro: "Falha ao listar conversas" });
+    }
+});
+
+// 🔹 Criar nova conversa
+router.post("/conversas", async (req, res) => {
+    try {
+        const { usuarioId, titulo } = req.body;
+        const tituloFinal = (titulo || "Nova conversa").substring(0, 80);
+        const { rows } = await pool.query(
+            "INSERT INTO hercules_conversas (usuario_id, titulo) VALUES ($1, $2) RETURNING *",
+            [usuarioId, tituloFinal]
+        );
+        res.json(rows[0]);
+    } catch (err) {
+        console.error("Erro ao criar conversa Hércules:", err);
+        res.status(500).json({ erro: "Falha ao criar conversa" });
+    }
+});
+
+// 🔹 Deletar conversa
+router.delete("/conversas/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query("DELETE FROM hercules_conversas WHERE id = $1", [id]);
+        res.json({ ok: true });
+    } catch (err) {
+        console.error("Erro ao deletar conversa Hércules:", err);
+        res.status(500).json({ erro: "Falha ao deletar conversa" });
+    }
+});
+
 module.exports = router;
