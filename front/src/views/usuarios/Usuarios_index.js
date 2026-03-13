@@ -19,7 +19,7 @@ function AvatarPlaceholder({ size = 48 }) {
 }
 
 const Usuarios_index = () => {
-    const { userId } = useContext(AuthContext);
+    const { userId, clearMensagensNaoLidas } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const [aba,             setAba]             = useState('meus');   // 'meus' | 'disponiveis' | 'pendentes'
@@ -60,7 +60,7 @@ const Usuarios_index = () => {
         }
     }, [userId]);
 
-    useEffect(() => { carregar(); }, [carregar]);
+    useEffect(() => { carregar(); clearMensagensNaoLidas(); }, [carregar]);
     useSocketRefresh(carregar);
 
     const toggleProcurando = async () => {

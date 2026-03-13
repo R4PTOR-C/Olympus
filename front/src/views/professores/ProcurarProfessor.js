@@ -27,7 +27,7 @@ function AvatarPlaceholder({ size = 52 }) {
 }
 
 export default function ProcurarProfessor() {
-    const { userId } = useContext(AuthContext);
+    const { userId, clearMensagensNaoLidas } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const [aba,            setAba]            = useState('disponiveis'); // 'disponiveis' | 'pendentes' | 'historico'
@@ -70,7 +70,7 @@ export default function ProcurarProfessor() {
         }
     }, [userId]);
 
-    useEffect(() => { carregar(); }, [carregar]);
+    useEffect(() => { carregar(); clearMensagensNaoLidas(); }, [carregar]);
     useSocketRefresh(carregar);
 
     const toggleProcurando = async () => {

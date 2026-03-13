@@ -160,6 +160,33 @@
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* ── DOT NEON PISCANDO ── */
+.navbar-dot-neon {
+    position: absolute;
+    top: 2px;
+    right: 0px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #00E5FF;
+    box-shadow: 0 0 6px #00E5FF, 0 0 12px #00E5FF;
+    animation: neon-pulse 1.4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes neon-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 4px #00E5FF, 0 0 10px #00E5FF;
+    }
+    50% {
+        opacity: 0.4;
+        transform: scale(1.4);
+        box-shadow: 0 0 8px #00E5FF, 0 0 20px #00E5FF, 0 0 30px #00E5FF;
+    }
+}
+
 /* ── BADGE MENSAGENS ── */
 .navbar-badge {
     position: absolute;
