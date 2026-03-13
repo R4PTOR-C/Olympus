@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
 import '../styles/Auth.css';
@@ -11,6 +11,17 @@ function Login() {
     const [erro,        setErro]        = useState(null);
     const navigate = useNavigate();
     const { login } = useContext(AuthContext);
+
+    useEffect(() => {
+        document.documentElement.style.overflow = 'hidden';
+        document.documentElement.style.position = 'fixed';
+        document.documentElement.style.width = '100%';
+        return () => {
+            document.documentElement.style.overflow = '';
+            document.documentElement.style.position = '';
+            document.documentElement.style.width = '';
+        };
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
