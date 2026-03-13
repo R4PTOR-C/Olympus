@@ -41,7 +41,7 @@
 
 /* ── HEADER (cinza claro) ── */
 .auth-header {
-    background: #E8EDF5;
+    background: white;
     padding: 28px 24px 22px;
     text-align: center;
     position: relative;
@@ -61,8 +61,8 @@
 }
 
 .auth-logo {
-    width: 90px;
-    height: 90px;
+    width: 150px;
+    height: 150px;
     object-fit: contain;
     margin-bottom: 10px;
     position: relative;
