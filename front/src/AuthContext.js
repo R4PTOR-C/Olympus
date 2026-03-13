@@ -72,11 +72,12 @@ export const AuthProvider = ({ children }) => {
                 setUser({ loggedIn: false });
             }
             setLoading(false);
-            const splash = document.getElementById('splash');
-            if (splash) {
-                splash.classList.add('hide');
-                setTimeout(() => splash.remove(), 380);
-            }
+            // DEV: splash fixo — descomente quando terminar os ajustes visuais
+             const splash = document.getElementById('splash');
+             if (splash) {
+                 splash.classList.add('hide');
+                 setTimeout(() => splash.remove(), 380);
+             }
         };
         checkSession();
     }, []);

@@ -22,17 +22,31 @@
 
 .custom-navbar-bg .container-fluid {
     height: 60px;
-    padding: 0 18px;
+    padding: 0 18px 0 12px;
 }
 
 /* ── LOGO ── */
 .custom-navbar-bg .navbar-brand {
-    font-family: 'Bebas Neue', sans-serif !important;
-    font-size: 1.45rem !important;
-    letter-spacing: 0.14em !important;
-    color: #4A90D9 !important;
     padding: 0 !important;
+    margin: 0 !important;
     line-height: 1;
+    display: flex !important;
+    align-items: center;
+    height: 60px;
+}
+
+.navbar-logo-texto {
+    height: 40px;       /* era 60px — tenta valores entre 40px e 55px */
+    width: auto;
+    max-width: 160px;   /* evita esticar demais */
+    object-fit: contain;
+    object-position: left center;
+    display: block;
+}
+@media (max-width: 576px) {
+    .navbar-logo-texto {
+        height: 35px;
+    }
 }
 
 /* ── LINKS CENTRAIS (desktop) ── */

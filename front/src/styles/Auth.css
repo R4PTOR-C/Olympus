@@ -61,12 +61,23 @@
 }
 
 .auth-logo {
-    width: 150px;
-    height: 150px;
+    width: 175px;
+    height: 175px;
     object-fit: contain;
-    margin-bottom: 10px;
     position: relative;
     z-index: 1;
+    margin-bottom: -75px;
+}
+
+.auth-logo-texto {
+    display: block;
+    width: 160px;
+    object-fit: contain;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    margin-bottom: -50px;
+
 }
 
 .auth-header-icon {

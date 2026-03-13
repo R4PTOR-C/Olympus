@@ -32,10 +32,9 @@ function Navbar() {
                 {/* Logo Olympus */}
                 <Link
                     className="navbar-brand"
-                    style={{ fontFamily: 'delirium' }}
                     to={homeLink}
                 >
-                    OLYMPUS
+                    <img src="/logo_texto_azul.png" alt="Olympus" className="navbar-logo-texto" />
                 </Link>
 
                 {/* Links centrais */}
