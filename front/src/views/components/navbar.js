@@ -135,7 +135,14 @@ Hércules                            </button>
 
 
 
-                                    <li className="dropdown-item d-flex justify-content-between align-items-center" style={{ cursor: 'default' }}>
+                                    <li
+                                        className="dropdown-item d-flex justify-content-between align-items-center"
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.currentTarget.querySelector('.dm-btn')?.click();
+                                        }}
+                                    >
                                         <span>{darkMode ? 'Modo claro' : 'Modo escuro'}</span>
                                         <DarkModeSwitch />
                                     </li>

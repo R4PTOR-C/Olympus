@@ -48,9 +48,10 @@ function Home() {
             .then(data => {
                 if (data.loggedIn) {
                     setUser({ loggedIn: true, userName: data.userName, userId: data.userId });
-                    fetchTreinos(data.userId, token);
+                    fetchTreinos(data.userId, token); // setLoading(false) happens inside fetchTreinos
+                } else {
+                    setLoading(false);
                 }
-                setLoading(false);
             })
             .catch(err => {
                 console.error('Erro ao verificar sessão:', err);
@@ -81,6 +82,8 @@ function Home() {
             if (treinoDoDia) fetchExerciciosTreino(treinoDoDia.id, token);
         } catch {
             setError('Erro ao buscar os treinos');
+        } finally {
+            setLoading(false);
         }
     };
 

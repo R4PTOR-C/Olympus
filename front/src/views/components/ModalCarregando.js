@@ -1,29 +1,16 @@
-// components/ModalCarregando.js
 import React from 'react';
-import '../../styles/ModalCarregando.css' // 👈 certifique-se de ter esse CSS criado
-import loadingGif from '../../imgs/muscle.gif';
-
+import '../../styles/ModalCarregando.css';
 
 const ModalCarregando = ({ show }) => {
     if (!show) return null;
 
     return (
-        <div className="modal-backdrop show" style={{ zIndex: 1050 }}>
-            <div
-                className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-            >
-                <div className="bg-white p-4 rounded d-flex flex-column align-items-center">
-                    <img
-                        src={loadingGif}
-                        alt="Carregando..."
-                        className="braco-loading mb-3"
-                        width="80"
-                        height="80"
-                    />
-
-                    <p className="mb-0">Carregando...</p>
-                </div>
-            </div>
+        <div className="mc-overlay">
+            <svg className="mc-spinner" viewBox="0 0 44 44" fill="none">
+                <circle className="mc-spinner-track" cx="22" cy="22" r="18" strokeWidth="3.5" />
+                <circle className="mc-spinner-arc"   cx="22" cy="22" r="18" strokeWidth="3.5" />
+            </svg>
+            <span className="mc-label">Carregando</span>
         </div>
     );
 };

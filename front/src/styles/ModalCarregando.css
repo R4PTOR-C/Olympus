@@ -1,0 +1,53 @@
+.mc-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: var(--mc-bg, #F0F3F8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+body.dark-mode .mc-overlay {
+    --mc-bg: #0E1117;
+}
+
+/* Spinner */
+.mc-spinner {
+    width: 52px;
+    height: 52px;
+    animation: mc-rotate 1s linear infinite;
+}
+
+.mc-spinner-track {
+    stroke: rgba(74, 144, 217, 0.18);
+}
+
+.mc-spinner-arc {
+    stroke: #4A90D9;
+    stroke-linecap: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 30;
+    animation: mc-dash 1s ease-in-out infinite;
+}
+
+@keyframes mc-rotate {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes mc-dash {
+    0%   { stroke-dashoffset: 90; }
+    50%  { stroke-dashoffset: 20; }
+    100% { stroke-dashoffset: 90; }
+}
+
+.mc-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #4A90D9;
+}
