@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('./db');
 const { enviarPush } = require('./push');
+const { authenticate, requireVinculo, verificarVinculo } = require('./middleware/auth');
 
 const router = express.Router();
 
@@ -23,7 +24,7 @@ router.get('/treinos/:id', async (req, res) => {
 });
 
 // Rota para criar um treino para um aluno
-router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
+router.post('/usuarios/:usuarioId/treinos', authenticate, requireVinculo('usuarioId'), async (req, res) => {
     const { usuarioId } = req.params;
     const { nome_treino, descricao, dia_semana, grupo_muscular, grupos_auxiliares } = req.body;
 
@@ -62,7 +63,7 @@ router.post('/usuarios/:usuarioId/treinos', async (req, res) => {
     }
 });
 
-router.put('/treinos/:treinoId', async (req, res) => {
+router.put('/treinos/:treinoId', authenticate, async (req, res) => {
     const { treinoId } = req.params;
     const { nome_treino, descricao, dia_semana, grupo_muscular, grupos_auxiliares } = req.body;
 
@@ -73,6 +74,12 @@ router.put('/treinos/:treinoId', async (req, res) => {
     };
 
     try {
+        // verificar vínculo antes de atualizar
+        const dono = await db.query('SELECT usuario_id FROM treinos WHERE id = $1', [treinoId]);
+        if (!dono.rows.length) return res.status(404).json({ error: 'Treino não encontrado' });
+        if (!await verificarVinculo(req, dono.rows[0].usuario_id))
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+
         const imagemSelecionada = grupoParaImagem[grupo_muscular] || 'default.png';
         const auxiliares = Array.isArray(grupos_auxiliares) ? grupos_auxiliares : [];
 
@@ -127,7 +134,7 @@ router.patch('/:treinoId/dia', async (req, res) => {
 });
 
 // PATCH genérico - atualiza apenas os campos enviados
-router.patch('/treinos/:treinoId', async (req, res) => {
+router.patch('/treinos/:treinoId', authenticate, async (req, res) => {
     const { treinoId } = req.params;
     const campos = req.body;
 
@@ -137,6 +144,10 @@ router.patch('/treinos/:treinoId', async (req, res) => {
     }
 
     try {
+        const dono = await db.query('SELECT usuario_id FROM treinos WHERE id = $1', [treinoId]);
+        if (!dono.rows.length) return res.status(404).json({ error: 'Treino não encontrado' });
+        if (!await verificarVinculo(req, dono.rows[0].usuario_id))
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
         // monta dinamicamente o SET do SQL
         const colunas = Object.keys(campos)
             .map((col, idx) => `${col} = $${idx + 1}`)
@@ -242,7 +253,7 @@ router.post('/treinos/:treinoId/exercicios', async (req, res) => {
 });
 
 // Rota para listar todos os treinos de um aluno
-router.get('/usuarios/:usuarioId/treinos', async (req, res) => {
+router.get('/usuarios/:usuarioId/treinos', authenticate, requireVinculo('usuarioId'), async (req, res) => {
     const { usuarioId } = req.params;
 
     try {
@@ -322,10 +333,15 @@ router.get('/grupos', async (req, res) => {
 
 
 // Rota para deletar um treino
-router.delete('/treinos/:id', async (req, res) => {
+router.delete('/treinos/:id', authenticate, async (req, res) => {
     const { id } = req.params;
 
     try {
+        const dono = await db.query('SELECT usuario_id FROM treinos WHERE id = $1', [id]);
+        if (!dono.rows.length) return res.status(404).json({ error: 'Treino não encontrado' });
+        if (!await verificarVinculo(req, dono.rows[0].usuario_id))
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+
         const result = await db.query('DELETE FROM treinos WHERE id = $1 RETURNING *', [id]);
 
         if (result.rowCount === 0) {

@@ -42,9 +42,11 @@ const UsuariosView = () => {
             return;
         }
         try {
+            const token = localStorage.getItem('token');
+            const authH = token ? { Authorization: `Bearer ${token}` } : {};
             const [usuarioRes, treinosRes] = await Promise.all([
-                fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`),
-                fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`)
+                fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`, { headers: authH }),
+                fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, { headers: authH })
             ]);
             if (!usuarioRes.ok || !treinosRes.ok) throw new Error('Erro ao carregar dados');
             setUsuario(await usuarioRes.json());
@@ -121,8 +123,10 @@ const UsuariosView = () => {
     const handleDeleteTreino = async (treinoId) => {
         if (!window.confirm('Tem certeza que deseja excluir este treino?')) return;
         try {
+            const token = localStorage.getItem('token');
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
             });
             if (res.ok) setTreinos(treinos.filter(t => t.id !== treinoId));
         } catch {

@@ -70,9 +70,10 @@ const TreinosEdit = () => {
     const handleSalvarCampo = async (campo, valor) => {
         setTreino(prev => ({ ...prev, [campo]: valor }));
         try {
+            const token = localStorage.getItem('token');
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ [campo]: valor }),
             });
             if (!res.ok) throw new Error('Erro ao atualizar treino');

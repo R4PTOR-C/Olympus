@@ -27,9 +27,11 @@ const TreinosForm = () => {
     const TODOS_DIAS = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        const authH = token ? { Authorization: `Bearer ${token}` } : {};
         Promise.all([
             fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`).then(r => r.json()),
-            fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`).then(r => r.json()),
+            fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, { headers: authH }).then(r => r.json()),
         ]).then(([exData, treinosData]) => {
             setExercicios(exData);
             setDiasOcupados(treinosData.map(t => t.dia_semana));
@@ -60,9 +62,10 @@ const TreinosForm = () => {
 
         setSubmitting(true);
         try {
+            const token = localStorage.getItem('token');
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ nome_treino: nomeTreino, descricao, dia_semana: diaSemana, grupo_muscular: grupoMuscular, grupos_auxiliares: gruposAuxiliares }),
             });
             if (!res.ok) { alert('Erro ao criar treino.'); return; }
