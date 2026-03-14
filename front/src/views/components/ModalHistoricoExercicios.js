@@ -29,7 +29,7 @@ function agruparPorData(rows) {
         const key = r.treino_realizado_id != null
             ? `tr_${r.treino_realizado_id}`
             : (r.data_treino || '').split('T')[0];
-        if (!acc[key]) acc[key] = { nomeTreino: r.nome_treino || '', data: (r.data_treino || '').split('T')[0], series: [] };
+        if (!acc[key]) acc[key] = { nomeTreino: r.nome_treino || '', data: (r.data_treino || '').split('T')[0], series: [], series_alvo: r.series_alvo, reps_alvo: r.reps_alvo };
         acc[key].series.push(r);
     }
     for (const key of Object.keys(acc)) {
@@ -134,7 +134,7 @@ function ModalHistoricoExercicio({ exercicio, userId, onClose }) {
                         <div className="mh-empty">Nenhuma série registrada para este exercício.</div>
                     )}
 
-                    {!loading && !erro && sessoes.map(([key, { nomeTreino, data, series }], idx) => (
+                    {!loading && !erro && sessoes.map(([key, { nomeTreino, data, series, series_alvo, reps_alvo }], idx) => (
                         <div key={key} className="mh-session-card">
                             {/* Cabeçalho da sessão */}
                             <div className="mh-session-header">
@@ -144,6 +144,29 @@ function ModalHistoricoExercicio({ exercicio, userId, onClose }) {
                                 <div className="mh-session-date">{formatDate(data)}</div>
                                 {nomeTreino && (
                                     <div className="mh-session-treino">{nomeTreino}</div>
+                                )}
+                                {(series_alvo || reps_alvo) && (
+                                    <div style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 5,
+                                        padding: '3px 9px',
+                                        borderRadius: 20,
+                                        background: 'rgba(74,144,217,0.1)',
+                                        border: '1px solid rgba(74,144,217,0.3)',
+                                        fontSize: '0.72rem',
+                                        color: '#4A90D9',
+                                        fontWeight: 700,
+                                        letterSpacing: '0.04em',
+                                        marginLeft: 'auto',
+                                    }}>
+                                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                        </svg>
+                                        Meta:{series_alvo ? ` ${series_alvo} séries` : ''}
+                                        {series_alvo && reps_alvo ? ' × ' : ''}
+                                        {reps_alvo ? `${reps_alvo} reps` : ''}
+                                    </div>
                                 )}
                             </div>
 

@@ -34,12 +34,14 @@ const TreinosEdit = () => {
         }
 
         const fetchAll = async () => {
+            const token = localStorage.getItem('token');
+            const authH = token ? { Authorization: `Bearer ${token}` } : {};
             try {
                 const [treinoRes, savedRes, exRes, treinosRes] = await Promise.all([
                     fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`),
                     fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`),
                     fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`),
-                    fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`),
+                    fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, { headers: authH }),
                 ]);
                 if (!treinoRes.ok) throw new Error(`Erro ao buscar treino (${treinoRes.status})`);
                 const treinoData = await treinoRes.json();
@@ -49,9 +51,9 @@ const TreinosEdit = () => {
                 setExercicios(await exRes.json());
                 // dias ocupados = outros treinos (excluindo o atual)
                 setDiasOcupados(
-                    treinosList
-                        .filter(t => t.id !== parseInt(treinoId))
-                        .map(t => t.dia_semana)
+                    Array.isArray(treinosList)
+                        ? treinosList.filter(t => t.id !== parseInt(treinoId)).map(t => t.dia_semana)
+                        : []
                 );
             } catch (err) {
                 setError(err.message);
@@ -99,6 +101,27 @@ const TreinosEdit = () => {
             }
         } catch (err) {
             console.error(err);
+        }
+    };
+
+    const handleAlvoChange = (exercicioId, campo, valor) => {
+        setExerciciosSalvos(prev =>
+            prev.map(ex => ex.exercicio_id === exercicioId ? { ...ex, [campo]: valor } : ex)
+        );
+    };
+
+    const handleAlvoBlur = async (exercicioId, series_alvo, reps_alvo) => {
+        try {
+            await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios/${exercicioId}`,
+                {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ series_alvo: series_alvo || null, reps_alvo: reps_alvo || null }),
+                }
+            );
+        } catch (err) {
+            console.error('Erro ao salvar meta:', err);
         }
     };
 
@@ -261,6 +284,40 @@ const TreinosEdit = () => {
                                         )}
                                     </div>
                                     <p className="tf-selected-name">{ex.nome_exercicio}</p>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '6px 0' }}>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            placeholder="Séries"
+                                            value={ex.series_alvo ?? ''}
+                                            onChange={e => handleAlvoChange(ex.exercicio_id, 'series_alvo', e.target.value)}
+                                            onBlur={() => handleAlvoBlur(ex.exercicio_id, ex.series_alvo, ex.reps_alvo)}
+                                            style={{
+                                                width: 56, padding: '5px 8px', borderRadius: 8,
+                                                border: '1.5px solid var(--tf-border, #2a3550)',
+                                                background: 'var(--tf-surface-2, #151f35)',
+                                                color: 'var(--tf-text, #e8edf5)',
+                                                fontSize: '0.78rem', textAlign: 'center',
+                                                fontFamily: "'Barlow', sans-serif",
+                                            }}
+                                        />
+                                        <span style={{ color: 'var(--tf-text-dim, #3d4e6a)', fontSize: '0.85rem', fontWeight: 700 }}>×</span>
+                                        <input
+                                            type="text"
+                                            placeholder="Reps"
+                                            value={ex.reps_alvo ?? ''}
+                                            onChange={e => handleAlvoChange(ex.exercicio_id, 'reps_alvo', e.target.value)}
+                                            onBlur={() => handleAlvoBlur(ex.exercicio_id, ex.series_alvo, ex.reps_alvo)}
+                                            style={{
+                                                width: 64, padding: '5px 8px', borderRadius: 8,
+                                                border: '1.5px solid var(--tf-border, #2a3550)',
+                                                background: 'var(--tf-surface-2, #151f35)',
+                                                color: 'var(--tf-text, #e8edf5)',
+                                                fontSize: '0.78rem', textAlign: 'center',
+                                                fontFamily: "'Barlow', sans-serif",
+                                            }}
+                                        />
+                                    </div>
                                     <button
                                         type="button"
                                         className="tf-rm-btn"

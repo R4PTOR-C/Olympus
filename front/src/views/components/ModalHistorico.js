@@ -141,6 +141,29 @@ function ModalHistorico({ usuarioId, treinoId, onClose }) {
                                                     </svg>
                                                     <span className="mh-ex-name">{ex.nome_exercicio}</span>
                                                 </div>
+                                                {(ex.series_alvo || ex.reps_alvo) && (
+                                                    <div style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: 5,
+                                                        padding: '3px 9px',
+                                                        borderRadius: 20,
+                                                        background: 'var(--ex-accent-dim, rgba(74,144,217,0.1))',
+                                                        border: '1px solid var(--ex-accent-border, rgba(74,144,217,0.3))',
+                                                        marginBottom: 8,
+                                                        fontSize: '0.72rem',
+                                                        color: 'var(--h-accent, #4A90D9)',
+                                                        fontWeight: 700,
+                                                        letterSpacing: '0.04em',
+                                                    }}>
+                                                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                                        </svg>
+                                                        Meta:{ex.series_alvo ? ` ${ex.series_alvo} séries` : ''}
+                                                        {ex.series_alvo && ex.reps_alvo ? ' × ' : ''}
+                                                        {ex.reps_alvo ? `${ex.reps_alvo} reps` : ''}
+                                                    </div>
+                                                )}
 
                                                 {ex.series.length === 0 ? (
                                                     <div className="mh-ex-empty">Sem séries registradas.</div>

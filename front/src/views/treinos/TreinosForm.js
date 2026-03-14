@@ -44,9 +44,15 @@ const TreinosForm = () => {
 
     const handleAdicionarExercicio = (ex) => {
         if (!exerciciosSelecionados.some(s => s.id === ex.id)) {
-            setExerciciosSelecionados(prev => [...prev, ex]);
+            setExerciciosSelecionados(prev => [...prev, { ...ex, series_alvo: '', reps_alvo: '' }]);
         }
         setExercicioAtivo(null);
+    };
+
+    const handleAlvoChange = (exId, campo, valor) => {
+        setExerciciosSelecionados(prev =>
+            prev.map(ex => ex.id === exId ? { ...ex, [campo]: valor } : ex)
+        );
     };
 
     const handleRemoveExercicio = (exId) => {
@@ -74,7 +80,13 @@ const TreinosForm = () => {
             await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${novoTreino.id}/exercicios`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ exercicios: exerciciosSelecionados.map(ex => ex.id) }),
+                body: JSON.stringify({
+                    exercicios: exerciciosSelecionados.map(ex => ({
+                        id: ex.id,
+                        series_alvo: ex.series_alvo ? Number(ex.series_alvo) : null,
+                        reps_alvo: ex.reps_alvo || null,
+                    }))
+                }),
             });
 
             navigate(`/usuarios/view/${id}`);
@@ -256,6 +268,46 @@ const TreinosForm = () => {
                                                 )}
                                             </div>
                                             <p className="tf-selected-name">{ex.nome_exercicio}</p>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '6px 0' }}>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    placeholder="Séries"
+                                                    value={ex.series_alvo}
+                                                    onChange={e => handleAlvoChange(ex.id, 'series_alvo', e.target.value)}
+                                                    onClick={e => e.stopPropagation()}
+                                                    style={{
+                                                        width: 56,
+                                                        padding: '5px 8px',
+                                                        borderRadius: 8,
+                                                        border: '1.5px solid var(--tf-border, #2a3550)',
+                                                        background: 'var(--tf-surface-2, #151f35)',
+                                                        color: 'var(--tf-text, #e8edf5)',
+                                                        fontSize: '0.78rem',
+                                                        textAlign: 'center',
+                                                        fontFamily: "'Barlow', sans-serif",
+                                                    }}
+                                                />
+                                                <span style={{ color: 'var(--tf-text-dim, #3d4e6a)', fontSize: '0.85rem', fontWeight: 700 }}>×</span>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Reps"
+                                                    value={ex.reps_alvo}
+                                                    onChange={e => handleAlvoChange(ex.id, 'reps_alvo', e.target.value)}
+                                                    onClick={e => e.stopPropagation()}
+                                                    style={{
+                                                        width: 64,
+                                                        padding: '5px 8px',
+                                                        borderRadius: 8,
+                                                        border: '1.5px solid var(--tf-border, #2a3550)',
+                                                        background: 'var(--tf-surface-2, #151f35)',
+                                                        color: 'var(--tf-text, #e8edf5)',
+                                                        fontSize: '0.78rem',
+                                                        textAlign: 'center',
+                                                        fontFamily: "'Barlow', sans-serif",
+                                                    }}
+                                                />
+                                            </div>
                                             <button
                                                 type="button"
                                                 className="tf-rm-btn"

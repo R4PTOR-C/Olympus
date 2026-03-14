@@ -58,7 +58,7 @@ export default function GraficoHistoricoExercicio({ dados = [], loading = false 
     const currentMetric = METRICS.find(m => m.key === metric);
 
     /* Cores que funcionam em atributos SVG (sem CSS vars) */
-    const lineColor = darkMode ? '#C0CDD8' : '#8899AA';
+    const lineColor = darkMode ? '#6AAFF0' : '#19222B';
     const gridColor = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
     const tickColor = darkMode ? '#6B7A99'               : '#9CAAB8';
 

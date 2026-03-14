@@ -186,12 +186,6 @@ body.dark-mode .btn-close {
 /* ========================= */
 /* RECHARTS                  */
 /* ========================= */
-.recharts-line path {
-    stroke: #19222B; /* linha padrão */
-}
-.grafico-linha path {
-    stroke: #19222B !important;
-}
 
 /* ========================= */
 /* APP DEFAULT               */

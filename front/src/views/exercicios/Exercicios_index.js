@@ -353,7 +353,32 @@ function Exercicios_index() {
                                 <div className="ex-card-body">
                                     <h2 className="ex-ex-name">{exercicio.nome_exercicio}</h2>
 
-                                    {/* Tabela de séries */}
+                                    {/* Meta de séries/reps */}
+                                    {(exercicio.series_alvo || exercicio.reps_alvo) && (
+                                        <div style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 6,
+                                            padding: '4px 10px',
+                                            borderRadius: 20,
+                                            background: 'var(--ex-accent-dim)',
+                                            border: '1px solid var(--ex-accent-border)',
+                                            marginBottom: 10,
+                                            fontSize: '0.75rem',
+                                            color: 'var(--ex-accent)',
+                                            fontWeight: 700,
+                                            letterSpacing: '0.04em',
+                                        }}>
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                            </svg>
+                                            Meta:{exercicio.series_alvo ? ` ${exercicio.series_alvo} séries` : ''}
+                                            {exercicio.series_alvo && exercicio.reps_alvo ? ' × ' : ''}
+                                            {exercicio.reps_alvo ? `${exercicio.reps_alvo} reps` : ''}
+                                        </div>
+                                    )}
+
+                                {/* Tabela de séries */}
                                     <div className="ex-series-wrap">
                                     <table className="ex-series-table">
                                         <thead>

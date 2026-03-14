@@ -237,11 +237,14 @@ router.post('/treinos/:treinoId/exercicios', async (req, res) => {
         // Iniciar transação para garantir que todos os exercícios sejam inseridos
         await db.query('BEGIN');
 
-        // Inserir cada exercício no treino
-        for (const exercicio_id of exercicios) {
+        // Aceita tanto array de IDs quanto array de objetos { id, series_alvo, reps_alvo }
+        for (const item of exercicios) {
+            const exercicio_id = typeof item === 'object' ? item.id : item;
+            const series_alvo = typeof item === 'object' ? (item.series_alvo || null) : null;
+            const reps_alvo = typeof item === 'object' ? (item.reps_alvo || null) : null;
             await db.query(
-                'INSERT INTO treinos_exercicios (treino_id, exercicio_id) VALUES ($1, $2)',
-                [treinoId, exercicio_id]
+                'INSERT INTO treinos_exercicios (treino_id, exercicio_id, series_alvo, reps_alvo) VALUES ($1, $2, $3, $4)',
+                [treinoId, exercicio_id, series_alvo, reps_alvo]
             );
         }
 
@@ -284,7 +287,8 @@ router.get('/treinos/:treinoId/exercicios', async (req, res) => {
 
         // Recuperar todos os exercícios do treino
         const result = await db.query(
-            `SELECT te.exercicio_id, e.nome_exercicio,e.grupo_muscular,  e.gif_url
+            `SELECT te.exercicio_id, e.nome_exercicio, e.grupo_muscular, e.gif_url,
+                    te.series_alvo, te.reps_alvo
              FROM treinos_exercicios te
              JOIN exercicios e ON te.exercicio_id = e.id
              WHERE te.treino_id = $1`,
@@ -356,6 +360,26 @@ router.delete('/treinos/:id', authenticate, async (req, res) => {
     } catch (error) {
         console.error('Erro ao excluir treino:', error);
         res.status(500).json({ error: 'Erro ao excluir treino' });
+    }
+});
+
+router.patch('/treinos/:treinoId/exercicios/:exercicioId', async (req, res) => {
+    const { treinoId, exercicioId } = req.params;
+    const { series_alvo, reps_alvo } = req.body;
+
+    try {
+        const result = await db.query(
+            `UPDATE treinos_exercicios
+             SET series_alvo = $1, reps_alvo = $2
+             WHERE treino_id = $3 AND exercicio_id = $4
+             RETURNING *`,
+            [series_alvo ?? null, reps_alvo ?? null, treinoId, exercicioId]
+        );
+        if (result.rowCount === 0) return res.status(404).json({ error: 'Exercício não encontrado no treino.' });
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Erro ao atualizar meta do exercício:', error);
+        res.status(500).json({ error: 'Erro ao atualizar meta do exercício.' });
     }
 });
 
@@ -635,9 +659,12 @@ router.get('/usuarios/:usuarioId/exercicios/:exercicioId/historico', async (req,
         s.carga,
         s.repeticoes,
         s.treino_realizado_id,
-        COALESCE(t.nome_treino, 'Treino removido') AS nome_treino
+        COALESCE(t.nome_treino, 'Treino removido') AS nome_treino,
+        te.series_alvo,
+        te.reps_alvo
       FROM series_usuario s
       LEFT JOIN treinos t ON t.id = s.treino_id
+      LEFT JOIN treinos_exercicios te ON te.treino_id = s.treino_id AND te.exercicio_id = s.exercicio_id
       WHERE s.usuario_id = $1 AND s.exercicio_id = $2
       ORDER BY s.data_treino DESC, s.treino_realizado_id, s.numero_serie;
     `, [usuarioId, exercicioId]);
