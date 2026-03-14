@@ -51,11 +51,13 @@ router.post('/usuarios/:usuarioId/treinos', authenticate, requireVinculo('usuari
 
         const treino = result.rows[0];
         req.io?.to(`user_${usuarioId}`).emit('atualizar_tela', { tipo: 'treinos' });
-        await enviarPush(usuarioId, {
-            title: 'Novo treino criado!',
-            body: treino.nome_treino,
-            url: `/usuarios/view/${usuarioId}`
-        });
+        if (String(req.user.userId) !== String(usuarioId)) {
+            await enviarPush(usuarioId, {
+                title: 'Novo treino criado!',
+                body: treino.nome_treino,
+                url: `/usuarios/view/${usuarioId}`
+            });
+        }
         res.status(201).json(treino);
     } catch (error) {
         console.error('Erro ao criar o treino:', error);

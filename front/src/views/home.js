@@ -149,6 +149,39 @@ function Home() {
                             })}
                         </div>
 
+                        {/* ── BANNER: SEM TREINOS ── */}
+                        {treinos.length === 0 && (
+                            <div
+                                onClick={() => navigate(`/usuarios/${user.userId}/treinos`)}
+                                style={{
+                                    margin: '0 16px 16px',
+                                    padding: '16px 20px',
+                                    background: 'var(--h-accent-dim)',
+                                    border: '1px solid var(--h-accent)',
+                                    borderRadius: 'var(--h-radius-md)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 14,
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--h-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ color: 'var(--h-accent)', fontWeight: 700, fontSize: 14 }}>
+                                        Nenhum treino cadastrado
+                                    </div>
+                                    <div style={{ color: 'var(--h-text-muted)', fontSize: 13, marginTop: 2 }}>
+                                        Crie seu primeiro treino para começar a treinar
+                                    </div>
+                                </div>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--h-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M9 18l6-6-6-6"/>
+                                </svg>
+                            </div>
+                        )}
+
                         {/* ── GRID PRINCIPAL ── */}
                         <div className="h-desktop-grid">
 
