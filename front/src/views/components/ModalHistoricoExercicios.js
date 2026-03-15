@@ -12,14 +12,30 @@ function agruparParaGrafico(rows) {
         const oneRM = carga > 0 && reps > 0 ? carga * (1 + reps / 30) : 0;
 
         if (!byDate.has(dia)) {
-            byDate.set(dia, { date: dia, maxCarga: 0, totalVolume: 0, max1RM: 0 });
+            byDate.set(dia, { date: dia, maxCarga: 0, totalVolume: 0, max1RM: 0, seriesDetalhe: [] });
         }
         const d = byDate.get(dia);
         d.maxCarga     = Math.max(d.maxCarga, carga);
         d.totalVolume += carga * reps;
         d.max1RM       = Math.max(d.max1RM, oneRM);
+        if (carga > 0 || reps > 0) {
+            d.seriesDetalhe.push({ serie: r.numero_serie, carga, reps });
+        }
     }
-    return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+    const sorted = Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+    // Adiciona delta em relação à sessão anterior por métrica
+    return sorted.map((d, i) => {
+        if (i === 0) return { ...d, deltaCarga: null, deltaVolume: null, delta1RM: null };
+        const prev = sorted[i - 1];
+        return {
+            ...d,
+            deltaCarga:  +(d.maxCarga    - prev.maxCarga).toFixed(1),
+            deltaVolume: +(d.totalVolume - prev.totalVolume).toFixed(1),
+            delta1RM:    +(d.max1RM      - prev.max1RM).toFixed(1),
+        };
+    });
 }
 
 /* Agrupa rows por sessão (treino_realizado_id) para exibição de cards separados */
