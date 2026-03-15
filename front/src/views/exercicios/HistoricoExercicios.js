@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../../AuthContext';
 import PageStateHandler from '../components/PageStateHandler';
 import ModalHistoricoExercicio from '../components/ModalHistoricoExercicios';
+import ModalMapaMuscular from '../components/ModalMapaMuscular';
 import PullToRefresh from '../components/PullToRefresh';
 import '../../styles/HistoricoExercicios.css';
 
@@ -12,6 +13,7 @@ function HistoricoExercicios() {
 
     const [exercicios, setExercicios] = useState([]);
     const [exercicioModal, setExercicioModal] = useState(null);
+    const [mapaAberto, setMapaAberto] = useState(false);
     const [loading, setLoading] = useState(true);
 
     const fetchExercicios = useCallback(async () => {
@@ -40,9 +42,31 @@ function HistoricoExercicios() {
                 {/* ── PAGE HEADER ── */}
                 <div className="hx-page-header">
                     <span className="hx-page-title">Histórico por Exercício</span>
-                    {!loading && exercicios.length > 0 && (
-                        <span className="hx-page-count">{exercicios.length} exercício{exercicios.length !== 1 ? 's' : ''}</span>
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        {!loading && exercicios.length > 0 && (
+                            <span className="hx-page-count">{exercicios.length} exercício{exercicios.length !== 1 ? 's' : ''}</span>
+                        )}
+                        <button
+                            onClick={() => setMapaAberto(true)}
+                            title="Mapa muscular do mês"
+                            style={{
+                                background: 'rgba(74,144,217,0.12)',
+                                border: '1px solid rgba(74,144,217,0.3)',
+                                borderRadius: 8, padding: '5px 7px',
+                                cursor: 'pointer', lineHeight: 0, color: '#4A90D9',
+                            }}
+                        >
+                            {/* ícone de radar/hexágono */}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" strokeWidth="2"
+                                strokeLinecap="round" strokeLinejoin="round">
+                                <polygon points="12 2 19 6.5 19 17.5 12 22 5 17.5 5 6.5 12 2"/>
+                                <line x1="12" y1="2"  x2="12" y2="22"/>
+                                <line x1="5"  y1="6.5"  x2="19" y2="17.5"/>
+                                <line x1="5"  y1="17.5" x2="19" y2="6.5"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 {loading ? (
@@ -128,6 +152,13 @@ function HistoricoExercicios() {
                     exercicio={exercicioModal}
                     userId={userId}
                     onClose={() => setExercicioModal(null)}
+                />
+            )}
+
+            {mapaAberto && (
+                <ModalMapaMuscular
+                    userId={userId}
+                    onClose={() => setMapaAberto(false)}
                 />
             )}
         </PageStateHandler>

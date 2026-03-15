@@ -679,4 +679,31 @@ router.get('/usuarios/:usuarioId/exercicios/:exercicioId/historico', authenticat
 
 
 
+// Séries por grupo muscular no mês atual (escala absoluta para radar chart)
+router.get('/usuarios/:usuarioId/musculos-mes', authenticate, async (req, res) => {
+    const { usuarioId } = req.params;
+    try {
+        const result = await db.query(`
+            SELECT e.grupo_muscular, COUNT(su.id) AS total_series
+            FROM series_usuario su
+            JOIN exercicios e ON e.id = su.exercicio_id
+            WHERE su.usuario_id = $1
+              AND su.data_treino >= DATE_TRUNC('month', CURRENT_DATE)
+              AND su.data_treino < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+            GROUP BY e.grupo_muscular
+            ORDER BY total_series DESC
+        `, [usuarioId]);
+
+        const dados = {};
+        result.rows.forEach(row => {
+            dados[row.grupo_muscular] = parseInt(row.total_series);
+        });
+
+        res.json(dados);
+    } catch (error) {
+        console.error('Erro ao buscar músculos do mês:', error);
+        res.status(500).json({ error: 'Erro ao buscar dados musculares.' });
+    }
+});
+
 module.exports = router;
