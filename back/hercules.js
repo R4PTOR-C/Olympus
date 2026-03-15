@@ -185,7 +185,7 @@ async function buscarDiasLivres(usuarioId) {
     return diasSemana.filter((dia) => !diasOcupados.has(dia));
 }
 
-async function salvarTreinoDoHercules({ usuarioId, tipos, exerciciosIds, dia, nome }) {
+async function salvarTreinoDoHercules({ usuarioId, tipos, exerciciosIds, dia, nome, seriesRepsPorId }) {
     const grupoPrincipal   = tipos[0] || "Geral";
     const gruposAuxiliares = tipos.slice(1);
     const nomeTreino = nome || (tipos.length > 0 ? `Treino de ${tipos.join(" + ")}` : "Treino sugerido pelo Hércules");
@@ -206,9 +206,12 @@ async function salvarTreinoDoHercules({ usuarioId, tipos, exerciciosIds, dia, no
         const treino = treinoRes.rows[0];
 
         for (const exercicioId of exerciciosIds) {
+            const sr = seriesRepsPorId
+                ? (seriesRepsPorId[exercicioId] || seriesRepsPorId[String(exercicioId)])
+                : null;
             await pool.query(
-                "INSERT INTO treinos_exercicios (treino_id, exercicio_id) VALUES ($1, $2)",
-                [treino.id, exercicioId]
+                "INSERT INTO treinos_exercicios (treino_id, exercicio_id, series_alvo, reps_alvo) VALUES ($1, $2, $3, $4)",
+                [treino.id, exercicioId, sr?.series || null, sr?.reps || null]
             );
         }
 
@@ -227,6 +230,24 @@ router.post("/chat", async (req, res) => {
         // 🔹 Buscar nome do usuário logado
         const userRes = await pool.query("SELECT nome FROM usuarios WHERE id = $1", [usuarioId]);
         const nomeUsuario = userRes.rows.length > 0 ? userRes.rows[0].nome : "usuário";
+
+        // 🔹 Carregar histórico da conversa para contexto do GPT
+        const conversaId = req.body.conversaId;
+        let historico = [];
+        if (conversaId) {
+            try {
+                const { rows: hist } = await pool.query(
+                    `SELECT autor, texto FROM hercules_mensagens
+                     WHERE conversa_id = $1
+                     ORDER BY criado_em DESC LIMIT 10`,
+                    [conversaId]
+                );
+                historico = hist.reverse().map(r => ({
+                    role: r.autor === 'user' ? 'user' : 'assistant',
+                    content: r.texto,
+                }));
+            } catch (_) {}
+        }
 
         if (req.body.aguardando_agendamento_treino) {
             const tiposPendentes = Array.isArray(req.body.tipo) ? req.body.tipo : [];
@@ -274,7 +295,8 @@ router.post("/chat", async (req, res) => {
                     tipos: tiposPendentes,
                     exerciciosIds: exerciciosPendentes,
                     dia: diaPreConfirmado,
-                    nome: nomePendente
+                    nome: nomePendente,
+                    seriesRepsPorId: req.body.series_reps_por_id || {},
                 });
 
                 return res.json({
@@ -360,7 +382,8 @@ router.post("/chat", async (req, res) => {
                 tipos: tiposPendentes,
                 exerciciosIds: exerciciosPendentes,
                 dia: diaEscolhido,
-                nome: nomePendente
+                nome: nomePendente,
+                seriesRepsPorId: req.body.series_reps_por_id || {},
             });
 
             return res.json({
@@ -523,6 +546,7 @@ Resposta: {"dia": "sábado"}  ✅
 
 `
                 },
+                ...historico,
                 { role: "user", content: mensagem }
             ],
             response_format: { type: "json_object" }
@@ -562,36 +586,99 @@ Resposta: {"dia": "sábado"}  ✅
             if (isFullBody) {
                 dados.tipo = ["Peitoral", "Costas", "Ombros", "Bíceps", "Tríceps", "Pernas", "Abdômen"];
                 dados.quantidade = { Peitoral: 2, Costas: 2, Ombros: 1, Bíceps: 1, Tríceps: 1, Pernas: 1, "Abdômen": 1 };
-                dados.series_repeticoes = { Peitoral: "4x10", Costas: "4x10", Ombros: "3x12", Bíceps: "3x12", Tríceps: "3x12", Pernas: "4x12", "Abdômen": "3x20" };
             }
 
             const tiposNormalizados = dados.tipo
                 .map((g) => normalizarGrupoMuscular(g))
                 .filter(Boolean);
-            const grupos = tiposNormalizados.map((g) => g.toLowerCase());
 
-            let todosExercicios = [];
-            let exercicios_ids = [];
-
-            for (const grupo of grupos) {
-                const tipoOriginal = tiposNormalizados[grupos.indexOf(grupo)];
-                const qtd = (dados.quantidade && dados.quantidade[tipoOriginal]) || 4;
-
-                const exerciciosRes = await pool.query(
+            // ── 1. Busca pool de exercícios do banco (5x o necessário para o GPT escolher) ──
+            const exerciciosPorGrupo = {};
+            for (const grupo of tiposNormalizados) {
+                const qtd = (dados.quantidade && (dados.quantidade[grupo] || dados.quantidade[grupo.toLowerCase()])) || 4;
+                const poolSize = Math.min(qtd * 5, 40);
+                const { rows } = await pool.query(
                     "SELECT id, nome_exercicio FROM exercicios WHERE LOWER(grupo_muscular) = LOWER($1) ORDER BY RANDOM() LIMIT $2",
-                    [grupo, qtd]
+                    [grupo, poolSize]
                 );
+                exerciciosPorGrupo[grupo] = { qtd, exercicios: rows };
+            }
 
-                if (exerciciosRes.rows.length > 0) {
-                    todosExercicios.push({
-                        grupo,
-                        exercicios: exerciciosRes.rows.map(e => e.nome_exercicio)
-                    });
-                    exercicios_ids.push(...exerciciosRes.rows.map(e => e.id));
+            // ── 2. GPT seleciona exercícios inteligentemente ──
+            const listaParaSelecao = tiposNormalizados.map(grupo => {
+                const { qtd, exercicios } = exerciciosPorGrupo[grupo];
+                return `${grupo} (selecione exatamente ${qtd}):\n${exercicios.map(e => `- ${e.nome_exercicio}`).join('\n')}`;
+            }).join('\n\n');
+
+            const selecaoRes = await openai.chat.completions.create({
+                model: "gpt-5-mini",
+                messages: [
+                    {
+                        role: "system",
+                        content: `Você é Hércules, treinador virtual do Olympus especializado em hipertrofia.
+Monte um treino inteligente seguindo estas regras:
+1. Comece SEMPRE com exercícios compostos/multiarticulares (supino, agachamento, remada, desenvolvimento, levantamento terra)
+2. Finalize com isolamentos (crucifixo, rosca, extensão, elevação)
+3. Varie os equipamentos dentro do possível (barra → halteres → cabo → máquina)
+4. Use EXATAMENTE os nomes da lista fornecida, sem alterar nada
+5. Selecione EXATAMENTE o número solicitado por grupo
+
+Retorne JSON neste formato:
+{
+  "grupos": [
+    {
+      "grupo": "Peitoral",
+      "exercicios": [
+        {"nome": "Supino Com Barra", "series": 4, "reps": "8-10"},
+        {"nome": "Crucifixo Com Halteres", "series": 3, "reps": "12-15"}
+      ]
+    }
+  ],
+  "resumo": "texto markdown rico e motivador com: título do treino, seção por grupo com emoji, cada exercício numerado com séries×reps e 1 dica rápida de execução, duração estimada e dica geral no final"
+}`,
+                    },
+                    {
+                        role: "user",
+                        content: `Monte um treino de ${tiposNormalizados.join(' + ')} para ${nomeUsuario}.\n\nExercícios disponíveis:\n\n${listaParaSelecao}`,
+                    },
+                ],
+                response_format: { type: "json_object" },
+            });
+
+            const selecao = JSON.parse(selecaoRes.choices[0].message.content);
+
+            // ── 3. Mapeia nomes selecionados para IDs do banco ──
+            const exercicios_ids = [];
+            const series_reps_por_id = {};
+            const todosExercicios = [];
+
+            for (const grp of (selecao.grupos || [])) {
+                const poolEx = exerciciosPorGrupo[grp.grupo]?.exercicios || [];
+                const found = [];
+                for (const ex of (grp.exercicios || [])) {
+                    const match = poolEx.find(
+                        dbEx => dbEx.nome_exercicio.toLowerCase() === ex.nome.toLowerCase()
+                    );
+                    if (match) {
+                        exercicios_ids.push(match.id);
+                        series_reps_por_id[match.id] = { series: ex.series, reps: ex.reps };
+                        found.push(ex.nome);
+                    }
+                }
+                if (found.length > 0) todosExercicios.push({ grupo: grp.grupo, exercicios: found });
+            }
+
+            // Fallback: se GPT não acertou nenhum nome, usa random do pool
+            if (exercicios_ids.length === 0) {
+                for (const grupo of tiposNormalizados) {
+                    const { qtd, exercicios } = exerciciosPorGrupo[grupo];
+                    const slice = exercicios.slice(0, qtd);
+                    slice.forEach(e => exercicios_ids.push(e.id));
+                    todosExercicios.push({ grupo, exercicios: slice.map(e => e.nome_exercicio) });
                 }
             }
 
-            if (todosExercicios.length === 0) {
+            if (exercicios_ids.length === 0) {
                 return res.json({
                     ...dados,
                     tipo: tiposNormalizados,
@@ -600,35 +687,22 @@ Resposta: {"dia": "sábado"}  ✅
                 });
             }
 
+            const textoComExercicios = selecao.resumo ||
+                todosExercicios.map(g => `**${g.grupo}**\n${g.exercicios.map(e => `- ${e}`).join('\n')}`).join('\n\n');
+
+            // ── 4. Agendamento (lógica inalterada) ──
             const diasLivres = await buscarDiasLivres(usuarioId);
             const diasLivresFormatados = formatarListaDias(diasLivres);
-
-            // Se o GPT já retornou um dia específico, tenta usá-lo direto
             const diaDoGPT = dados.dia ? normalizarDia(dados.dia) : null;
-
-            // Monta lista de exercícios reais para todos os casos
-            const seriesRepeticoes = dados.series_repeticoes || {};
-            const listaExerciciosReais = todosExercicios.map(g => {
-                const grupoCapitalizado = g.grupo.charAt(0).toUpperCase() + g.grupo.slice(1);
-                // Busca séries/reps pelo grupo capitalizado ou original
-                const srKey = Object.keys(seriesRepeticoes).find(k => k.toLowerCase() === g.grupo.toLowerCase());
-                const sr = srKey ? seriesRepeticoes[srKey] : null;
-                const header = sr ? `**${grupoCapitalizado}** _(${sr})_` : `**${grupoCapitalizado}**`;
-                return `${header}\n${g.exercicios.map(e => `- ${e}`).join('\n')}`;
-            }).join('\n\n');
-            const textoComExercicios = listaExerciciosReais
-                ? `Aqui está o treino montado:\n\n${listaExerciciosReais}`
-                : dados.texto;
 
             if (diaDoGPT && diasSemana.includes(diaDoGPT)) {
                 if (!diasLivres.includes(diaDoGPT)) {
-                    // Dia ocupado — alerta e mostra dias livres
                     return res.json({
                         ...dados,
                         tipo: tiposNormalizados,
                         exercicios_ids,
+                        series_reps_por_id,
                         nome_treino: dados.nome || null,
-                        texto_treino: dados.texto,
                         aguardando_agendamento_treino: diasLivres.length > 0,
                         dias_livres: diasLivresFormatados,
                         texto: `${textoComExercicios}\n\n⚠️ ${nomeUsuario}, ${formatarDiaParaBanco(diaDoGPT)} já está ocupado.${diasLivres.length > 0 ? ` Dias livres: ${diasLivresFormatados.join(", ")}.` : " Você não tem dias livres no momento."}`,
@@ -636,13 +710,12 @@ Resposta: {"dia": "sábado"}  ✅
                     });
                 }
 
-                // Dia livre — pula a etapa de perguntar, vai direto pra confirmação
                 return res.json({
                     ...dados,
                     tipo: tiposNormalizados,
                     exercicios_ids,
+                    series_reps_por_id,
                     nome_treino: dados.nome || null,
-                    texto_treino: dados.texto,
                     aguardando_agendamento_treino: true,
                     dia_confirmado: diaDoGPT,
                     confirmado: false,
@@ -651,7 +724,6 @@ Resposta: {"dia": "sábado"}  ✅
                 });
             }
 
-            // Sem dia especificado — pede para o usuário escolher
             const textoAgendamento = diasLivres.length > 0
                 ? `${textoComExercicios}\n\n📅 Se quiser que eu salve esse treino, me diga um destes dias livres: ${diasLivresFormatados.join(", ")}.`
                 : `${textoComExercicios}\n\n⚠️ Você não tem dias livres no momento para eu salvar esse treino.`;
@@ -660,8 +732,8 @@ Resposta: {"dia": "sábado"}  ✅
                 ...dados,
                 tipo: tiposNormalizados,
                 exercicios_ids,
+                series_reps_por_id,
                 nome_treino: dados.nome || null,
-                texto_treino: dados.texto,
                 aguardando_agendamento_treino: diasLivres.length > 0,
                 dias_livres: diasLivresFormatados,
                 texto: textoAgendamento,

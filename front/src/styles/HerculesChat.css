@@ -415,6 +415,72 @@ body.dark-mode {
     box-shadow: none;
 }
 
+/* =============================== */
+/* MARKDOWN nas bolhas do Hércules */
+/* =============================== */
+.hc-msg.herc .hc-bubble .hc-md-h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.06em;
+    color: var(--hc-accent);
+    margin: 10px 0 4px;
+}
+.hc-msg.herc .hc-bubble .hc-md-h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--hc-text);
+    margin: 10px 0 3px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--hc-border);
+}
+.hc-msg.herc .hc-bubble .hc-md-h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--hc-text-muted);
+    margin: 8px 0 2px;
+}
+.hc-msg.herc .hc-bubble .hc-md-p {
+    margin: 3px 0;
+    line-height: 1.55;
+}
+.hc-msg.herc .hc-bubble .hc-md-list {
+    margin: 4px 0 4px 4px;
+    padding-left: 14px;
+    list-style: none;
+}
+.hc-msg.herc .hc-bubble .hc-md-list li {
+    position: relative;
+    padding-left: 10px;
+    margin-bottom: 3px;
+    line-height: 1.5;
+    font-size: 0.88rem;
+}
+.hc-msg.herc .hc-bubble .hc-md-list li::before {
+    content: '–';
+    position: absolute;
+    left: -4px;
+    color: var(--hc-accent);
+    font-weight: 700;
+}
+.hc-msg.herc .hc-bubble .hc-md-hr {
+    border: none;
+    border-top: 1px solid var(--hc-border);
+    margin: 10px 0;
+}
+.hc-msg.herc .hc-bubble strong {
+    font-weight: 700;
+    color: var(--hc-text);
+}
+.hc-msg.herc .hc-bubble em {
+    font-style: italic;
+    color: var(--hc-text-muted);
+}
+
 /* ── MOBILE ── */
 @media (max-width: 768px) {
     .hc-container {

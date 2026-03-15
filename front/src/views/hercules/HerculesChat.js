@@ -5,6 +5,56 @@ import '../../styles/HerculesChat.css';
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
+// ── Renderizador de markdown simples ─────────────────────────────────────────
+function BubbleText({ texto }) {
+    if (!texto) return null;
+    const lines = texto.split('\n');
+    const result = [];
+    let listItems = [];
+    let key = 0;
+
+    const inlineStyles = (text) => {
+        const parts = text.split(/(\*\*[^*]+\*\*|_[^_]+_)/g);
+        return parts.map((part, i) => {
+            if (part.startsWith('**') && part.endsWith('**')) return <strong key={i}>{part.slice(2, -2)}</strong>;
+            if (part.startsWith('_') && part.endsWith('_')) return <em key={i}>{part.slice(1, -1)}</em>;
+            return part;
+        });
+    };
+
+    const flushList = () => {
+        if (listItems.length > 0) {
+            result.push(<ul key={key++} className="hc-md-list">{listItems}</ul>);
+            listItems = [];
+        }
+    };
+
+    for (const line of lines) {
+        if (line.startsWith('### ')) {
+            flushList();
+            result.push(<h5 key={key++} className="hc-md-h3">{inlineStyles(line.slice(4))}</h5>);
+        } else if (line.startsWith('## ')) {
+            flushList();
+            result.push(<h4 key={key++} className="hc-md-h2">{inlineStyles(line.slice(3))}</h4>);
+        } else if (line.startsWith('# ')) {
+            flushList();
+            result.push(<h3 key={key++} className="hc-md-h1">{inlineStyles(line.slice(2))}</h3>);
+        } else if (line.match(/^[-*] /)) {
+            listItems.push(<li key={key++}>{inlineStyles(line.slice(2))}</li>);
+        } else if (line === '---') {
+            flushList();
+            result.push(<hr key={key++} className="hc-md-hr" />);
+        } else if (line.trim() === '') {
+            flushList();
+        } else {
+            flushList();
+            result.push(<p key={key++} className="hc-md-p">{inlineStyles(line)}</p>);
+        }
+    }
+    flushList();
+    return <>{result}</>;
+}
+
 function HerculesChat() {
     const [msg, setMsg] = useState('');
     const [chat, setChat] = useState([]);
@@ -131,6 +181,7 @@ function HerculesChat() {
                 body: JSON.stringify({
                     mensagem: msg,
                     usuarioId: userId,
+                    conversaId: idConversa,
                     ...ultimaMeta,
                     ...extra,
                 }),
@@ -141,7 +192,9 @@ function HerculesChat() {
             setChat(prev => [...prev, { autor: 'Hércules', texto: data.texto, meta: data }]);
             salvarMensagem('hercules', data.texto, data, idConversa);
         } catch {
-            setChat(prev => [...prev, { autor: 'Hércules', texto: '⚠️ Erro ao falar com Hércules.' }]);
+            const textoErro = '⚠️ Erro ao falar com Hércules. Tente novamente.';
+            setChat(prev => [...prev, { autor: 'Hércules', texto: textoErro }]);
+            salvarMensagem('hercules', textoErro, null, idConversa);
         } finally {
             setLoading(false);
         }
@@ -201,7 +254,7 @@ function HerculesChat() {
                 {chat.map((c, i) => (
                     <div key={i} className={`hc-msg ${c.autor === 'Você' ? 'me' : 'herc'}`}>
                         <div className="hc-bubble">
-                            {c.texto}
+                            {c.autor === 'Você' ? c.texto : <BubbleText texto={c.texto} />}
                         </div>
 
                         {c.autor === 'Hércules' && (
