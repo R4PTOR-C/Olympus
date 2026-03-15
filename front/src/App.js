@@ -34,6 +34,8 @@ import HerculesChat from "./views/hercules/HerculesChat";
 import ProfessoresList from "./views/professores/ProfessoresList";
 import ProcurarProfessor from "./views/professores/ProcurarProfessor";
 import ProfessoresEdit from "./views/professores/Professores_edit";
+import HistoricoAluno from "./views/professores/HistoricoAluno";
+import HistoricoAlunos from "./views/professores/HistoricoAlunos";
 import ChatView from "./views/chat/ChatView";
 import ChatsList from "./views/chat/ChatsList";
 
@@ -108,6 +110,8 @@ function AppContent() {
                 <Route path="/exercicios_new" element={<ProtectedRoute><Exercicios_new /></ProtectedRoute>} />
                 <Route path="/exercicios" element={<ProtectedRoute><Exercicios_tabela /></ProtectedRoute>} />
                 <Route path="/historico-exercicios" element={<ProtectedRoute><HistoricoExercicios /></ProtectedRoute>} />
+                <Route path="/historico-aluno/:alunoId" element={<ProtectedRoute><HistoricoAluno /></ProtectedRoute>} />
+                <Route path="/historico-alunos" element={<ProtectedRoute><HistoricoAlunos /></ProtectedRoute>} />
                 <Route path="/treinos/:treinoId/exercicios" element={<ProtectedRoute><Exercicios_index /></ProtectedRoute>} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/nova_senha/:token" element={<ResetPassword />} />

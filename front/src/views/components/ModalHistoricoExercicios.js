@@ -61,13 +61,14 @@ function ModalHistoricoExercicio({ exercicio, userId, onClose }) {
         if (!exercicio) return;
 
         const fetchHistorico = async () => {
+            const token = localStorage.getItem('token');
             try {
                 setLoading(true);
                 setErro(null);
 
                 const res = await fetch(
                     `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/exercicios/${exercicio.exercicio_id}/historico`,
-                    { credentials: 'include' }
+                    { headers: { Authorization: `Bearer ${token}` } }
                 );
                 if (!res.ok) throw new Error('Falha ao carregar histórico');
                 const rows = await res.json();

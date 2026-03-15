@@ -624,7 +624,7 @@ router.get('/treinos_realizados', async (req, res) => {
 });
 
 // GET /usuarios/:usuarioId/exercicios_realizados
-router.get('/usuarios/:usuarioId/exercicios_realizados', async (req, res) => {
+router.get('/usuarios/:usuarioId/exercicios_realizados', authenticate, requireVinculo('usuarioId'), async (req, res) => {
     const { usuarioId } = req.params;
 
     try {
@@ -648,7 +648,7 @@ router.get('/usuarios/:usuarioId/exercicios_realizados', async (req, res) => {
 });
 
 // GET /usuarios/:usuarioId/exercicios/:exercicioId/historico
-router.get('/usuarios/:usuarioId/exercicios/:exercicioId/historico', async (req, res) => {
+router.get('/usuarios/:usuarioId/exercicios/:exercicioId/historico', authenticate, requireVinculo('usuarioId'), async (req, res) => {
     const { usuarioId, exercicioId } = req.params;
 
     try {
