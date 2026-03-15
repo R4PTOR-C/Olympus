@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import PageStateHandler from "./components/PageStateHandler";
 import { AuthContext } from "../AuthContext";
 import '../styles/home.css';
-import ModalCarregando from './components/ModalCarregando';
 import PullToRefresh from './components/PullToRefresh';
 import useSocketRefresh from '../hooks/useSocketRefresh';
 
@@ -117,14 +116,53 @@ function Home() {
     const now = new Date();
     const dateRange = `${now.getDate()} de ${MONTHS[now.getMonth()]}`;
 
-    if (loading) return <ModalCarregando show={true} />;
-    if (error)   return <div style={{ color: '#fff', padding: '2rem' }}>Erro: {error}</div>;
+    if (error) return <div style={{ color: '#fff', padding: '2rem' }}>Erro: {error}</div>;
 
     return (
         <PageStateHandler>
             <PullToRefresh onRefresh={refresh} />
             <div className="home-wrapper">
-                {user.loggedIn ? (
+                {loading ? (
+                    <>
+                        {/* ── WEEK STRIP SKELETON ── */}
+                        <div className="h-week-header">
+                            <span className="h-skel" style={{ width: 60, height: 13, display: 'inline-block' }} />
+                            <span className="h-skel" style={{ width: 90, height: 13, display: 'inline-block' }} />
+                        </div>
+                        <div className="h-week-strip-skel">
+                            {[...Array(7)].map((_, i) => <div key={i} className="h-week-day-skel" style={{ animationDelay: `${i * 0.08}s` }} />)}
+                        </div>
+                        <div className="h-desktop-grid">
+                            <div>
+                                <div className="h-sec-header">
+                                    <span className="h-skel" style={{ width: 110, height: 14, display: 'inline-block' }} />
+                                </div>
+                                <div className="h-today-card-skel">
+                                    <div className="h-today-card-skel-hero" />
+                                    <div className="h-today-card-skel-body">
+                                        <div className="h-skel" style={{ height: 14, width: '70%' }} />
+                                        <div className="h-skel" style={{ height: 11, width: '45%' }} />
+                                        <div className="h-skel" style={{ height: 36, borderRadius: 10, marginTop: 4 }} />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div className="h-sec-header">
+                                    <span className="h-skel" style={{ width: 120, height: 14, display: 'inline-block' }} />
+                                </div>
+                                {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="h-upc-card-skel" style={{ animationDelay: `${i * 0.1}s` }}>
+                                        <div className="h-upc-skel-thumb" />
+                                        <div className="h-upc-skel-lines">
+                                            <div className="h-skel" style={{ height: 11, width: '55%' }} />
+                                            <div className="h-skel" style={{ height: 13, width: '80%' }} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </>
+                ) : user.loggedIn ? (
                     <>
                         {/* ── WEEK STRIP ── */}
                         <div className="h-week-header">

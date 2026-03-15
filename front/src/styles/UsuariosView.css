@@ -38,6 +38,48 @@ body.dark-mode {
     --uv-shadow-hover: 0 4px 24px rgba(0, 0, 0, 0.7);
 }
 
+/* ── SKELETON ── */
+@keyframes uv-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+}
+.uv-skel {
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    animation: uv-pulse 1.4s ease-in-out infinite;
+}
+.uv-skel-day {
+    background: var(--uv-surface);
+    border: 1px solid var(--uv-border);
+    border-radius: var(--uv-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--uv-shadow);
+}
+.uv-skel-day-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--uv-border);
+}
+.uv-skel-day-body {
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.uv-skel-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    background: var(--uv-surface-3);
+    animation: uv-pulse 1.4s ease-in-out infinite;
+}
+.uv-skel-line {
+    height: 11px;
+    border-radius: 6px;
+    background: var(--uv-surface-3);
+    animation: uv-pulse 1.4s ease-in-out infinite;
+}
+
 /* ── PÁGINA ── */
 .uv-page {
     background: var(--uv-bg);

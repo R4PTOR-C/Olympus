@@ -2,6 +2,32 @@
 /* HISTÓRICO POR EXERCÍCIO         */
 /* =============================== */
 
+/* ── SKELETON ── */
+.hx-card-skel {
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--h-shadow);
+}
+.hx-skel-gif {
+    height: 110px;
+    background: var(--h-surface-3);
+    animation: h-pulse 1.4s ease-in-out infinite;
+}
+.hx-skel-info {
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.hx-skel-line {
+    height: 10px;
+    border-radius: 6px;
+    background: var(--h-surface-3);
+    animation: h-pulse 1.4s ease-in-out infinite;
+}
+
 .hx-wrapper {
     background: var(--h-bg);
     min-height: 100vh;

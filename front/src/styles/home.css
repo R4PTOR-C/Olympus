@@ -648,6 +648,84 @@ body.dark-mode .h-muscle-wrap img {
     border-radius: var(--h-radius-md);
 }
 
+/* ── SKELETON ── */
+@keyframes h-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+}
+
+.h-skel {
+    background: var(--h-surface-3);
+    border-radius: 8px;
+    animation: h-pulse 1.4s ease-in-out infinite;
+}
+
+/* Week strip skeleton */
+.h-week-strip-skel {
+    display: flex;
+    gap: 6px;
+    padding: 0 20px 22px;
+}
+
+.h-week-day-skel {
+    flex: 1;
+    height: 56px;
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: 10px;
+    animation: h-pulse 1.4s ease-in-out infinite;
+}
+
+/* Today card skeleton */
+.h-today-card-skel {
+    margin: 0 20px 16px;
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-lg);
+    overflow: hidden;
+}
+
+.h-today-card-skel-hero {
+    height: 110px;
+    background: var(--h-surface-3);
+    animation: h-pulse 1.4s ease-in-out infinite;
+}
+
+.h-today-card-skel-body {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Upcoming skeleton */
+.h-upc-card-skel {
+    margin: 0 20px 10px;
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: var(--h-radius-md);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.h-upc-skel-thumb {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    background: var(--h-surface-3);
+    animation: h-pulse 1.4s ease-in-out infinite;
+}
+
+.h-upc-skel-lines {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 /* ── ANIMATION ── */
 @keyframes h-fadeUp {
     from { opacity: 0; transform: translateY(14px); }
@@ -701,3 +779,4 @@ body.dark-mode .h-muscle-wrap img {
         font-size: 2.5rem;
     }
 }
+

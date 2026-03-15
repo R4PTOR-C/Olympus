@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../../AuthContext';
 import PageStateHandler from '../components/PageStateHandler';
 import ModalHistoricoExercicio from '../components/ModalHistoricoExercicios';
-import ModalCarregando from '../components/ModalCarregando';
 import PullToRefresh from '../components/PullToRefresh';
 import '../../styles/HistoricoExercicios.css';
 
@@ -32,8 +31,6 @@ function HistoricoExercicios() {
 
     useEffect(() => { fetchExercicios(); }, [fetchExercicios]);
 
-    if (loading) return <ModalCarregando show={true} />;
-
     return (
         <PageStateHandler>
             <PullToRefresh onRefresh={fetchExercicios} />
@@ -42,12 +39,25 @@ function HistoricoExercicios() {
                 {/* ── PAGE HEADER ── */}
                 <div className="hx-page-header">
                     <span className="hx-page-title">Histórico por Exercício</span>
-                    {exercicios.length > 0 && (
+                    {!loading && exercicios.length > 0 && (
                         <span className="hx-page-count">{exercicios.length} exercício{exercicios.length !== 1 ? 's' : ''}</span>
                     )}
                 </div>
 
-                {exercicios.length === 0 ? (
+                {loading ? (
+                    <div className="hx-grid">
+                        {[...Array(6)].map((_, i) => (
+                            <div key={i} className="hx-card-skel" style={{ animationDelay: `${i * 0.07}s` }}>
+                                <div className="hx-skel-gif" style={{ animationDelay: `${i * 0.07}s` }} />
+                                <div className="hx-skel-info">
+                                    <div className="hx-skel-line" style={{ width: '50%', animationDelay: `${i * 0.07}s` }} />
+                                    <div className="hx-skel-line" style={{ width: '80%', animationDelay: `${i * 0.07 + 0.1}s` }} />
+                                    <div className="hx-skel-line" style={{ width: '40%', animationDelay: `${i * 0.07 + 0.2}s` }} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : exercicios.length === 0 ? (
                     /* ── EMPTY STATE ── */
                     <div className="hx-empty">
                         <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 64 64" fill="none">

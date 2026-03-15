@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import ModalCarregando from '../components/ModalCarregando';
 import PullToRefresh from '../components/PullToRefresh';
 import useSocketRefresh from '../../hooks/useSocketRefresh';
 import '../../styles/UsuariosView.css';
@@ -136,8 +135,44 @@ const UsuariosView = () => {
 
     // ── RENDER ────────────────────────────────────────────────────────────
 
-    if (loading) return <ModalCarregando show={true} />;
     if (error)   return <div style={{ color: 'red', padding: '2rem' }}>Erro: {error}</div>;
+
+    if (loading) return (
+        <div className="uv-page">
+            {/* Header skeleton — sempre escuro */}
+            <div className="uv-header">
+                <div className="uv-skel" style={{ width: 88, height: 88, borderRadius: '50%' }} />
+                <div className="uv-skel" style={{ width: 160, height: 26, marginTop: 14 }} />
+                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                    {[70, 70, 70].map((w, i) => (
+                        <div key={i} className="uv-skel" style={{ width: w, height: 38, borderRadius: 10, animationDelay: `${i * 0.1}s` }} />
+                    ))}
+                </div>
+                <div className="uv-skel" style={{ width: '100%', maxWidth: 280, height: 40, borderRadius: 10, marginTop: 14 }} />
+            </div>
+
+            {/* Board skeleton */}
+            <div className="uv-board">
+                {[...Array(5)].map((_, i) => (
+                    <div key={i} className="uv-skel-day" style={{ animationDelay: `${i * 0.08}s` }}>
+                        <div className="uv-skel-day-header">
+                            <div className="uv-skel-line" style={{ width: 90 }} />
+                        </div>
+                        {i < 3 && (
+                            <div className="uv-skel-day-body">
+                                <div className="uv-skel-thumb" style={{ animationDelay: `${i * 0.08}s` }} />
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    <div className="uv-skel-line" style={{ width: '75%', animationDelay: `${i * 0.08}s` }} />
+                                    <div className="uv-skel-line" style={{ width: '50%', animationDelay: `${i * 0.08 + 0.1}s` }} />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
     if (!usuario) return <div style={{ padding: '2rem' }}>Usuário não encontrado.</div>;
 
     return (
