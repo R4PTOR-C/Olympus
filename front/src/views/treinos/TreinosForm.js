@@ -7,6 +7,17 @@ const GRUPOS = ['Peitoral', 'Bíceps', 'Tríceps', 'Costas', 'Ombros', 'Pernas',
 
 const isVideo = (url) => url && (url.includes('/video/') || /\.(mp4|mov|webm)(\?|$)/i.test(url));
 
+const normalizar = (str) => str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() ?? '';
+
+const matchBusca = (ex, searchTerm) => {
+    const palavras = normalizar(searchTerm).split(/\s+/).filter(Boolean);
+    if (!palavras.length) return true;
+    return palavras.every(p =>
+        normalizar(ex.nome_exercicio).includes(p) ||
+        normalizar(ex.grupo_muscular).includes(p)
+    );
+};
+
 const TreinosForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -351,14 +362,13 @@ const TreinosForm = () => {
                         <div className="tf-accordion">
                             {GRUPOS.map((grupo) => {
                                 const exerciciosGrupo = exercicios.filter(ex =>
-                                    (ex.nome_exercicio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                        ex.grupo_muscular?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+                                    matchBusca(ex, searchTerm) &&
                                     ex.grupo_muscular === grupo &&
                                     !exerciciosSelecionados.some(s => s.id === ex.id)
                                 );
                                 if (!exerciciosGrupo.length) return null;
 
-                                const isOpen = !!openGroups[grupo];
+                                const isOpen = !!openGroups[grupo] || searchTerm.trim().length > 0;
                                 return (
                                     <div className="tf-acc-item" key={grupo}>
                                         <button
