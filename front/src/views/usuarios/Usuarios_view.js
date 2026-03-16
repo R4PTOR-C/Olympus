@@ -5,6 +5,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import PullToRefresh from '../components/PullToRefresh';
 import useSocketRefresh from '../../hooks/useSocketRefresh';
 import '../../styles/UsuariosView.css';
+import '../../styles/Cardio.css';
 
 const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
@@ -33,6 +34,7 @@ const UsuariosView = () => {
     const [usuario, setUsuario] = useState(null);
     const [treinos, setTreinos] = useState([]);
     const [ultimaAvaliacao, setUltimaAvaliacao] = useState(null);
+    const [cardioSemana, setCardioSemana] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [pendingDelete, setPendingDelete] = useState(null);
@@ -45,10 +47,19 @@ const UsuariosView = () => {
         try {
             const token = localStorage.getItem('token');
             const authH = token ? { Authorization: `Bearer ${token}` } : {};
-            const [usuarioRes, treinosRes, avaliacoesRes] = await Promise.all([
+            // Semana atual (segunda → domingo)
+            const hoje = new Date();
+            const diaSemana = hoje.getDay(); // 0=dom
+            const diffSeg = (diaSemana === 0 ? -6 : 1 - diaSemana);
+            const segunda = new Date(hoje); segunda.setDate(hoje.getDate() + diffSeg);
+            const domingo = new Date(segunda); domingo.setDate(segunda.getDate() + 6);
+            const fmt = d => d.toISOString().split('T')[0];
+
+            const [usuarioRes, treinosRes, avaliacoesRes, cardioRes] = await Promise.all([
                 fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`, { headers: authH }),
                 fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, { headers: authH }),
                 fetch(`${process.env.REACT_APP_API_BASE_URL}/avaliacoes/usuarios/${id}`, { headers: authH }),
+                fetch(`${process.env.REACT_APP_API_BASE_URL}/cardio/usuarios/${id}?inicio=${fmt(segunda)}&fim=${fmt(domingo)}`, { headers: authH }),
             ]);
             if (!usuarioRes.ok || !treinosRes.ok) throw new Error('Erro ao carregar dados');
             setUsuario(await usuarioRes.json());
@@ -56,10 +67,12 @@ const UsuariosView = () => {
             if (avaliacoesRes.ok) {
                 const avaliacoes = await avaliacoesRes.json();
                 if (Array.isArray(avaliacoes) && avaliacoes.length > 0) {
-                    // mais recente primeiro
                     const ordenadas = [...avaliacoes].sort((a, b) => new Date(b.data_avaliacao) - new Date(a.data_avaliacao));
                     setUltimaAvaliacao(ordenadas[0]);
                 }
+            }
+            if (cardioRes.ok) {
+                setCardioSemana(await cardioRes.json());
             }
             setLoading(false);
         } catch (err) {
@@ -247,6 +260,8 @@ const UsuariosView = () => {
                         </svg>
                         Criar Treino
                     </button>
+                </div>
+                <div className="uv-header-actions" style={{ marginTop: 8 }}>
                     <button
                         className="uv-btn-avaliacao"
                         onClick={() => navigate(`/avaliacoes/${id}/new`)}
@@ -255,6 +270,15 @@ const UsuariosView = () => {
                             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                         </svg>
                         Avaliação
+                    </button>
+                    <button
+                        className="uv-btn-cardio"
+                        onClick={() => navigate(`/cardio/${id}/new`)}
+                    >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        Registrar Cardio
                     </button>
                 </div>
             </div>
@@ -266,12 +290,22 @@ const UsuariosView = () => {
                         const treinosDoDia = treinos.filter(t => mapDias[t.dia_semana] === dia);
                         const temTreino    = treinosDoDia.length > 0;
 
+                        const diaCompleto = mapDiasBack[dia];
+                        // Cardio sessions neste dia da semana (compara dia da semana)
+                        const cardioDoDia = cardioSemana.filter(c => {
+                            const d = new Date(c.data + 'T12:00:00');
+                            const diaSemanaCardio = d.toLocaleDateString('pt-BR', { weekday: 'long' });
+                            // normaliza: "segunda-feira" → "Segunda-feira"
+                            const norm = diaSemanaCardio.charAt(0).toUpperCase() + diaSemanaCardio.slice(1);
+                            return norm === diaCompleto;
+                        });
+
                         return (
                             <div className="uv-day-block" key={dia}>
 
                                 {/* Header do dia */}
                                 <div className="uv-day-header">
-                                    <span className="uv-day-name">{mapDiasBack[dia]}</span>
+                                    <span className="uv-day-name">{diaCompleto}</span>
                                     {temTreino && (
                                         <span className="uv-day-badge">{treinosDoDia[0].grupo_muscular || 'Treino'}</span>
                                     )}
@@ -351,6 +385,25 @@ const UsuariosView = () => {
                                         </div>
                                     )}
                                 </Droppable>
+
+                                {/* Chips de cardio do dia */}
+                                {cardioDoDia.map(c => (
+                                    <div
+                                        key={c.id}
+                                        className="uv-cardio-chip"
+                                        onClick={() => navigate(`/cardio/${id}/new`)}
+                                    >
+                                        <svg className="uv-cardio-chip-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                        </svg>
+                                        <div className="uv-cardio-chip-text">
+                                            <span className="uv-cardio-chip-nome">{c.nome_exercicio}</span>
+                                            <span className="uv-cardio-chip-dur">
+                                                {c.duracao_min} min{c.distancia_km ? ` · ${c.distancia_km} km` : ''}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         );
                     })}

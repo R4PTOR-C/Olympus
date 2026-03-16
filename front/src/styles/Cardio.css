@@ -1,0 +1,413 @@
+/* =============================== */
+/* CARDIO — OLYMPUS                */
+/* =============================== */
+
+:root {
+    --cd-accent:        #2ECC71;
+    --cd-accent-dim:    rgba(46, 204, 113, 0.12);
+    --cd-accent-border: rgba(46, 204, 113, 0.3);
+    --cd-bg:            #F0F3F8;
+    --cd-surface:       #FFFFFF;
+    --cd-surface-2:     #EBF0F7;
+    --cd-text:          #19222B;
+    --cd-text-muted:    #5A6B82;
+    --cd-text-dim:      #9CAAB8;
+    --cd-border:        rgba(0, 0, 0, 0.08);
+    --cd-shadow:        0 2px 14px rgba(0, 0, 0, 0.07);
+    --cd-radius:        16px;
+}
+
+body.dark-mode {
+    --cd-bg:        #0A0D16;
+    --cd-surface:   #0E1220;
+    --cd-surface-2: #151f35;
+    --cd-text:      #E8EDF5;
+    --cd-text-muted:#8892aa;
+    --cd-text-dim:  #3d4e6a;
+    --cd-border:    rgba(255,255,255,0.06);
+    --cd-shadow:    0 2px 14px rgba(0,0,0,0.4);
+}
+
+/* ── PAGE ── */
+.cd-page { min-height: 100vh; background: var(--cd-bg); padding-bottom: 80px; }
+
+/* ── HEADER ── */
+.cd-header {
+    background: linear-gradient(135deg, #0A0D16 0%, #0a1a12 100%);
+    padding: 20px 20px 24px;
+    color: #E8EDF5;
+}
+
+.cd-header-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.cd-back-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06);
+    color: #E8EDF5;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+    transition: background 0.15s;
+}
+.cd-back-btn:active { background: rgba(255,255,255,0.12); }
+
+.cd-header-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--cd-accent); margin: 0;
+}
+
+.cd-header-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.7rem; letter-spacing: 0.04em;
+    color: #E8EDF5; margin: 0; line-height: 1.1;
+}
+
+/* ── BODY ── */
+.cd-body {
+    display: flex; flex-direction: column;
+    gap: 12px; padding: 16px 16px 0;
+}
+
+/* ── SECTION ── */
+.cd-section {
+    background: var(--cd-surface);
+    border-radius: var(--cd-radius);
+    border: 1px solid var(--cd-border);
+    box-shadow: var(--cd-shadow);
+    overflow: hidden;
+}
+
+.cd-section-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--cd-border);
+}
+
+.cd-section-icon { color: var(--cd-accent); flex-shrink: 0; }
+
+.cd-section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--cd-text-muted);
+}
+
+.cd-section-body {
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 14px;
+}
+
+/* ── BUSCA ── */
+.cd-search-wrap {
+    position: relative;
+    padding: 10px 16px 0;
+}
+
+.cd-search-icon {
+    position: absolute;
+    left: 28px; top: 50%;
+    transform: translateY(-20%);
+    color: var(--cd-text-dim);
+    pointer-events: none;
+}
+
+.cd-search {
+    width: 100%;
+    padding: 10px 12px 10px 36px;
+    border-radius: 10px;
+    border: 1.5px solid var(--cd-border);
+    background: var(--cd-surface-2);
+    color: var(--cd-text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.88rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+.cd-search:focus { border-color: var(--cd-accent-border); }
+
+/* ── GRID DE EXERCÍCIOS ── */
+.cd-ex-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px 16px 14px;
+}
+
+.cd-ex-card {
+    position: relative;
+    background: var(--cd-surface-2);
+    border: 1.5px solid var(--cd-border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; flex-direction: column; align-items: center;
+    padding-bottom: 8px;
+}
+
+.cd-ex-card.active {
+    border-color: var(--cd-accent);
+    background: var(--cd-accent-dim);
+}
+
+.cd-ex-card:active { transform: scale(0.96); }
+
+.cd-ex-gif {
+    width: 100%; aspect-ratio: 1;
+    overflow: hidden; background: rgba(0,0,0,0.06);
+}
+.cd-ex-gif img, .cd-ex-gif video {
+    width: 100%; height: 100%; object-fit: cover;
+}
+
+.cd-ex-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.62rem; font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--cd-text-muted);
+    text-align: center;
+    padding: 6px 6px 0;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.cd-ex-card.active .cd-ex-name { color: var(--cd-accent); }
+
+.cd-ex-check {
+    position: absolute;
+    top: 5px; right: 5px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--cd-accent);
+    display: flex; align-items: center; justify-content: center;
+}
+
+.cd-ex-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 20px 0;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--cd-text-dim);
+}
+
+/* ── FIELDS ── */
+.cd-field { display: flex; flex-direction: column; gap: 6px; }
+
+.cd-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--cd-text-muted);
+}
+
+.cd-label-opt {
+    font-weight: 400; text-transform: none;
+    letter-spacing: 0; font-size: 0.68rem;
+    color: var(--cd-text-dim);
+}
+
+.cd-input {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--cd-border);
+    background: var(--cd-surface-2);
+    color: var(--cd-text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.95rem;
+    outline: none; box-sizing: border-box;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+}
+.cd-input:focus { border-color: var(--cd-accent-border); }
+
+.cd-inputs-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* ── STEPPER DE DURAÇÃO ── */
+.cd-stepper {
+    display: flex;
+    align-items: center;
+    background: var(--cd-surface-2);
+    border: 1.5px solid var(--cd-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.cd-stepper-btn {
+    width: 48px; height: 52px;
+    background: none; border: none;
+    color: var(--cd-accent);
+    font-size: 1.3rem; font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.1s;
+    flex-shrink: 0;
+}
+.cd-stepper-btn:active { background: var(--cd-accent-dim); }
+
+.cd-stepper-center {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 1px; padding: 4px 0;
+}
+
+.cd-stepper-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem; line-height: 1;
+    color: var(--cd-text); letter-spacing: 0.02em;
+}
+
+.cd-stepper-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--cd-text-dim);
+}
+
+/* ── RESUMO ── */
+.cd-resumo {
+    background: var(--cd-accent-dim);
+    border: 1px solid var(--cd-accent-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+}
+
+.cd-resumo-icon {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(46,204,113,0.15);
+    border: 1.5px solid rgba(46,204,113,0.3);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--cd-accent); flex-shrink: 0;
+}
+
+.cd-resumo-text { flex: 1; }
+
+.cd-resumo-nome {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.9rem; font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--cd-text);
+    margin: 0 0 2px;
+}
+
+.cd-resumo-detalhe {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--cd-accent);
+    margin: 0;
+}
+
+/* ── ACTIONS ── */
+.cd-actions {
+    display: flex; flex-direction: column;
+    gap: 10px; padding: 4px 0 16px;
+}
+
+.cd-btn-submit {
+    width: 100%; padding: 14px;
+    border-radius: 12px; border: none;
+    background: var(--cd-accent);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: opacity 0.15s;
+    box-shadow: 0 4px 16px rgba(46,204,113,0.25);
+}
+.cd-btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+.cd-btn-submit:active:not(:disabled) { opacity: 0.85; }
+
+.cd-btn-cancel {
+    width: 100%; padding: 12px;
+    border-radius: 12px;
+    border: 1.5px solid var(--cd-border);
+    background: transparent;
+    color: var(--cd-text-muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; transition: background 0.15s;
+}
+.cd-btn-cancel:active { background: var(--cd-surface-2); }
+
+/* ── SUCESSO ── */
+.cd-sucesso {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px; padding: 20px 16px; text-align: center;
+}
+
+.cd-sucesso-icon {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(46,204,113,0.12);
+    border: 1.5px solid rgba(46,204,113,0.4);
+    display: flex; align-items: center; justify-content: center;
+    color: #2ECC71;
+}
+
+.cd-sucesso-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem; letter-spacing: 0.06em;
+    color: #2ECC71; margin: 0;
+}
+
+.cd-sucesso-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--cd-text-muted); margin: 0;
+}
+
+/* ── CHIP NO BOARD (Usuarios_view) ── */
+.uv-cardio-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(46,204,113,0.1);
+    border: 1px solid rgba(46,204,113,0.25);
+    border-radius: 8px;
+    padding: 5px 8px;
+    margin-top: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.uv-cardio-chip:active { background: rgba(46,204,113,0.18); }
+
+.uv-cardio-chip-icon { color: #2ECC71; flex-shrink: 0; }
+
+.uv-cardio-chip-text {
+    display: flex; flex-direction: column; gap: 1px; flex: 1; overflow: hidden;
+}
+
+.uv-cardio-chip-nome {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #2ECC71;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.uv-cardio-chip-dur {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.58rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: rgba(46,204,113,0.6);
+}

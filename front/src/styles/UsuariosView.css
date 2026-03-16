@@ -248,6 +248,32 @@ body.dark-mode {
     transform: scale(0.97);
 }
 
+/* Botão registrar cardio */
+.uv-btn-cardio {
+    flex: 1;
+    background: rgba(46, 204, 113, 0.1);
+    color: #2ECC71;
+    border: 1.5px solid rgba(46, 204, 113, 0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.18s;
+}
+
+.uv-btn-cardio:active {
+    background: rgba(46, 204, 113, 0.2);
+    transform: scale(0.97);
+}
+
 /* =============================== */
 /* BOARD — dias da semana          */
 /* =============================== */

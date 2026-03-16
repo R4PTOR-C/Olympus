@@ -37,6 +37,51 @@
     margin: 0 auto;
 }
 
+/* ── TABS ── */
+.hx-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 14px 20px 0;
+}
+
+.hx-tab {
+    flex: 1;
+    padding: 9px 8px;
+    border-radius: 10px;
+    border: 1.5px solid var(--h-border);
+    background: var(--h-surface);
+    color: var(--h-text-muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.hx-tab.active-musc {
+    background: rgba(74,144,217,0.12);
+    border-color: rgba(74,144,217,0.4);
+    color: #4A90D9;
+}
+
+.hx-tab.active-aval {
+    background: rgba(241,196,15,0.1);
+    border-color: rgba(241,196,15,0.4);
+    color: #F1C40F;
+}
+
+.hx-tab.active-cardio {
+    background: rgba(46,204,113,0.1);
+    border-color: rgba(46,204,113,0.35);
+    color: #2ECC71;
+}
+
 /* ── PAGE HEADER ── */
 .hx-page-header {
     display: flex;
@@ -66,7 +111,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    padding: 0 16px 14px;
+    padding: 14px 16px 14px;
 }
 
 /* ── CARD ── */
@@ -187,6 +232,132 @@
     font-size: 0.8rem;
     color: var(--h-text-muted);
     margin: 0;
+}
+
+/* ── LISTA (avaliações e cardio) ── */
+.hx-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 20px;
+}
+
+.hx-list-card {
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: var(--h-shadow);
+    animation: h-fadein 0.25s ease both;
+}
+
+.hx-list-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.hx-list-icon.aval {
+    background: rgba(241,196,15,0.1);
+    border: 1.5px solid rgba(241,196,15,0.3);
+    color: #F1C40F;
+}
+
+.hx-list-icon.cardio {
+    background: rgba(46,204,113,0.1);
+    border: 1.5px solid rgba(46,204,113,0.3);
+    color: #2ECC71;
+}
+
+.hx-list-body { flex: 1; min-width: 0; }
+
+.hx-list-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--h-text);
+    margin: 0 0 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hx-list-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--h-text-muted);
+    margin: 0;
+}
+
+.hx-list-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+    flex-shrink: 0;
+}
+
+.hx-list-main-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    line-height: 1;
+    letter-spacing: 0.02em;
+}
+
+.hx-list-date {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--h-text-dim);
+}
+
+/* ── RESUMO MENSAL (cardio) ── */
+.hx-cardio-resumo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 14px 20px 0;
+}
+
+.hx-cardio-stat {
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    text-align: center;
+}
+
+.hx-cardio-stat-val {
+    display: block;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: #2ECC71;
+    letter-spacing: 0.02em;
+}
+
+.hx-cardio-stat-lbl {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--h-text-dim);
+    margin-top: 2px;
 }
 
 /* ── DESKTOP ── */
