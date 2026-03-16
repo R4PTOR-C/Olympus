@@ -261,6 +261,48 @@ body.dark-mode {
     40%            { transform: translateY(-6px); opacity: 1; }
 }
 
+/* Loading com mensagem engraçada */
+.hc-bubble-loading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 12px 16px;
+    width: auto;
+    min-height: auto;
+    justify-content: flex-start;
+}
+
+.hc-loading-dots {
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+}
+
+.hc-loading-dots span {
+    display: block;
+    width: 6px;
+    height: 6px;
+    background: var(--hc-text-dim);
+    border-radius: 50%;
+    animation: hc-bounce 1.2s infinite ease-in-out;
+}
+
+.hc-loading-dots span:nth-child(1) { animation-delay: 0s; }
+.hc-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.hc-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+.hc-loading-msg {
+    font-size: 0.78rem;
+    color: var(--hc-text-muted);
+    font-style: italic;
+    animation: hc-fade-msg 0.4s ease;
+}
+
+@keyframes hc-fade-msg {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Ações abaixo da bolha do Hércules ── */
 .hc-msg-actions {
     display: flex;

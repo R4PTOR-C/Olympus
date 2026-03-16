@@ -55,10 +55,75 @@ function BubbleText({ texto }) {
     return <>{result}</>;
 }
 
+const LOADING_MSGS = [
+    'Consultando os deuses do Olimpo...',
+    'Pesando cada exercício com cuidado...',
+    'Calculando o quanto você vai sofrer amanhã...',
+    'Verificando se você aguentaria mais uma série...',
+    'Lembrando você que perna não é opcional...',
+    'Perguntando pro Zeus o que ele acha...',
+    'Organizando sua dor de um jeito eficiente...',
+    'Revisando se você vai malhar no dia de perna...',
+    'Garantindo que você vai andar torto amanhã...',
+    'Montando o treino dos sonhos (ou pesadelos)...',
+    'Separando o joio do treino...',
+    'Analisando seus músculos com a bola de cristal...',
+    'Certificando que vai doer (do jeito certo)...',
+    'Checando se o Aquiles fez algo parecido...',
+    'Invocando a sabedoria ancestral da hipertrofia...',
+    'Descobrindo até onde vai sua coragem...',
+    'Ajustando seu treino para máxima glória...',
+    'Definindo quantas repetições separam você do shape...',
+    'Traduzindo sua vontade em séries e repetições...',
+    'Calculando a dose exata de caos muscular...',
+    'Preparando um treino digno de semideus...',
+    'Decidindo entre evolução e arrependimento...',
+    'Lapidando seu sofrimento com precisão olímpica...',
+    'Buscando equilíbrio entre força, volume e desespero...',
+    'Forjando um treino no fogo da progressão...',
+    'Testando se seu descanso foi suficiente mesmo...',
+    'Estimando o pump potencial da sessão...',
+    'Escolhendo exercícios que respeitam sua dignidade...',
+    'Removendo exercícios suspeitos do plano...',
+    'Planejando sua próxima crise existencial na academia...',
+    'Convertendo disciplina em resultado...',
+    'Otimizando seu caminho até o shape...',
+    'Analisando se isso é treino ou punição divina...',
+    'Consultando Hércules sobre sua próxima batalha...',
+    'Verificando se seu posterior vai te perdoar...',
+    'Medindo o impacto emocional do leg day...',
+    'Calculando a chance de você xingar no final...',
+    'Montando uma sequência que até Esparta aprovaria...',
+    'Avaliando se cabe mais uma intensidadezinha...',
+    'Preparando uma sessão abençoada pela hipertrofia...',
+    'Combinando volume, técnica e um pouco de maldade...',
+    'Organizando sua evolução sem misericórdia...',
+    'Anotando mentalmente seu futuro cansaço...',
+    'Vendo se esse treino merece ser chamado de treino...',
+    'Ajustando o plano para gerar progresso, não desculpas...',
+    'Filtrando o que é útil do que é só firula...',
+    'Sincronizando foco, força e sofrimento...',
+    'Calculando o delay da dor muscular tardia...',
+    'Estudando como te deixar maior sem te quebrar...',
+    'Buscando a rota mais curta até o shape impossível...',
+    'Preparando o ritual da progressão de carga...',
+    'Confirmando que o básico bem feito ainda funciona...',
+    'Estimando o nível de respeito que esse treino impõe...',
+    'Analisando se o cárdio vai entrar ou ser ignorado...',
+    'Checando quantos litros de suor isso vai custar...',
+    'Escrevendo sua próxima lenda na academia...',
+    'Convertendo esforço em estética...',
+    'Reunindo argumentos contra pular o treino...',
+    'Ajustando o treino para ficar bruto e inteligente...',
+    'Meditando profundamente sobre sua próxima série...',
+    'Definindo o limite entre dedicação e loucura...'
+];
+
 function HerculesChat() {
     const [msg, setMsg] = useState('');
     const [chat, setChat] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [loadingMsg, setLoadingMsg] = useState(LOADING_MSGS[0]);
     const [copiedIdx, setCopiedIdx] = useState(null);
     const { userId } = useContext(AuthContext);
     const [ultimaMeta, setUltimaMeta] = useState(null);
@@ -93,6 +158,18 @@ function HerculesChat() {
             .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId]);
+
+    // cicla as mensagens de loading
+    useEffect(() => {
+        if (!loading) return;
+        let idx = 0;
+        setLoadingMsg(LOADING_MSGS[0]);
+        const interval = setInterval(() => {
+            idx = (idx + 1) % LOADING_MSGS.length;
+            setLoadingMsg(LOADING_MSGS[idx]);
+        }, 2600);
+        return () => clearInterval(interval);
+    }, [loading]);
 
     // auto-scroll ao receber mensagem
     useEffect(() => {
@@ -297,8 +374,11 @@ function HerculesChat() {
 
                 {loading && (
                     <div className="hc-msg herc">
-                        <div className="hc-bubble typing">
-                            <span /><span /><span />
+                        <div className="hc-bubble hc-bubble-loading">
+                            <div className="hc-loading-dots">
+                                <span /><span /><span />
+                            </div>
+                            <span className="hc-loading-msg">{loadingMsg}</span>
                         </div>
                     </div>
                 )}

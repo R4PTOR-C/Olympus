@@ -647,13 +647,15 @@ Retorne JSON neste formato:
     {
       "grupo": "Peitoral",
       "exercicios": [
-        {"nome": "Supino Com Barra", "series": 4, "reps": "8-10"},
-        {"nome": "Crucifixo Com Halteres", "series": 3, "reps": "12-15"}
+        {"nome": "Supino Com Barra", "series": 4, "reps": 10},
+        {"nome": "Crucifixo Com Halteres", "series": 3, "reps": 12}
       ]
     }
   ],
   "resumo": "texto markdown rico e motivador com: título do treino, seção por grupo com emoji, cada exercício numerado com séries×reps e 1 dica rápida de execução, duração estimada e dica geral no final"
-}`,
+}
+
+⚠️ "reps" deve ser SEMPRE um número inteiro, NUNCA um range como "8-10". Use o valor mais alto do intervalo pretendido (ex: para "8-10" use 10, para "12-15" use 12).`,
                     },
                     {
                         role: "user",
@@ -666,6 +668,16 @@ Retorne JSON neste formato:
             const selecao = JSON.parse(selecaoRes.choices[0].message.content);
 
             // ── 3. Mapeia nomes selecionados para IDs do banco ──
+            const parseReps = (reps) => {
+                if (typeof reps === 'number') return reps;
+                if (typeof reps === 'string') {
+                    const match = reps.match(/(\d+)-(\d+)/);
+                    if (match) return parseInt(match[2]); // upper bound of range
+                    return parseInt(reps) || null;
+                }
+                return null;
+            };
+
             const exercicios_ids = [];
             const series_reps_por_id = {};
             const todosExercicios = [];
@@ -679,7 +691,7 @@ Retorne JSON neste formato:
                     );
                     if (match) {
                         exercicios_ids.push(match.id);
-                        series_reps_por_id[match.id] = { series: ex.series, reps: ex.reps };
+                        series_reps_por_id[match.id] = { series: ex.series, reps: parseReps(ex.reps) };
                         found.push(ex.nome);
                     }
                 }
