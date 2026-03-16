@@ -32,6 +32,7 @@ const UsuariosView = () => {
 
     const [usuario, setUsuario] = useState(null);
     const [treinos, setTreinos] = useState([]);
+    const [ultimaAvaliacao, setUltimaAvaliacao] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [pendingDelete, setPendingDelete] = useState(null);
@@ -44,13 +45,22 @@ const UsuariosView = () => {
         try {
             const token = localStorage.getItem('token');
             const authH = token ? { Authorization: `Bearer ${token}` } : {};
-            const [usuarioRes, treinosRes] = await Promise.all([
+            const [usuarioRes, treinosRes, avaliacoesRes] = await Promise.all([
                 fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`, { headers: authH }),
-                fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, { headers: authH })
+                fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, { headers: authH }),
+                fetch(`${process.env.REACT_APP_API_BASE_URL}/avaliacoes/usuarios/${id}`, { headers: authH }),
             ]);
             if (!usuarioRes.ok || !treinosRes.ok) throw new Error('Erro ao carregar dados');
             setUsuario(await usuarioRes.json());
             setTreinos(await treinosRes.json());
+            if (avaliacoesRes.ok) {
+                const avaliacoes = await avaliacoesRes.json();
+                if (Array.isArray(avaliacoes) && avaliacoes.length > 0) {
+                    // mais recente primeiro
+                    const ordenadas = [...avaliacoes].sort((a, b) => new Date(b.data_avaliacao) - new Date(a.data_avaliacao));
+                    setUltimaAvaliacao(ordenadas[0]);
+                }
+            }
             setLoading(false);
         } catch (err) {
             setError(err.message);
@@ -219,17 +229,34 @@ const UsuariosView = () => {
                             <span className="uv-stat-chip-lbl">Gênero</span>
                         </div>
                     )}
+                    {ultimaAvaliacao?.gordura_corporal != null && (
+                        <div className="uv-stat-chip uv-stat-chip-bf" onClick={() => navigate(`/avaliacoes/${id}/new`)}>
+                            <span className="uv-stat-chip-val">{parseFloat(ultimaAvaliacao.gordura_corporal).toFixed(1)}%</span>
+                            <span className="uv-stat-chip-lbl">Gordura</span>
+                        </div>
+                    )}
                 </div>
 
-                <button
-                    className="uv-btn-new"
-                    onClick={() => navigate(`/usuarios/${id}/treinos`)}
-                >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    Criar Novo Treino
-                </button>
+                <div className="uv-header-actions">
+                    <button
+                        className="uv-btn-new"
+                        onClick={() => navigate(`/usuarios/${id}/treinos`)}
+                    >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Criar Treino
+                    </button>
+                    <button
+                        className="uv-btn-avaliacao"
+                        onClick={() => navigate(`/avaliacoes/${id}/new`)}
+                    >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                        Avaliação
+                    </button>
+                </div>
             </div>
 
             {/* ── BOARD ── */}
