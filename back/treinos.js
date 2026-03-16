@@ -238,13 +238,19 @@ router.post('/treinos/:treinoId/exercicios', async (req, res) => {
         await db.query('BEGIN');
 
         // Aceita tanto array de IDs quanto array de objetos { id, series_alvo, reps_alvo }
-        for (const item of exercicios) {
+        for (let i = 0; i < exercicios.length; i++) {
+            const item = exercicios[i];
             const exercicio_id = typeof item === 'object' ? item.id : item;
             const series_alvo = typeof item === 'object' ? (item.series_alvo || null) : null;
             const reps_alvo = typeof item === 'object' ? (item.reps_alvo || null) : null;
+            const ordemAtual = await db.query(
+                'SELECT COUNT(*) FROM treinos_exercicios WHERE treino_id = $1',
+                [treinoId]
+            );
+            const ordem = parseInt(ordemAtual.rows[0].count);
             await db.query(
-                'INSERT INTO treinos_exercicios (treino_id, exercicio_id, series_alvo, reps_alvo) VALUES ($1, $2, $3, $4)',
-                [treinoId, exercicio_id, series_alvo, reps_alvo]
+                'INSERT INTO treinos_exercicios (treino_id, exercicio_id, series_alvo, reps_alvo, ordem) VALUES ($1, $2, $3, $4, $5)',
+                [treinoId, exercicio_id, series_alvo, reps_alvo, ordem]
             );
         }
 
@@ -254,6 +260,32 @@ router.post('/treinos/:treinoId/exercicios', async (req, res) => {
         await db.query('ROLLBACK'); // Desfaz a transação em caso de erro
         console.error('Erro ao adicionar exercícios ao treino:', error);
         res.status(500).json({ error: 'Erro ao adicionar exercícios ao treino' });
+    }
+});
+
+// Rota para salvar a ordem dos exercícios de um treino
+router.put('/treinos/:treinoId/exercicios/ordem', async (req, res) => {
+    const { treinoId } = req.params;
+    const { ordem } = req.body; // array de exercicio_id na nova ordem
+
+    if (!Array.isArray(ordem) || ordem.length === 0) {
+        return res.status(400).json({ error: 'ordem deve ser um array de exercicio_id' });
+    }
+
+    try {
+        await db.query('BEGIN');
+        for (let i = 0; i < ordem.length; i++) {
+            await db.query(
+                'UPDATE treinos_exercicios SET ordem = $1 WHERE treino_id = $2 AND exercicio_id = $3',
+                [i, treinoId, ordem[i]]
+            );
+        }
+        await db.query('COMMIT');
+        res.json({ ok: true });
+    } catch (error) {
+        await db.query('ROLLBACK');
+        console.error('Erro ao salvar ordem:', error);
+        res.status(500).json({ error: 'Erro ao salvar ordem dos exercícios' });
     }
 });
 
@@ -291,7 +323,8 @@ router.get('/treinos/:treinoId/exercicios', async (req, res) => {
                     te.series_alvo, te.reps_alvo
              FROM treinos_exercicios te
              JOIN exercicios e ON te.exercicio_id = e.id
-             WHERE te.treino_id = $1`,
+             WHERE te.treino_id = $1
+             ORDER BY te.ordem ASC`,
             [treinoId]
         );
 

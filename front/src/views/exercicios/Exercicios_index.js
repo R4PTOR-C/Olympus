@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import ModalHistorico from '../components/ModalHistorico';
 import ModalSucesso from '../components/ModalSucesso';
 import PageStateHandler from '../components/PageStateHandler';
@@ -244,6 +245,34 @@ function Exercicios_index() {
         }
     };
 
+    // ── DRAG AND DROP ─────────────────────────────────────────────────────
+
+    const handleReorder = async (result) => {
+        if (!result.destination) return;
+        const from = result.source.index;
+        const to = result.destination.index;
+        if (from === to) return;
+
+        const novaOrdem = [...exercicios];
+        const [moved] = novaOrdem.splice(from, 1);
+        novaOrdem.splice(to, 0, moved);
+        setExercicios(novaOrdem);
+
+        try {
+            await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios/ordem`,
+                {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ ordem: novaOrdem.map(ex => ex.exercicio_id) }),
+                }
+            );
+        } catch {
+            console.error('Erro ao salvar ordem');
+        }
+    };
+
     // ── HELPERS ───────────────────────────────────────────────────────────
 
     const isVideo = (url) => url && (url.includes('/video/') || /\.(mp4|mov|webm)(\?|$)/i.test(url));
@@ -334,12 +363,38 @@ function Exercicios_index() {
                 )}
 
                 {/* ── LISTA DE EXERCÍCIOS ── */}
-                <div className="ex-list">
-                    {exercicios.map((exercicio) => {
+                <DragDropContext onDragEnd={handleReorder}>
+                <Droppable droppableId="ex-list">
+                    {(droppableProvided, droppableSnapshot) => (
+                    <div
+                        className={`ex-list${droppableSnapshot.isDraggingOver ? ' ex-list-dropping' : ''}`}
+                        ref={droppableProvided.innerRef}
+                        {...droppableProvided.droppableProps}
+                    >
+                    {exercicios.map((exercicio, index) => {
                         const series = formData[exercicio.exercicio_id] || exercicio.series || [];
 
                         return (
-                            <div className="ex-card" key={exercicio.exercicio_id}>
+                            <Draggable
+                                key={String(exercicio.exercicio_id)}
+                                draggableId={String(exercicio.exercicio_id)}
+                                index={index}
+                            >
+                            {(provided, snapshot) => (
+                            <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={`ex-card${snapshot.isDragging ? ' ex-dragging' : ''}`}
+                            >
+
+                                {/* Drag handle */}
+                                <div className="ex-drag-handle" {...provided.dragHandleProps}>
+                                    <svg width="16" height="10" viewBox="0 0 16 10" fill="currentColor">
+                                        <rect y="0" width="16" height="2" rx="1"/>
+                                        <rect y="4" width="16" height="2" rx="1"/>
+                                        <rect y="8" width="16" height="2" rx="1"/>
+                                    </svg>
+                                </div>
 
                                 {/* GIF / Vídeo */}
                                 <div className="ex-gif-wrap">
@@ -481,9 +536,15 @@ function Exercicios_index() {
                                     )}
                                 </div>
                             </div>
+                            )}
+                            </Draggable>
                         );
                     })}
-                </div>
+                    {droppableProvided.placeholder}
+                    </div>
+                    )}
+                </Droppable>
+                </DragDropContext>
 
                 {/* ── TIMER DE DESCANSO ── */}
                 {modoEdicao && <TimerDescanso />}

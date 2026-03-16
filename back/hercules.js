@@ -205,13 +205,14 @@ async function salvarTreinoDoHercules({ usuarioId, tipos, exerciciosIds, dia, no
 
         const treino = treinoRes.rows[0];
 
-        for (const exercicioId of exerciciosIds) {
+        for (let i = 0; i < exerciciosIds.length; i++) {
+            const exercicioId = exerciciosIds[i];
             const sr = seriesRepsPorId
                 ? (seriesRepsPorId[exercicioId] || seriesRepsPorId[String(exercicioId)])
                 : null;
             await pool.query(
-                "INSERT INTO treinos_exercicios (treino_id, exercicio_id, series_alvo, reps_alvo) VALUES ($1, $2, $3, $4)",
-                [treino.id, exercicioId, sr?.series || null, sr?.reps || null]
+                "INSERT INTO treinos_exercicios (treino_id, exercicio_id, series_alvo, reps_alvo, ordem) VALUES ($1, $2, $3, $4, $5)",
+                [treino.id, exercicioId, sr?.series || null, sr?.reps || null, i]
             );
         }
 

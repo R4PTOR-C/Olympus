@@ -263,14 +263,50 @@ body.dark-mode {
     border-radius: var(--ex-radius-lg);
     overflow: hidden;
     box-shadow: var(--ex-shadow);
-    animation: ex-fadeUp 0.35s ease both;
-    transition: box-shadow 0.2s;
+    transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
 }
 
-.ex-card:nth-child(2) { animation-delay: 0.05s; }
-.ex-card:nth-child(3) { animation-delay: 0.10s; }
-.ex-card:nth-child(4) { animation-delay: 0.15s; }
-.ex-card:nth-child(5) { animation-delay: 0.20s; }
+.ex-card.ex-dragging {
+    overflow: visible;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    border-color: var(--ex-accent-border);
+    transform: scale(1.02);
+    z-index: 50;
+}
+
+/* ── Slot de destino (placeholder do dnd) ── */
+.ex-list [data-rfd-placeholder-context-id] {
+    border-radius: var(--ex-radius-lg) !important;
+    background: var(--ex-accent-dim) !important;
+    border: 2px dashed rgba(74, 144, 217, 0.45) !important;
+    box-sizing: border-box !important;
+}
+
+/* ── Handle de arrastar ── */
+.ex-drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    cursor: grab;
+    background: var(--ex-surface-2);
+    border-bottom: 1px solid var(--ex-border);
+    color: var(--ex-text-dim);
+    transition: background 0.12s, color 0.12s;
+    user-select: none;
+    touch-action: none;
+}
+
+.ex-drag-handle:active {
+    cursor: grabbing;
+    background: var(--ex-accent-dim);
+    color: var(--ex-accent);
+}
+
+.ex-drag-handle:hover {
+    background: var(--ex-surface-3);
+    color: var(--ex-accent);
+}
 
 @keyframes ex-fadeUp {
     from { opacity: 0; transform: translateY(12px); }
