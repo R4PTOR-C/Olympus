@@ -326,6 +326,25 @@ body.dark-mode .tf-select {
     line-height: 1.2;
 }
 
+/* Steppers menores dentro dos cards selecionados */
+.tf-selected-card .tf-stepper-btn {
+    width: 20px;
+    height: 30px;
+}
+
+.tf-selected-card .tf-stepper-center {
+    min-width: 20px;
+    padding: 2px 1px;
+}
+
+.tf-selected-card .tf-stepper-val {
+    font-size: 0.82rem;
+}
+
+.tf-selected-card .tf-stepper-label {
+    font-size: 0.46rem;
+}
+
 .tf-rm-btn {
     width: 100%;
     background: rgba(232, 64, 64, 0.08);
