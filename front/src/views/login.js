@@ -55,8 +55,8 @@ function Login() {
 
                 {/* ── HEADER ── */}
                 <div className="auth-header">
-                    <img src="/logo2.png" alt="Olympus" className="auth-logo" />
-                    <img src="/logo_texto.png" alt="Olympus" className="auth-logo-texto" />
+                    <img src="/logo2.png" alt="Olympus" className="auth-logo" width="175" height="175" decoding="sync" fetchpriority="high" />
+                    <img src="/logo_texto.png" alt="Olympus" className="auth-logo-texto" width="160" decoding="sync" />
                 </div>
 
                 {/* ── BODY ── */}
