@@ -29,8 +29,8 @@ body.dark-mode {
     --hc-surface-2: #171E2A;
     --hc-surface-3: #1D2535;
     --hc-text: #E8EDF5;
-    --hc-text-muted: #6B7A99;
-    --hc-text-dim: #3D4E6A;
+    --hc-text-muted: #A4AEBF;
+    --hc-text-dim: #7B8FA8;
     --hc-border: rgba(255, 255, 255, 0.06);
     --hc-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
 }

@@ -30,8 +30,8 @@ body.dark-mode {
     --h-surface-2: #1C2436;
     --h-surface-3: #222D42;
     --h-text: #E8EDF5;
-    --h-text-muted: #6B7A99;
-    --h-text-dim: #3D4E6A;
+    --h-text-muted: #A4AEBF;
+    --h-text-dim: #7B8FA8;
     --h-border: rgba(255, 255, 255, 0.07);
     --h-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
     --h-shadow-hover: 0 4px 22px rgba(0, 0, 0, 0.55);

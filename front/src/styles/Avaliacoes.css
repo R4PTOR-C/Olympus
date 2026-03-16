@@ -26,8 +26,8 @@ body.dark-mode {
     --av-surface:       #0E1220;
     --av-surface-2:     #151f35;
     --av-text:          #E8EDF5;
-    --av-text-muted:    #8892aa;
-    --av-text-dim:      #3d4e6a;
+    --av-text-muted:    #A4AEBF;
+    --av-text-dim:      #7B8FA8;
     --av-border:        rgba(255, 255, 255, 0.06);
     --av-shadow:        0 2px 14px rgba(0, 0, 0, 0.4);
 }

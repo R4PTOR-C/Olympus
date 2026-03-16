@@ -31,8 +31,8 @@ body.dark-mode {
     --uv-surface-2: #171E2A;
     --uv-surface-3: #1D2535;
     --uv-text: #E8EDF5;
-    --uv-text-muted: #6B7A99;
-    --uv-text-dim: #3D4E6A;
+    --uv-text-muted: #A4AEBF;
+    --uv-text-dim: #7B8FA8;
     --uv-border: rgba(255, 255, 255, 0.06);
     --uv-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
     --uv-shadow-hover: 0 4px 24px rgba(0, 0, 0, 0.7);

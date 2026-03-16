@@ -31,8 +31,8 @@ body.dark-mode {
     --ex-surface-2: #171E2A;
     --ex-surface-3: #1D2535;
     --ex-text: #E8EDF5;
-    --ex-text-muted: #6B7A99;
-    --ex-text-dim: #3D4E6A;
+    --ex-text-muted: #A4AEBF;
+    --ex-text-dim: #7B8FA8;
     --ex-border: rgba(255, 255, 255, 0.06);
     --ex-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
     --ex-shadow-hover: 0 4px 24px rgba(0, 0, 0, 0.7);
@@ -434,6 +434,10 @@ body.dark-mode {
 body.dark-mode .ex-inline-input {
     background: #1D2535;
     color: #E8EDF5;
+}
+
+body.dark-mode .ex-inline-input::placeholder {
+    color: #7B8FA8;
 }
 
 .ex-inline-input::-webkit-outer-spin-button,

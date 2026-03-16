@@ -22,8 +22,8 @@ body.dark-mode {
     --cd-surface:   #0E1220;
     --cd-surface-2: #151f35;
     --cd-text:      #E8EDF5;
-    --cd-text-muted:#8892aa;
-    --cd-text-dim:  #3d4e6a;
+    --cd-text-muted:#A4AEBF;
+    --cd-text-dim:  #7B8FA8;
     --cd-border:    rgba(255,255,255,0.06);
     --cd-shadow:    0 2px 14px rgba(0,0,0,0.4);
 }

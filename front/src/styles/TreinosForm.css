@@ -29,8 +29,8 @@ body.dark-mode {
     --tf-surface-2: #171E2A;
     --tf-surface-3: #1D2535;
     --tf-text: #E8EDF5;
-    --tf-text-muted: #6B7A99;
-    --tf-text-dim: #3D4E6A;
+    --tf-text-muted: #A4AEBF;
+    --tf-text-dim: #7B8FA8;
     --tf-border: rgba(255, 255, 255, 0.06);
     --tf-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
 }
@@ -327,22 +327,34 @@ body.dark-mode .tf-select {
 }
 
 /* Steppers menores dentro dos cards selecionados */
+.tf-selected-card {
+    padding: 10px 8px 8px;
+}
+
+.tf-selected-card .tf-steppers-row {
+    gap: 4px;
+}
+
 .tf-selected-card .tf-stepper-btn {
-    width: 20px;
-    height: 30px;
+    width: 18px;
+    height: 28px;
 }
 
 .tf-selected-card .tf-stepper-center {
-    min-width: 20px;
+    min-width: 18px;
     padding: 2px 1px;
 }
 
 .tf-selected-card .tf-stepper-val {
-    font-size: 0.82rem;
+    font-size: 0.78rem;
 }
 
 .tf-selected-card .tf-stepper-label {
-    font-size: 0.46rem;
+    font-size: 0.44rem;
+}
+
+.tf-selected-card .tf-stepper-sep {
+    font-size: 0.72rem;
 }
 
 .tf-rm-btn {
