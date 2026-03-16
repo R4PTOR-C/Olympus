@@ -4,12 +4,10 @@ import { useContext } from 'react';
 import { AuthContext } from '../AuthContext';
 
 // Rotas principais da navbar em ordem
-const ROTAS_PROFESSOR = [
+const ROTAS_PROFESSOR = (userId) => [
     '/usuarios',
-    '/treinos',
-    '/hercules',
-    '/chat',
-    '/professores/edit',
+    '/historico-alunos',
+    `/professores/edit/${userId}`,
 ];
 
 const ROTAS_ALUNO = (userId) => [
@@ -47,7 +45,7 @@ export function useSwipeNavigation() {
 
     useEffect(() => {
         const rotas = funcao === 'Professor'
-            ? ROTAS_PROFESSOR
+            ? ROTAS_PROFESSOR(userId)
             : ROTAS_ALUNO(userId);
 
         const indiceAtual = encontrarIndice(rotas, location.pathname);

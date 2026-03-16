@@ -201,6 +201,61 @@
 
 .ue-field:active .ue-field-chevron { color: var(--h-accent); }
 
+/* ── SKELETON ── */
+@keyframes ue-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.35; }
+}
+
+.ue-skel {
+    border-radius: 6px;
+    animation: ue-pulse 1.4s ease-in-out infinite;
+}
+
+.ue-skel-circle {
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    animation: ue-pulse 1.4s ease-in-out infinite;
+    margin-bottom: 14px;
+    border: 3px solid rgba(74,144,217,0.2);
+}
+
+.ue-skel-line {
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    animation: ue-pulse 1.4s ease-in-out infinite;
+}
+
+.ue-skel-line.dark {
+    background: var(--h-surface-3);
+}
+
+.ue-skel-chip {
+    height: 28px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.08);
+    animation: ue-pulse 1.4s ease-in-out infinite;
+}
+
+.ue-skel-section-header {
+    height: 40px;
+    background: var(--h-surface-2);
+    border-bottom: 1px solid var(--h-border);
+    animation: ue-pulse 1.4s ease-in-out infinite;
+}
+
+.ue-skel-field {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--h-border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ue-skel-field:last-child { border-bottom: none; }
+
 /* ── DESKTOP ── */
 @media (min-width: 768px) {
     .ue-page { padding-bottom: 2rem; }

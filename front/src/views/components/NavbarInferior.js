@@ -15,7 +15,7 @@ function NavbarInferior() {
 
     // ── Navbar do Professor ──
     if (isProfessor) {
-        const leftItems = [
+        const profItems = [
             {
                 label: 'Alunos',
                 path: '/usuarios',
@@ -37,18 +37,6 @@ function NavbarInferior() {
                     </svg>
                 ),
             },
-        ];
-
-        const rightItems = [
-            {
-                label: 'Mensagens',
-                path: '/chat',
-                icon: (active) => (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={active ? '#4A90D9' : '#3D4E6A'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                ),
-            },
             {
                 label: 'Perfil',
                 path: `/professores/edit/${userId}`,
@@ -63,29 +51,7 @@ function NavbarInferior() {
 
         return (
             <nav className="nav-inferior d-md-none">
-                {leftItems.map(item => {
-                    const active = isActive(item.path);
-                    return (
-                        <button
-                            key={item.path}
-                            className={`nav-inf-item${active ? ' active' : ''}`}
-                            onClick={() => navigate(item.path)}
-                        >
-                            {item.icon(active)}
-                            <span className="nav-inf-label">{item.label}</span>
-                        </button>
-                    );
-                })}
-
-                {/* Botão central — Hércules */}
-                <div className="nav-inf-center" onClick={() => navigate('/hercules')}>
-                    <div className={`nav-inf-circle${herculesActive ? ' active' : ''}`}>
-                        <img src="/hercules.png" alt="Hércules" className="nav-inf-hercules-img" />
-                    </div>
-                    <span className={`nav-inf-center-label${herculesActive ? ' active' : ''}`}>Hércules</span>
-                </div>
-
-                {rightItems.map(item => {
+                {profItems.map(item => {
                     const active = isActive(item.path);
                     return (
                         <button

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import CropAvatar from '../components/CropAvatar';
-import ModalCarregando from '../components/ModalCarregando';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
 import PageStateHandler from '../components/PageStateHandler';
 import '../../styles/UsuariosEdit.css';
@@ -217,7 +216,40 @@ const ProfessoresEdit = () => {
         } catch (err) { setError(err.toString()); }
     };
 
-    if (loading) return <ModalCarregando show={true} />;
+    if (loading) return (
+        <PageStateHandler>
+            <div className="ue-page">
+                {/* Header skeleton */}
+                <div className="ue-header">
+                    <div className="ue-skel-circle" />
+                    <div className="ue-skel-line" style={{ width: 160, height: 28, marginBottom: 14 }} />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                        <div className="ue-skel-chip" style={{ width: 90 }} />
+                        <div className="ue-skel-chip" style={{ width: 110 }} />
+                    </div>
+                </div>
+                {/* Body skeleton */}
+                <div className="ue-body">
+                    {[
+                        { title: 'Dados Pessoais',      rows: dadosPessoais.length },
+                        { title: 'Dados Profissionais', rows: dadosProfissionais.length },
+                        { title: 'Localização',         rows: 1 },
+                    ].map((sec, si) => (
+                        <div key={si} className="ue-section">
+                            <div className="ue-skel-section-header" />
+                            {[...Array(sec.rows)].map((_, ri) => (
+                                <div key={ri} className="ue-skel-field">
+                                    <div className="ue-skel-line dark" style={{ width: '35%', height: 9, animationDelay: `${(si * sec.rows + ri) * 0.05}s` }} />
+                                    <div className="ue-skel-line dark" style={{ width: `${55 + (ri % 3) * 10}%`, height: 14, animationDelay: `${(si * sec.rows + ri) * 0.05 + 0.1}s` }} />
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </PageStateHandler>
+    );
+
     if (error)   return <div style={{ color: 'red', padding: '2rem' }}>Erro: {error}</div>;
     if (!usuario || !professor) return null;
 
