@@ -64,8 +64,10 @@ function AppContent() {
 
     useSwipeNavigation();
 
-    // aplica classes no body sempre que mudar rota ou tema
+    // aplica classes no body sempre que mudar rota ou tema + reseta scroll
     useEffect(() => {
+        window.scrollTo(0, 0);
+
         const hasChrome = loggedIn && !['/', '/sign-in'].includes(location.pathname);
         document.body.classList.toggle('with-chrome', hasChrome);
         document.body.classList.toggle('no-chrome', !hasChrome);

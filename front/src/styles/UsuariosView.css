@@ -148,32 +148,34 @@ body.dark-mode {
 
 /* Stats chips */
 .uv-stats-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
     margin-bottom: 20px;
+    width: 100%;
+    max-width: 280px;
 }
 
 .uv-stat-chip {
     background: rgba(255, 255, 255, 0.07);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 100px;
-    padding: 5px 14px;
+    padding: 5px 12px;
     display: flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    gap: 4px;
 }
 
 .uv-stat-chip-val {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: #ffffff;
 }
 
 .uv-stat-chip-lbl {
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     color: rgba(200, 209, 208, 0.55);
 }
 

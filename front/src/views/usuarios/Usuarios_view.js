@@ -226,26 +226,26 @@ const UsuariosView = () => {
                 <div className="uv-stats-row">
                     {usuario.peso && (
                         <div className="uv-stat-chip">
-                            <span className="uv-stat-chip-val">{usuario.peso} kg</span>
                             <span className="uv-stat-chip-lbl">Peso</span>
+                            <span className="uv-stat-chip-val">{usuario.peso} kg</span>
                         </div>
                     )}
                     {usuario.altura && (
                         <div className="uv-stat-chip">
-                            <span className="uv-stat-chip-val">{usuario.altura} cm</span>
                             <span className="uv-stat-chip-lbl">Altura</span>
+                            <span className="uv-stat-chip-val">{usuario.altura} cm</span>
                         </div>
                     )}
                     {usuario.genero && (
                         <div className="uv-stat-chip">
-                            <span className="uv-stat-chip-val">{usuario.genero}</span>
                             <span className="uv-stat-chip-lbl">Gênero</span>
+                            <span className="uv-stat-chip-val">{usuario.genero}</span>
                         </div>
                     )}
                     {ultimaAvaliacao?.gordura_corporal != null && (
                         <div className="uv-stat-chip uv-stat-chip-bf" onClick={() => navigate(`/avaliacoes/${id}/new`)}>
-                            <span className="uv-stat-chip-val">{parseFloat(ultimaAvaliacao.gordura_corporal).toFixed(1)}%</span>
                             <span className="uv-stat-chip-lbl">Gordura</span>
+                            <span className="uv-stat-chip-val">{parseFloat(ultimaAvaliacao.gordura_corporal).toFixed(1)}%</span>
                         </div>
                     )}
                 </div>
