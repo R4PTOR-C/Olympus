@@ -1,26 +1,125 @@
-.checkmark {
-    stroke: #28a745;
-    stroke-width: 2;
-    stroke-miterlimit: 10;
+/* ── MODAL SUCESSO ── */
+
+@keyframes ms-fadein {
+    from { opacity: 0; transform: scale(0.88) translateY(16px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0);    }
 }
 
-.checkmark__circle {
-    stroke-dasharray: 166;
-    stroke-dashoffset: 166;
-    stroke-width: 2;
-    stroke: #28a745;
-    animation: stroke 0.6s ease-in-out forwards;
+@keyframes ms-ring {
+    from { stroke-dashoffset: 314.16; }
+    to   { stroke-dashoffset: 0;      }
 }
 
-.checkmark__check {
-    transform-origin: 50% 50%;
-    stroke-dasharray: 48;
-    stroke-dashoffset: 48;
-    animation: stroke 0.4s 0.6s ease-in-out forwards;
+@keyframes ms-check {
+    from { stroke-dashoffset: 80; }
+    to   { stroke-dashoffset: 0;  }
 }
 
-@keyframes stroke {
-    to {
-        stroke-dashoffset: 0;
-    }
+@keyframes ms-glow {
+    0%, 100% { opacity: .35; }
+    50%      { opacity: .7;  }
+}
+
+.ms-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    background: rgba(5, 8, 15, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ms-card {
+    background: #0e1220;
+    border: 1px solid rgba(46, 204, 113, 0.2);
+    border-radius: 24px;
+    padding: 36px 40px 28px;
+    width: 280px;
+    text-align: center;
+    animation: ms-fadein 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    box-shadow: 0 8px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(46, 204, 113, 0.15);
+}
+
+.ms-icon-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.ms-glow {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(46, 204, 113, 0.25) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: ms-glow 2s ease-in-out infinite;
+}
+
+.ms-ring-track {
+    fill: none;
+    stroke: rgba(46, 204, 113, 0.12);
+    stroke-width: 3.5;
+}
+
+.ms-ring-arc {
+    fill: none;
+    stroke: #2ECC71;
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    stroke-dasharray: 314.16;
+    animation: ms-ring 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    filter: drop-shadow(0 0 6px rgba(46, 204, 113, 0.7));
+}
+
+.ms-checkmark {
+    fill: none;
+    stroke: #2ECC71;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 80;
+    animation: ms-check 0.4s 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    filter: drop-shadow(0 0 4px rgba(46, 204, 113, 0.8));
+}
+
+.ms-title {
+    display: block;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 0.06em;
+    color: #e8edf5;
+    line-height: 1.05;
+}
+
+.ms-title-accent {
+    color: #2ECC71;
+    margin-top: -8px;
+}
+
+.ms-sub {
+    font-size: 13px;
+    color: #4a5a7a;
+    font-family: system-ui, sans-serif;
+    margin: 0 0 24px;
+}
+
+.ms-bar-track {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.ms-bar-fill {
+    height: 100%;
+    background: #2ECC71;
+    border-radius: 2px;
+    box-shadow: 0 0 6px rgba(46, 204, 113, 0.6);
+    transition: width 0.1s linear;
 }

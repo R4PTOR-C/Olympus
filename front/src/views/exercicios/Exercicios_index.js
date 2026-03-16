@@ -4,6 +4,7 @@ import { AuthContext } from '../../AuthContext';
 import ModalHistorico from '../components/ModalHistorico';
 import ModalSucesso from '../components/ModalSucesso';
 import PageStateHandler from '../components/PageStateHandler';
+import TimerDescanso from '../components/TimerDescanso';
 import '../../styles/ExerciciosIndex.css';
 
 function Exercicios_index() {
@@ -483,6 +484,9 @@ function Exercicios_index() {
                         );
                     })}
                 </div>
+
+                {/* ── TIMER DE DESCANSO ── */}
+                {modoEdicao && <TimerDescanso />}
 
                 {/* ── MODAIS ── */}
                 {mostrarModalHistorico && (

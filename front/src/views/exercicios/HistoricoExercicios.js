@@ -43,9 +43,7 @@ function HistoricoExercicios() {
                 <div className="hx-page-header">
                     <span className="hx-page-title">Histórico por Exercício</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        {!loading && exercicios.length > 0 && (
-                            <span className="hx-page-count">{exercicios.length} exercício{exercicios.length !== 1 ? 's' : ''}</span>
-                        )}
+                            <span className="hx-page-count">Mapa Muscular</span>
                         <button
                             onClick={() => setMapaAberto(true)}
                             title="Mapa muscular do mês"
@@ -56,7 +54,6 @@ function HistoricoExercicios() {
                                 cursor: 'pointer', lineHeight: 0, color: '#4A90D9',
                             }}
                         >
-                            {/* ícone de radar/hexágono */}
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" strokeWidth="2"
                                 strokeLinecap="round" strokeLinejoin="round">
