@@ -3,20 +3,58 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ModalCarregando from '../components/ModalCarregando';
 import '../../styles/TreinosForm.css';
 
-const GRUPOS = ['Peitoral', 'Bíceps', 'Tríceps', 'Costas', 'Ombros', 'Pernas', 'Abdômen', 'Panturrilha'];
+const API = process.env.REACT_APP_API_BASE_URL;
+
+const DIAS = [
+    { curto: 'Seg', completo: 'Segunda-feira' },
+    { curto: 'Ter', completo: 'Terça-feira'   },
+    { curto: 'Qua', completo: 'Quarta-feira'  },
+    { curto: 'Qui', completo: 'Quinta-feira'  },
+    { curto: 'Sex', completo: 'Sexta-feira'   },
+    { curto: 'Sáb', completo: 'Sábado'        },
+    { curto: 'Dom', completo: 'Domingo'       },
+];
+
+const GRUPOS_CONFIG = [
+    { nome: 'Peitoral',    img: 'peito.png'       },
+    { nome: 'Bíceps',      img: 'biceps.png'      },
+    { nome: 'Tríceps',     img: 'triceps.png'     },
+    { nome: 'Costas',      img: 'costas.png'      },
+    { nome: 'Ombros',      img: 'ombros.png'      },
+    { nome: 'Pernas',      img: 'perna.png'       },
+    { nome: 'Abdômen',     img: 'abdomen.png'     },
+    { nome: 'Panturrilha', img: 'panturrilha.png' },
+];
+
+const GRUPOS = GRUPOS_CONFIG.map(g => g.nome);
 
 const isVideo = (url) => url && (url.includes('/video/') || /\.(mp4|mov|webm)(\?|$)/i.test(url));
 
 const normalizar = (str) => str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() ?? '';
 
-const matchBusca = (ex, searchTerm) => {
-    const palavras = normalizar(searchTerm).split(/\s+/).filter(Boolean);
+const matchBusca = (ex, term) => {
+    const palavras = normalizar(term).split(/\s+/).filter(Boolean);
     if (!palavras.length) return true;
     return palavras.every(p =>
         normalizar(ex.nome_exercicio).includes(p) ||
         normalizar(ex.grupo_muscular).includes(p)
     );
 };
+
+function Stepper({ value, onChange, min = 1, max = 30, label }) {
+    return (
+        <div className="tf-stepper">
+            <button type="button" className="tf-stepper-btn"
+                onClick={() => onChange(Math.max(min, value - 1))}>−</button>
+            <div className="tf-stepper-center">
+                <span className="tf-stepper-val">{value}</span>
+                <span className="tf-stepper-label">{label}</span>
+            </div>
+            <button type="button" className="tf-stepper-btn"
+                onClick={() => onChange(Math.min(max, value + 1))}>+</button>
+        </div>
+    );
+}
 
 const TreinosForm = () => {
     const { id } = useParams();
@@ -30,34 +68,33 @@ const TreinosForm = () => {
     const [exercicios, setExercicios] = useState([]);
     const [exerciciosSelecionados, setExerciciosSelecionados] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [exercicioAtivo, setExercicioAtivo] = useState(null);
     const [openGroups, setOpenGroups] = useState({});
+    const [expandedGroups, setExpandedGroups] = useState({});
     const [submitting, setSubmitting] = useState(false);
-    const [diasOcupados, setDiasOcupados] = useState([]);
 
-    const TODOS_DIAS = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
+    const PAGE = 8;
+    const [diasOcupados, setDiasOcupados] = useState([]);
+    const [erros, setErros] = useState({});
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         const authH = token ? { Authorization: `Bearer ${token}` } : {};
         Promise.all([
-            fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`).then(r => r.json()),
-            fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, { headers: authH }).then(r => r.json()),
+            fetch(`${API}/exercicios`).then(r => r.json()),
+            fetch(`${API}/treinos/usuarios/${id}/treinos`, { headers: authH }).then(r => r.json()),
         ]).then(([exData, treinosData]) => {
             setExercicios(exData);
             setDiasOcupados(treinosData.map(t => t.dia_semana));
         });
     }, [id]);
 
-    const toggleGroup = (grupo) => {
+    const toggleGroup = (grupo) =>
         setOpenGroups(prev => ({ ...prev, [grupo]: !prev[grupo] }));
-    };
 
     const handleAdicionarExercicio = (ex) => {
         if (!exerciciosSelecionados.some(s => s.id === ex.id)) {
-            setExerciciosSelecionados(prev => [...prev, { ...ex, series_alvo: '', reps_alvo: '' }]);
+            setExerciciosSelecionados(prev => [...prev, { ...ex, series_alvo: 3, reps_alvo: 12 }]);
         }
-        setExercicioAtivo(null);
     };
 
     const handleAlvoChange = (exId, campo, valor) => {
@@ -66,35 +103,49 @@ const TreinosForm = () => {
         );
     };
 
-    const handleRemoveExercicio = (exId) => {
+    const handleRemoveExercicio = (exId) =>
         setExerciciosSelecionados(prev => prev.filter(ex => ex.id !== exId));
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!nomeTreino || !descricao || !diaSemana || !grupoMuscular || exerciciosSelecionados.length === 0) {
-            alert('Preencha todos os campos e selecione ao menos um exercício.');
+        const novosErros = {};
+        if (!nomeTreino.trim())             novosErros.nomeTreino    = 'Dê um nome ao treino';
+        if (!diaSemana)                     novosErros.diaSemana     = 'Escolha o dia da semana';
+        if (!grupoMuscular)                 novosErros.grupoMuscular = 'Escolha o grupo muscular principal';
+        if (exerciciosSelecionados.length === 0) novosErros.exercicios = 'Adicione pelo menos um exercício';
+
+        if (Object.keys(novosErros).length) {
+            setErros(novosErros);
+            const primeiroErro = document.querySelector('.tf-error');
+            primeiroErro?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
 
+        setErros({});
         setSubmitting(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, {
+            const res = await fetch(`${API}/treinos/usuarios/${id}/treinos`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ nome_treino: nomeTreino, descricao, dia_semana: diaSemana, grupo_muscular: grupoMuscular, grupos_auxiliares: gruposAuxiliares }),
+                body: JSON.stringify({
+                    nome_treino: nomeTreino,
+                    descricao,
+                    dia_semana: diaSemana,
+                    grupo_muscular: grupoMuscular,
+                    grupos_auxiliares: gruposAuxiliares,
+                }),
             });
-            if (!res.ok) { alert('Erro ao criar treino.'); return; }
+            if (!res.ok) { setErros({ geral: 'Erro ao criar treino. Tente novamente.' }); return; }
             const novoTreino = await res.json();
 
-            await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${novoTreino.id}/exercicios`, {
+            await fetch(`${API}/treinos/treinos/${novoTreino.id}/exercicios`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     exercicios: exerciciosSelecionados.map(ex => ({
                         id: ex.id,
-                        series_alvo: ex.series_alvo ? Number(ex.series_alvo) : null,
+                        series_alvo: ex.series_alvo || null,
                         reps_alvo: ex.reps_alvo || null,
                     }))
                 }),
@@ -102,7 +153,7 @@ const TreinosForm = () => {
 
             navigate(`/usuarios/view/${id}`);
         } catch {
-            alert('Erro ao criar treino.');
+            setErros({ geral: 'Erro ao criar treino. Tente novamente.' });
         } finally {
             setSubmitting(false);
         }
@@ -126,19 +177,17 @@ const TreinosForm = () => {
                         <h1 className="tf-header-title">Criar Treino</h1>
                     </div>
                 </div>
-                <div className="tf-header-badge">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    Preencha os dados abaixo
-                </div>
             </div>
 
             {/* ── BODY ── */}
             <form onSubmit={handleSubmit}>
                 <div className="tf-body">
 
-                    {/* ── Dados do treino ── */}
+                    {erros.geral && (
+                        <div className="tf-error-banner">{erros.geral}</div>
+                    )}
+
+                    {/* ── DADOS DO TREINO ── */}
                     <div className="tf-section">
                         <div className="tf-section-header">
                             <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -147,127 +196,144 @@ const TreinosForm = () => {
                             <span className="tf-section-title">Dados do Treino</span>
                         </div>
                         <div className="tf-section-body">
+
+                            {/* Nome */}
                             <div className="tf-field">
                                 <label className="tf-label">Nome do Treino</label>
                                 <input
-                                    className="tf-input"
+                                    className={`tf-input${erros.nomeTreino ? ' tf-input-error' : ''}`}
                                     type="text"
                                     placeholder="Ex: Treino A — Peito e Tríceps"
                                     value={nomeTreino}
-                                    onChange={e => setNomeTreino(e.target.value)}
-                                    required
+                                    onChange={e => { setNomeTreino(e.target.value); setErros(p => ({ ...p, nomeTreino: null })); }}
                                 />
+                                {erros.nomeTreino && <span className="tf-error">{erros.nomeTreino}</span>}
                             </div>
 
+                            {/* Descrição — opcional */}
                             <div className="tf-field">
-                                <label className="tf-label">Descrição</label>
+                                <label className="tf-label">
+                                    Descrição <span className="tf-label-opt">(opcional)</span>
+                                </label>
                                 <textarea
                                     className="tf-textarea"
                                     placeholder="Descreva o objetivo ou foco deste treino..."
                                     value={descricao}
                                     onChange={e => setDescricao(e.target.value)}
-                                    required
                                 />
                             </div>
 
+                            {/* Dia da semana — chips visuais */}
                             <div className="tf-field">
                                 <label className="tf-label">Dia da Semana</label>
-                                <div className="tf-select-wrap">
-                                    <select
-                                        className="tf-select"
-                                        value={diaSemana}
-                                        onChange={e => setDiaSemana(e.target.value)}
-                                        required
-                                    >
-                                        <option value="">Selecione o dia</option>
-                                        {TODOS_DIAS.filter(d => !diasOcupados.includes(d)).map(d => (
-                                            <option key={d} value={d}>{d}</option>
-                                        ))}
-                                    </select>
-                                    <svg className="tf-select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="6 9 12 15 18 9"/>
-                                    </svg>
-                                </div>
-                            </div>
-
-                            <div className="tf-field">
-                                <label className="tf-label">Grupo Muscular Principal</label>
-                                <div className="tf-select-wrap">
-                                    <select
-                                        className="tf-select"
-                                        value={grupoMuscular}
-                                        onChange={e => {
-                                            setGrupoMuscular(e.target.value);
-                                            setGruposAuxiliares(prev => prev.filter(g => g !== e.target.value));
-                                        }}
-                                        required
-                                    >
-                                        <option value="">Selecione o grupo muscular</option>
-                                        {GRUPOS.map(g => <option key={g} value={g}>{g}</option>)}
-                                    </select>
-                                    <svg className="tf-select-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="6 9 12 15 18 9"/>
-                                    </svg>
-                                </div>
-                            </div>
-
-                            <div className="tf-field">
-                                <label className="tf-label">Grupos Auxiliares</label>
-                                <p style={{ fontSize: '0.72rem', color: 'var(--tf-text-dim, #6b7a99)', marginBottom: 8, marginTop: -4 }}>
-                                    Toque para adicionar ou remover
-                                </p>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                                    {GRUPOS.filter(g => g !== grupoMuscular).map(g => {
-                                        const ativo = gruposAuxiliares.includes(g);
+                                <div className="tf-day-chips">
+                                    {DIAS.map(({ curto, completo }) => {
+                                        const ocupado   = diasOcupados.includes(completo);
+                                        const selecionado = diaSemana === completo;
                                         return (
                                             <button
-                                                key={g}
+                                                key={completo}
                                                 type="button"
-                                                onClick={() => setGruposAuxiliares(prev =>
-                                                    ativo ? prev.filter(x => x !== g) : [...prev, g]
-                                                )}
-                                                style={{
-                                                    padding: '6px 14px',
-                                                    borderRadius: 20,
-                                                    border: ativo ? '1.5px solid var(--tf-accent, #4A90D9)' : '1.5px solid var(--tf-border, #2a3550)',
-                                                    background: ativo ? 'rgba(74,144,217,0.15)' : 'var(--tf-surface-2, #151f35)',
-                                                    color: ativo ? 'var(--tf-accent, #4A90D9)' : 'var(--tf-text-muted, #8892aa)',
-                                                    fontSize: '0.8rem',
-                                                    fontFamily: "'Barlow Condensed', sans-serif",
-                                                    fontWeight: 700,
-                                                    letterSpacing: '0.06em',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.15s',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 5,
-                                                }}
+                                                disabled={ocupado}
+                                                onClick={() => { setDiaSemana(completo); setErros(p => ({ ...p, diaSemana: null })); }}
+                                                className={`tf-day-chip${selecionado ? ' active' : ''}${ocupado ? ' disabled' : ''}`}
                                             >
-                                                {ativo && (
-                                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                                )}
-                                                {g}
+                                                {curto}
+                                                {ocupado && <span className="tf-day-dot" />}
                                             </button>
                                         );
                                     })}
                                 </div>
+                                {erros.diaSemana && <span className="tf-error">{erros.diaSemana}</span>}
                             </div>
+
                         </div>
                     </div>
 
-                    {/* ── Exercícios selecionados ── */}
+                    {/* ── GRUPO MUSCULAR ── */}
                     <div className="tf-section">
                         <div className="tf-section-header">
                             <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="20 6 9 17 4 12"/>
+                                <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
                             </svg>
-                            <span className="tf-section-title">Exercícios Selecionados</span>
-                            {exerciciosSelecionados.length > 0 && (
-                                <span className="tf-acc-count">{exerciciosSelecionados.length}</span>
-                            )}
+                            <span className="tf-section-title">Grupo Muscular Principal</span>
                         </div>
                         <div className="tf-section-body">
-                            {exerciciosSelecionados.length > 0 ? (
+                            <div className="tf-muscle-grid">
+                                {GRUPOS_CONFIG.map(({ nome, img }) => {
+                                    const ativo = grupoMuscular === nome;
+                                    return (
+                                        <button
+                                            key={nome}
+                                            type="button"
+                                            className={`tf-muscle-card${ativo ? ' active' : ''}`}
+                                            onClick={() => {
+                                                setGrupoMuscular(nome);
+                                                setGruposAuxiliares(prev => prev.filter(g => g !== nome));
+                                                setErros(p => ({ ...p, grupoMuscular: null }));
+                                            }}
+                                        >
+                                            <img
+                                                className="tf-muscle-img"
+                                                src={`${API}/uploads/${img}`}
+                                                alt={nome}
+                                            />
+                                            <span className="tf-muscle-nome">{nome}</span>
+                                            {ativo && (
+                                                <div className="tf-muscle-check">
+                                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <polyline points="20 6 9 17 4 12"/>
+                                                    </svg>
+                                                </div>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            {erros.grupoMuscular && <span className="tf-error">{erros.grupoMuscular}</span>}
+
+                            {/* Grupos auxiliares */}
+                            {grupoMuscular && (
+                                <div className="tf-field" style={{ marginTop: 4 }}>
+                                    <label className="tf-label">
+                                        Grupos Auxiliares <span className="tf-label-opt">(opcional)</span>
+                                    </label>
+                                    <div className="tf-aux-chips">
+                                        {GRUPOS.filter(g => g !== grupoMuscular).map(g => {
+                                            const ativo = gruposAuxiliares.includes(g);
+                                            return (
+                                                <button
+                                                    key={g}
+                                                    type="button"
+                                                    className={`tf-aux-chip${ativo ? ' active' : ''}`}
+                                                    onClick={() => setGruposAuxiliares(prev =>
+                                                        ativo ? prev.filter(x => x !== g) : [...prev, g]
+                                                    )}
+                                                >
+                                                    {ativo && (
+                                                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                                    )}
+                                                    {g}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* ── EXERCÍCIOS SELECIONADOS ── */}
+                    {exerciciosSelecionados.length > 0 && (
+                        <div className="tf-section">
+                            <div className="tf-section-header">
+                                <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                <span className="tf-section-title">Exercícios Selecionados</span>
+                                <span className="tf-acc-count">{exerciciosSelecionados.length}</span>
+                            </div>
+                            <div className="tf-section-body">
                                 <div className="tf-selected-grid">
                                     {exerciciosSelecionados.map(ex => (
                                         <div key={ex.id} className="tf-selected-card">
@@ -279,46 +345,23 @@ const TreinosForm = () => {
                                                 )}
                                             </div>
                                             <p className="tf-selected-name">{ex.nome_exercicio}</p>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '6px 0' }}>
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    placeholder="Séries"
+
+                                            <div className="tf-steppers-row">
+                                                <Stepper
                                                     value={ex.series_alvo}
-                                                    onChange={e => handleAlvoChange(ex.id, 'series_alvo', e.target.value)}
-                                                    onClick={e => e.stopPropagation()}
-                                                    style={{
-                                                        width: 56,
-                                                        padding: '5px 8px',
-                                                        borderRadius: 8,
-                                                        border: '1.5px solid var(--tf-border, #2a3550)',
-                                                        background: 'var(--tf-surface-2, #151f35)',
-                                                        color: 'var(--tf-text, #e8edf5)',
-                                                        fontSize: '0.78rem',
-                                                        textAlign: 'center',
-                                                        fontFamily: "'Barlow', sans-serif",
-                                                    }}
+                                                    onChange={v => handleAlvoChange(ex.id, 'series_alvo', v)}
+                                                    min={1} max={8}
+                                                    label="séries"
                                                 />
-                                                <span style={{ color: 'var(--tf-text-dim, #3d4e6a)', fontSize: '0.85rem', fontWeight: 700 }}>×</span>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Reps"
+                                                <span className="tf-stepper-sep">×</span>
+                                                <Stepper
                                                     value={ex.reps_alvo}
-                                                    onChange={e => handleAlvoChange(ex.id, 'reps_alvo', e.target.value)}
-                                                    onClick={e => e.stopPropagation()}
-                                                    style={{
-                                                        width: 64,
-                                                        padding: '5px 8px',
-                                                        borderRadius: 8,
-                                                        border: '1.5px solid var(--tf-border, #2a3550)',
-                                                        background: 'var(--tf-surface-2, #151f35)',
-                                                        color: 'var(--tf-text, #e8edf5)',
-                                                        fontSize: '0.78rem',
-                                                        textAlign: 'center',
-                                                        fontFamily: "'Barlow', sans-serif",
-                                                    }}
+                                                    onChange={v => handleAlvoChange(ex.id, 'reps_alvo', v)}
+                                                    min={1} max={30}
+                                                    label="reps"
                                                 />
                                             </div>
+
                                             <button
                                                 type="button"
                                                 className="tf-rm-btn"
@@ -329,22 +372,19 @@ const TreinosForm = () => {
                                         </div>
                                     ))}
                                 </div>
-                            ) : (
-                                <p className="tf-empty-msg">Nenhum exercício selecionado ainda</p>
-                            )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* ── Exercícios disponíveis ── */}
+                    {/* ── EXERCÍCIOS DISPONÍVEIS ── */}
                     <div className="tf-section">
                         <div className="tf-section-header">
                             <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
                             </svg>
-                            <span className="tf-section-title">Exercícios Disponíveis</span>
+                            <span className="tf-section-title">Adicionar Exercícios</span>
                         </div>
 
-                        {/* Busca */}
                         <div className="tf-search-wrap">
                             <svg className="tf-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -358,7 +398,12 @@ const TreinosForm = () => {
                             />
                         </div>
 
-                        {/* Accordion */}
+                        {erros.exercicios && (
+                            <div style={{ padding: '0 16px 8px' }}>
+                                <span className="tf-error">{erros.exercicios}</span>
+                            </div>
+                        )}
+
                         <div className="tf-accordion">
                             {GRUPOS.map((grupo) => {
                                 const exerciciosGrupo = exercicios.filter(ex =>
@@ -369,6 +414,10 @@ const TreinosForm = () => {
                                 if (!exerciciosGrupo.length) return null;
 
                                 const isOpen = !!openGroups[grupo] || searchTerm.trim().length > 0;
+                                const isExpanded = !!expandedGroups[grupo] || searchTerm.trim().length > 0;
+                                const visiveis = isExpanded ? exerciciosGrupo : exerciciosGrupo.slice(0, PAGE);
+                                const restante = exerciciosGrupo.length - PAGE;
+
                                 return (
                                     <div className="tf-acc-item" key={grupo}>
                                         <button
@@ -390,11 +439,11 @@ const TreinosForm = () => {
                                         {isOpen && (
                                             <div className="tf-acc-body">
                                                 <div className="tf-ex-grid">
-                                                    {exerciciosGrupo.map(ex => (
+                                                    {visiveis.map(ex => (
                                                         <div
                                                             key={ex.id}
-                                                            className={`tf-ex-card${exercicioAtivo === ex.id ? ' tf-ex-active' : ''}`}
-                                                            onClick={() => setExercicioAtivo(ex.id === exercicioAtivo ? null : ex.id)}
+                                                            className="tf-ex-card"
+                                                            onClick={() => { handleAdicionarExercicio(ex); setErros(p => ({ ...p, exercicios: null })); }}
                                                         >
                                                             <div className="tf-ex-gif">
                                                                 {isVideo(ex.gif_url) ? (
@@ -404,18 +453,23 @@ const TreinosForm = () => {
                                                                 )}
                                                             </div>
                                                             <p className="tf-ex-name">{ex.nome_exercicio}</p>
-                                                            {exercicioAtivo === ex.id && (
-                                                                <button
-                                                                    type="button"
-                                                                    className="tf-use-btn"
-                                                                    onClick={e => { e.stopPropagation(); handleAdicionarExercicio(ex); }}
-                                                                >
-                                                                    Usar
-                                                                </button>
-                                                            )}
+                                                            <div className="tf-ex-add">
+                                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                                                                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                                                                </svg>
+                                                            </div>
                                                         </div>
                                                     ))}
                                                 </div>
+                                                {!isExpanded && restante > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        className="tf-ver-mais"
+                                                        onClick={() => setExpandedGroups(p => ({ ...p, [grupo]: true }))}
+                                                    >
+                                                        Ver mais {restante} exercício{restante !== 1 ? 's' : ''}
+                                                    </button>
+                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -424,7 +478,7 @@ const TreinosForm = () => {
                         </div>
                     </div>
 
-                    {/* ── Ações ── */}
+                    {/* ── AÇÕES ── */}
                     <div className="tf-actions">
                         <button type="submit" className="tf-btn-submit">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

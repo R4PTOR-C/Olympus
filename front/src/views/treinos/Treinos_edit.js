@@ -5,7 +5,30 @@ import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
 import ModalCarregando from '../components/ModalCarregando';
 import '../../styles/TreinosForm.css';
 
-const GRUPOS = ['Peitoral', 'Bíceps', 'Tríceps', 'Costas', 'Ombros', 'Pernas', 'Abdômen', 'Panturrilha'];
+const API = process.env.REACT_APP_API_BASE_URL;
+
+const DIAS = [
+    { curto: 'Seg', completo: 'Segunda-feira' },
+    { curto: 'Ter', completo: 'Terça-feira'   },
+    { curto: 'Qua', completo: 'Quarta-feira'  },
+    { curto: 'Qui', completo: 'Quinta-feira'  },
+    { curto: 'Sex', completo: 'Sexta-feira'   },
+    { curto: 'Sáb', completo: 'Sábado'        },
+    { curto: 'Dom', completo: 'Domingo'       },
+];
+
+const GRUPOS_CONFIG = [
+    { nome: 'Peitoral',    img: 'peito.png'       },
+    { nome: 'Bíceps',      img: 'biceps.png'      },
+    { nome: 'Tríceps',     img: 'triceps.png'     },
+    { nome: 'Costas',      img: 'costas.png'      },
+    { nome: 'Ombros',      img: 'ombros.png'      },
+    { nome: 'Pernas',      img: 'perna.png'       },
+    { nome: 'Abdômen',     img: 'abdomen.png'     },
+    { nome: 'Panturrilha', img: 'panturrilha.png' },
+];
+
+const GRUPOS = GRUPOS_CONFIG.map(g => g.nome);
 
 const isVideo = (url) => url && (url.includes('/video/') || /\.(mp4|mov|webm)(\?|$)/i.test(url));
 
@@ -20,6 +43,21 @@ const matchBusca = (ex, searchTerm) => {
     );
 };
 
+function Stepper({ value, onChange, min = 1, max = 30, label }) {
+    return (
+        <div className="tf-stepper">
+            <button type="button" className="tf-stepper-btn"
+                onClick={() => onChange(Math.max(min, (value || min) - 1))}>−</button>
+            <div className="tf-stepper-center">
+                <span className="tf-stepper-val">{value || min}</span>
+                <span className="tf-stepper-label">{label}</span>
+            </div>
+            <button type="button" className="tf-stepper-btn"
+                onClick={() => onChange(Math.min(max, (value || min) + 1))}>+</button>
+        </div>
+    );
+}
+
 const TreinosEdit = () => {
     const { id, treinoId } = useParams();
     const navigate = useNavigate();
@@ -31,12 +69,13 @@ const TreinosEdit = () => {
     const [exerciciosSalvos, setExerciciosSalvos] = useState([]);
     const [exercicios, setExercicios] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [exercicioAtivo, setExercicioAtivo] = useState(null);
     const [campoEditando, setCampoEditando] = useState(null);
     const [openGroups, setOpenGroups] = useState({});
+    const [expandedGroups, setExpandedGroups] = useState({});
     const [diasOcupados, setDiasOcupados] = useState([]);
 
-    const TODOS_DIAS = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
+    const PAGE = 8;
+    const [pendingRemove, setPendingRemove] = useState(null);
 
     useEffect(() => {
         if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
@@ -49,10 +88,10 @@ const TreinosEdit = () => {
             const authH = token ? { Authorization: `Bearer ${token}` } : {};
             try {
                 const [treinoRes, savedRes, exRes, treinosRes] = await Promise.all([
-                    fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`),
-                    fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`),
-                    fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios`),
-                    fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${id}/treinos`, { headers: authH }),
+                    fetch(`${API}/treinos/treinos/${treinoId}`),
+                    fetch(`${API}/treinos/treinos/${treinoId}/exercicios`),
+                    fetch(`${API}/exercicios`),
+                    fetch(`${API}/treinos/usuarios/${id}/treinos`, { headers: authH }),
                 ]);
                 if (!treinoRes.ok) throw new Error(`Erro ao buscar treino (${treinoRes.status})`);
                 const treinoData = await treinoRes.json();
@@ -60,7 +99,6 @@ const TreinosEdit = () => {
                 setTreino(treinoData);
                 setExerciciosSalvos(await savedRes.json());
                 setExercicios(await exRes.json());
-                // dias ocupados = outros treinos (excluindo o atual)
                 setDiasOcupados(
                     Array.isArray(treinosList)
                         ? treinosList.filter(t => t.id !== parseInt(treinoId)).map(t => t.dia_semana)
@@ -76,15 +114,14 @@ const TreinosEdit = () => {
         fetchAll();
     }, [treinoId, id, userId, funcao, navigate]);
 
-    const toggleGroup = (grupo) => {
+    const toggleGroup = (grupo) =>
         setOpenGroups(prev => ({ ...prev, [grupo]: !prev[grupo] }));
-    };
 
     const handleSalvarCampo = async (campo, valor) => {
         setTreino(prev => ({ ...prev, [campo]: valor }));
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
+            const res = await fetch(`${API}/treinos/treinos/${treinoId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ [campo]: valor }),
@@ -97,55 +134,100 @@ const TreinosEdit = () => {
         }
     };
 
-    const handleAdicionarExercicio = async (ex) => {
+    const handleGrupoSelect = async (nome) => {
+        const auxiliares = Array.isArray(treino.grupos_auxiliares) ? treino.grupos_auxiliares : [];
+        const novosAux = auxiliares.filter(g => g !== nome);
+        setTreino(prev => ({ ...prev, grupo_muscular: nome, grupos_auxiliares: novosAux }));
         try {
-            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`, {
+            const token = localStorage.getItem('token');
+            await fetch(`${API}/treinos/treinos/${treinoId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ grupo_muscular: nome }),
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleAuxToggle = async (g) => {
+        const auxiliares = Array.isArray(treino.grupos_auxiliares) ? treino.grupos_auxiliares : [];
+        const ativo = auxiliares.includes(g);
+        const novos = ativo ? auxiliares.filter(x => x !== g) : [...auxiliares, g];
+        setTreino(prev => ({ ...prev, grupos_auxiliares: novos }));
+        try {
+            await fetch(`${API}/treinos/treinos/${treinoId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nome_treino: treino.nome_treino,
+                    descricao: treino.descricao,
+                    dia_semana: treino.dia_semana,
+                    grupo_muscular: treino.grupo_muscular,
+                    grupos_auxiliares: novos,
+                }),
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleAdicionarExercicio = async (ex) => {
+        if (exerciciosSalvos.some(s => s.exercicio_id === ex.id)) return;
+        try {
+            const res = await fetch(`${API}/treinos/treinos/${treinoId}/exercicios`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ exercicios: [ex.id] }),
             });
             if (res.ok) {
-                setExerciciosSalvos(prev => [...prev, { ...ex, exercicio_id: ex.id }]);
-                setExercicioAtivo(null);
+                setExerciciosSalvos(prev => [...prev, { ...ex, exercicio_id: ex.id, series_alvo: 3, reps_alvo: 12 }]);
             } else {
-                alert('Erro ao adicionar exercício');
+                console.error('Erro ao adicionar exercício');
             }
         } catch (err) {
             console.error(err);
         }
     };
 
-    const handleAlvoChange = (exercicioId, campo, valor) => {
-        setExerciciosSalvos(prev =>
-            prev.map(ex => ex.exercicio_id === exercicioId ? { ...ex, [campo]: valor } : ex)
-        );
-    };
-
     const handleAlvoBlur = async (exercicioId, series_alvo, reps_alvo) => {
         try {
-            await fetch(
-                `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios/${exercicioId}`,
-                {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ series_alvo: series_alvo || null, reps_alvo: reps_alvo || null }),
-                }
-            );
+            await fetch(`${API}/treinos/treinos/${treinoId}/exercicios/${exercicioId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ series_alvo: series_alvo || null, reps_alvo: reps_alvo || null }),
+            });
         } catch (err) {
             console.error('Erro ao salvar meta:', err);
         }
     };
 
-    const handleRemoveExercicio = async (exercicioId) => {
-        if (!window.confirm('Remover este exercício do treino?')) return;
-        const res = await fetch(
-            `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios/${exercicioId}`,
-            { method: 'DELETE' }
+    const handleAlvoStep = (exercicioId, campo, novoValor) => {
+        setExerciciosSalvos(prev =>
+            prev.map(ex => ex.exercicio_id === exercicioId ? { ...ex, [campo]: novoValor } : ex)
         );
+        const ex = exerciciosSalvos.find(e => e.exercicio_id === exercicioId);
+        if (ex) {
+            const series = campo === 'series_alvo' ? novoValor : ex.series_alvo;
+            const reps   = campo === 'reps_alvo'   ? novoValor : ex.reps_alvo;
+            handleAlvoBlur(exercicioId, series, reps);
+        }
+    };
+
+    const handleRemoveExercicio = async (exercicioId) => {
+        if (pendingRemove !== exercicioId) {
+            setPendingRemove(exercicioId);
+            setTimeout(() => setPendingRemove(p => p === exercicioId ? null : p), 3000);
+            return;
+        }
+        setPendingRemove(null);
+        const res = await fetch(`${API}/treinos/treinos/${treinoId}/exercicios/${exercicioId}`, {
+            method: 'DELETE',
+        });
         if (res.ok) {
             setExerciciosSalvos(prev => prev.filter(ex => ex.exercicio_id !== exercicioId));
         } else {
-            alert('Erro ao remover exercício.');
+            console.error('Erro ao remover exercício.');
         }
     };
 
@@ -153,21 +235,11 @@ const TreinosEdit = () => {
     if (error) return <div style={{ color: 'red', padding: '2rem' }}>Erro: {error}</div>;
     if (!treino) return null;
 
-    const diasDisponiveis = TODOS_DIAS.filter(
-        d => !diasOcupados.includes(d) || d === treino.dia_semana
-    );
+    const auxiliares = Array.isArray(treino.grupos_auxiliares) ? treino.grupos_auxiliares : [];
 
-    const camposTreino = [
+    const camposTexto = [
         { name: 'nome_treino', label: 'Nome do Treino', tipo: 'text' },
-        { name: 'descricao', label: 'Descrição', tipo: 'text' },
-        {
-            name: 'dia_semana', label: 'Dia da Semana', tipo: 'select',
-            options: diasDisponiveis,
-        },
-        {
-            name: 'grupo_muscular', label: 'Grupo Muscular Principal', tipo: 'select',
-            options: ['Peitoral', 'Costas', 'Ombros', 'Bíceps', 'Tríceps', 'Pernas', 'Abdômen'],
-        },
+        { name: 'descricao',   label: 'Descrição',      tipo: 'text' },
     ];
 
     return (
@@ -193,7 +265,7 @@ const TreinosEdit = () => {
 
             <div className="tf-body">
 
-                {/* ── Dados do treino ── */}
+                {/* ── DADOS DO TREINO ── */}
                 <div className="tf-section">
                     <div className="tf-section-header">
                         <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -202,8 +274,10 @@ const TreinosEdit = () => {
                         <span className="tf-section-title">Dados do Treino</span>
                         <span className="tf-acc-count">Toque para editar</span>
                     </div>
+
+                    {/* Nome e Descrição — modal */}
                     <div className="tf-field-rows">
-                        {camposTreino.map(campo => (
+                        {camposTexto.map(campo => (
                             <div
                                 key={campo.name}
                                 className="tf-field-row"
@@ -222,56 +296,99 @@ const TreinosEdit = () => {
                         ))}
                     </div>
 
-                    {/* ── Grupos Auxiliares ── */}
-                    <div style={{ padding: '12px 16px 4px' }}>
-                        <span className="tf-field-row-label" style={{ display: 'block', marginBottom: 6 }}>Grupos Auxiliares</span>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                            {GRUPOS.filter(g => g !== treino.grupo_muscular).map(g => {
-                                const auxiliares = Array.isArray(treino.grupos_auxiliares) ? treino.grupos_auxiliares : [];
-                                const ativo = auxiliares.includes(g);
-                                return (
-                                    <button
-                                        key={g}
-                                        type="button"
-                                        onClick={async () => {
-                                            const novos = ativo
-                                                ? auxiliares.filter(x => x !== g)
-                                                : [...auxiliares, g];
-                                            setTreino(prev => ({ ...prev, grupos_auxiliares: novos }));
-                                            await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
-                                                method: 'PUT',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({
-                                                    nome_treino: treino.nome_treino,
-                                                    descricao: treino.descricao,
-                                                    dia_semana: treino.dia_semana,
-                                                    grupo_muscular: treino.grupo_muscular,
-                                                    grupos_auxiliares: novos,
-                                                }),
-                                            });
-                                        }}
-                                        style={{
-                                            padding: '6px 14px', borderRadius: 20,
-                                            border: ativo ? '1.5px solid var(--tf-accent, #4A90D9)' : '1.5px solid var(--tf-border, #2a3550)',
-                                            background: ativo ? 'rgba(74,144,217,0.15)' : 'var(--tf-surface-2, #151f35)',
-                                            color: ativo ? 'var(--tf-accent, #4A90D9)' : 'var(--tf-text-muted, #8892aa)',
-                                            fontSize: '0.8rem', fontFamily: "'Barlow Condensed', sans-serif",
-                                            fontWeight: 700, letterSpacing: '0.06em', cursor: 'pointer',
-                                            transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 5,
-                                        }}
-                                    >
-                                        {ativo && (
-                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                        )}
-                                        {g}
-                                    </button>
-                                );
-                            })}
+                    {/* Dia da semana — chips */}
+                    <div className="tf-section-body" style={{ paddingTop: 4 }}>
+                        <div className="tf-field">
+                            <label className="tf-label">Dia da Semana</label>
+                            <div className="tf-day-chips">
+                                {DIAS.map(({ curto, completo }) => {
+                                    const ocupado     = diasOcupados.includes(completo);
+                                    const selecionado = treino.dia_semana === completo;
+                                    return (
+                                        <button
+                                            key={completo}
+                                            type="button"
+                                            disabled={ocupado}
+                                            onClick={() => !ocupado && handleSalvarCampo('dia_semana', completo)}
+                                            className={`tf-day-chip${selecionado ? ' active' : ''}${ocupado ? ' disabled' : ''}`}
+                                        >
+                                            {curto}
+                                            {ocupado && <span className="tf-day-dot" />}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* ── Exercícios do treino ── */}
+                {/* ── GRUPO MUSCULAR ── */}
+                <div className="tf-section">
+                    <div className="tf-section-header">
+                        <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+                        </svg>
+                        <span className="tf-section-title">Grupo Muscular Principal</span>
+                    </div>
+                    <div className="tf-section-body">
+                        <div className="tf-muscle-grid">
+                            {GRUPOS_CONFIG.map(({ nome, img }) => {
+                                const ativo = treino.grupo_muscular === nome;
+                                return (
+                                    <button
+                                        key={nome}
+                                        type="button"
+                                        className={`tf-muscle-card${ativo ? ' active' : ''}`}
+                                        onClick={() => handleGrupoSelect(nome)}
+                                    >
+                                        <img
+                                            className="tf-muscle-img"
+                                            src={`${API}/uploads/${img}`}
+                                            alt={nome}
+                                        />
+                                        <span className="tf-muscle-nome">{nome}</span>
+                                        {ativo && (
+                                            <div className="tf-muscle-check">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polyline points="20 6 9 17 4 12"/>
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Grupos auxiliares */}
+                        {treino.grupo_muscular && (
+                            <div className="tf-field" style={{ marginTop: 4 }}>
+                                <label className="tf-label">
+                                    Grupos Auxiliares <span className="tf-label-opt">(opcional)</span>
+                                </label>
+                                <div className="tf-aux-chips">
+                                    {GRUPOS.filter(g => g !== treino.grupo_muscular).map(g => {
+                                        const ativo = auxiliares.includes(g);
+                                        return (
+                                            <button
+                                                key={g}
+                                                type="button"
+                                                className={`tf-aux-chip${ativo ? ' active' : ''}`}
+                                                onClick={() => handleAuxToggle(g)}
+                                            >
+                                                {ativo && (
+                                                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                                )}
+                                                {g}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* ── EXERCÍCIOS DO TREINO ── */}
                 <div className="tf-section">
                     <div className="tf-section-header">
                         <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -295,46 +412,30 @@ const TreinosEdit = () => {
                                         )}
                                     </div>
                                     <p className="tf-selected-name">{ex.nome_exercicio}</p>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '6px 0' }}>
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            placeholder="Séries"
-                                            value={ex.series_alvo ?? ''}
-                                            onChange={e => handleAlvoChange(ex.exercicio_id, 'series_alvo', e.target.value)}
-                                            onBlur={() => handleAlvoBlur(ex.exercicio_id, ex.series_alvo, ex.reps_alvo)}
-                                            style={{
-                                                width: 56, padding: '5px 8px', borderRadius: 8,
-                                                border: '1.5px solid var(--tf-border, #2a3550)',
-                                                background: 'var(--tf-surface-2, #151f35)',
-                                                color: 'var(--tf-text, #e8edf5)',
-                                                fontSize: '0.78rem', textAlign: 'center',
-                                                fontFamily: "'Barlow', sans-serif",
-                                            }}
+
+                                    <div className="tf-steppers-row">
+                                        <Stepper
+                                            value={ex.series_alvo}
+                                            onChange={v => handleAlvoStep(ex.exercicio_id, 'series_alvo', v)}
+                                            min={1} max={8}
+                                            label="séries"
                                         />
-                                        <span style={{ color: 'var(--tf-text-dim, #3d4e6a)', fontSize: '0.85rem', fontWeight: 700 }}>×</span>
-                                        <input
-                                            type="text"
-                                            placeholder="Reps"
-                                            value={ex.reps_alvo ?? ''}
-                                            onChange={e => handleAlvoChange(ex.exercicio_id, 'reps_alvo', e.target.value)}
-                                            onBlur={() => handleAlvoBlur(ex.exercicio_id, ex.series_alvo, ex.reps_alvo)}
-                                            style={{
-                                                width: 64, padding: '5px 8px', borderRadius: 8,
-                                                border: '1.5px solid var(--tf-border, #2a3550)',
-                                                background: 'var(--tf-surface-2, #151f35)',
-                                                color: 'var(--tf-text, #e8edf5)',
-                                                fontSize: '0.78rem', textAlign: 'center',
-                                                fontFamily: "'Barlow', sans-serif",
-                                            }}
+                                        <span className="tf-stepper-sep">×</span>
+                                        <Stepper
+                                            value={ex.reps_alvo}
+                                            onChange={v => handleAlvoStep(ex.exercicio_id, 'reps_alvo', v)}
+                                            min={1} max={30}
+                                            label="reps"
                                         />
                                     </div>
+
                                     <button
                                         type="button"
                                         className="tf-rm-btn"
                                         onClick={() => handleRemoveExercicio(ex.exercicio_id)}
+                                        style={pendingRemove === ex.exercicio_id ? { background: 'rgba(231,76,60,0.18)', borderColor: 'rgba(231,76,60,0.5)', color: '#e74c3c' } : {}}
                                     >
-                                        Remover
+                                        {pendingRemove === ex.exercicio_id ? 'Confirmar?' : 'Remover'}
                                     </button>
                                 </div>
                             ))}
@@ -346,7 +447,7 @@ const TreinosEdit = () => {
                     )}
                 </div>
 
-                {/* ── Exercícios disponíveis ── */}
+                {/* ── ADICIONAR EXERCÍCIOS ── */}
                 <div className="tf-section">
                     <div className="tf-section-header">
                         <svg className="tf-section-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -355,7 +456,6 @@ const TreinosEdit = () => {
                         <span className="tf-section-title">Adicionar Exercícios</span>
                     </div>
 
-                    {/* Busca */}
                     <div className="tf-search-wrap">
                         <svg className="tf-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -369,7 +469,6 @@ const TreinosEdit = () => {
                         />
                     </div>
 
-                    {/* Accordion */}
                     <div className="tf-accordion">
                         {GRUPOS.map((grupo) => {
                             const exerciciosGrupo = exercicios.filter(ex =>
@@ -380,6 +479,10 @@ const TreinosEdit = () => {
                             if (!exerciciosGrupo.length) return null;
 
                             const isOpen = !!openGroups[grupo] || searchTerm.trim().length > 0;
+                            const isExpanded = !!expandedGroups[grupo] || searchTerm.trim().length > 0;
+                            const visiveis = isExpanded ? exerciciosGrupo : exerciciosGrupo.slice(0, PAGE);
+                            const restante = exerciciosGrupo.length - PAGE;
+
                             return (
                                 <div className="tf-acc-item" key={grupo}>
                                     <button
@@ -401,11 +504,11 @@ const TreinosEdit = () => {
                                     {isOpen && (
                                         <div className="tf-acc-body">
                                             <div className="tf-ex-grid">
-                                                {exerciciosGrupo.map(ex => (
+                                                {visiveis.map(ex => (
                                                     <div
                                                         key={ex.id}
-                                                        className={`tf-ex-card${exercicioAtivo === ex.id ? ' tf-ex-active' : ''}`}
-                                                        onClick={() => setExercicioAtivo(ex.id === exercicioAtivo ? null : ex.id)}
+                                                        className="tf-ex-card"
+                                                        onClick={() => handleAdicionarExercicio(ex)}
                                                     >
                                                         <div className="tf-ex-gif">
                                                             {isVideo(ex.gif_url) ? (
@@ -415,18 +518,23 @@ const TreinosEdit = () => {
                                                             )}
                                                         </div>
                                                         <p className="tf-ex-name">{ex.nome_exercicio}</p>
-                                                        {exercicioAtivo === ex.id && (
-                                                            <button
-                                                                type="button"
-                                                                className="tf-use-btn"
-                                                                onClick={e => { e.stopPropagation(); handleAdicionarExercicio(ex); }}
-                                                            >
-                                                                Usar
-                                                            </button>
-                                                        )}
+                                                        <div className="tf-ex-add">
+                                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                                                                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                                                            </svg>
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>
+                                            {!isExpanded && restante > 0 && (
+                                                <button
+                                                    type="button"
+                                                    className="tf-ver-mais"
+                                                    onClick={() => setExpandedGroups(p => ({ ...p, [grupo]: true }))}
+                                                >
+                                                    Ver mais {restante} exercício{restante !== 1 ? 's' : ''}
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -435,7 +543,7 @@ const TreinosEdit = () => {
                     </div>
                 </div>
 
-                {/* ── Voltar ── */}
+                {/* ── VOLTAR ── */}
                 <div className="tf-actions">
                     <button type="button" className="tf-btn-cancel" onClick={() => navigate(-1)}>
                         Voltar
@@ -444,7 +552,7 @@ const TreinosEdit = () => {
 
             </div>
 
-            {/* Modal de edição de campo */}
+            {/* Modal de edição (nome / descrição) */}
             {campoEditando && (
                 <ModalEdicaoCampo
                     campo={campoEditando}

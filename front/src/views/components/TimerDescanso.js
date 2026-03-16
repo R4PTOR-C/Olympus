@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const DURATIONS = [60, 90, 120, 180];
+const DURATIONS = [30, 60, 90, 120, 180];
 const R = 17;
 const CIRC = 2 * Math.PI * R;
 

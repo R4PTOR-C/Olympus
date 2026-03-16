@@ -51,22 +51,6 @@ function Navbar() {
                                     <span className="navbar-badge">{mensagensNaoLidas > 9 ? '9+' : mensagensNaoLidas}</span>
                                 )}
                             </Link>
-                            <div className="nav-item dropdown">
-                                <a
-                                    className="nav-link dropdown-toggle"
-                                    href="#"
-                                    id="exerciciosDropdown"
-                                    role="button"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
-                                    Exercícios
-                                </a>
-                                <ul className="dropdown-menu" aria-labelledby="exerciciosDropdown">
-                                    <li><Link className="dropdown-item" to="/exercicios_new">Novo Exercício</Link></li>
-                                    <li><Link className="dropdown-item" to="/exercicios">Tabela de Exercícios</Link></li>
-                                </ul>
-                            </div>
                         </>
                     ) : (
                         <>

@@ -34,6 +34,7 @@ const UsuariosView = () => {
     const [treinos, setTreinos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [pendingDelete, setPendingDelete] = useState(null);
 
     const carregarDados = useCallback(async () => {
         if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
@@ -120,7 +121,12 @@ const UsuariosView = () => {
     };
 
     const handleDeleteTreino = async (treinoId) => {
-        if (!window.confirm('Tem certeza que deseja excluir este treino?')) return;
+        if (pendingDelete !== treinoId) {
+            setPendingDelete(treinoId);
+            setTimeout(() => setPendingDelete(p => p === treinoId ? null : p), 3000);
+            return;
+        }
+        setPendingDelete(null);
         try {
             const token = localStorage.getItem('token');
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}`, {
@@ -129,7 +135,7 @@ const UsuariosView = () => {
             });
             if (res.ok) setTreinos(treinos.filter(t => t.id !== treinoId));
         } catch {
-            alert('Erro ao excluir treino.');
+            console.error('Erro ao excluir treino.');
         }
     };
 
@@ -300,8 +306,9 @@ const UsuariosView = () => {
                                                                     <button
                                                                         className="uv-btn-delete"
                                                                         onClick={e => { e.stopPropagation(); handleDeleteTreino(t.id); }}
+                                                                        style={pendingDelete === t.id ? { background: 'rgba(231,76,60,0.18)', borderColor: 'rgba(231,76,60,0.5)', color: '#e74c3c' } : {}}
                                                                     >
-                                                                        Excluir
+                                                                        {pendingDelete === t.id ? 'Confirmar?' : 'Excluir'}
                                                                     </button>
                                                                 </div>
                                                             </div>
