@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import ModalCarregando from '../components/ModalCarregando';
 import '../../styles/TreinosForm.css';
 
@@ -59,10 +59,13 @@ function Stepper({ value, onChange, min = 1, max = 30, label }) {
 const TreinosForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const diaParam = new URLSearchParams(location.search).get('dia') || '';
 
     const [nomeTreino, setNomeTreino] = useState('');
     const [descricao, setDescricao] = useState('');
-    const [diaSemana, setDiaSemana] = useState('');
+    const [diaSemana, setDiaSemana] = useState(diaParam);
     const [grupoMuscular, setGrupoMuscular] = useState('');
     const [gruposAuxiliares, setGruposAuxiliares] = useState([]);
     const [exercicios, setExercicios] = useState([]);

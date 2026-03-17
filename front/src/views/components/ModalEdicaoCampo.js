@@ -2,6 +2,17 @@ import React, { useState, useEffect } from 'react';
 import CalendarioData, { normalizarData } from './CalendarioData';
 import '../../styles/ModalEdicaoCampo.css';
 
+const aplicarMascaraCref = (valor) => {
+    const clean = valor.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+    let result = '';
+    for (let i = 0; i < clean.length && i < 9; i++) {
+        if (i === 6) result += '-';
+        if (i === 7) result += '/';
+        result += clean[i];
+    }
+    return result;
+};
+
 const aplicarMascaraTelefone = (valor) => {
     if (!valor) return '';
     let digitos = valor.replace(/\D/g, '');
@@ -40,6 +51,7 @@ const ModalEdicaoCampo = ({ campo, valorAtual, onClose, onSave }) => {
     const handleChange = (e) => {
         let v = e.target.value;
         if (campo.name === 'telefone') v = aplicarMascaraTelefone(v);
+        if (campo.name === 'cref') v = aplicarMascaraCref(v);
         setValor(v);
     };
 
@@ -87,7 +99,7 @@ const ModalEdicaoCampo = ({ campo, valorAtual, onClose, onSave }) => {
                         <input
                             type={campo.tipo}
                             className="mec-input"
-                            value={campo.name === 'telefone' ? aplicarMascaraTelefone(valor) : valor}
+                            value={campo.name === 'telefone' ? aplicarMascaraTelefone(valor) : campo.name === 'cref' ? aplicarMascaraCref(valor) : valor}
                             onChange={handleChange}
                             autoFocus
                         />

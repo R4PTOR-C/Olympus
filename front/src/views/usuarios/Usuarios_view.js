@@ -377,7 +377,10 @@ const UsuariosView = () => {
                                                     </Draggable>
                                                 ))
                                             ) : (
-                                                <div className={`uv-empty-day${snapshot.isDraggingOver ? ' drag-over' : ''}`}>
+                                                <div
+                                                    className={`uv-empty-day uv-empty-day-btn${snapshot.isDraggingOver ? ' drag-over' : ''}`}
+                                                    onClick={() => !snapshot.isDraggingOver && navigate(`/usuarios/${id}/treinos?dia=${encodeURIComponent(diaCompleto)}`)}
+                                                >
                                                     Arraste um treino para cá
                                                 </div>
                                             )}

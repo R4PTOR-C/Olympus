@@ -6,6 +6,17 @@ import '../../styles/Auth.css';
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
+const maskCref = (v) => {
+    const clean = v.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+    let r = '';
+    for (let i = 0; i < clean.length && i < 9; i++) {
+        if (i === 6) r += '-';
+        if (i === 7) r += '/';
+        r += clean[i];
+    }
+    return r;
+};
+
 function CompletarPerfilProfessor() {
     const navigate = useNavigate();
     const { userId, updateUser, trocarFuncao } = useContext(AuthContext);
@@ -121,7 +132,7 @@ function CompletarPerfilProfessor() {
                                     type="text"
                                     className="auth-input"
                                     value={cref}
-                                    onChange={e => setCref(e.target.value)}
+                                    onChange={e => setCref(maskCref(e.target.value))}
                                     placeholder="000000-G/UF"
                                 />
                             </div>
@@ -247,7 +258,13 @@ function CompletarPerfilProfessor() {
 
             </div>
 
-            <ModalSucesso show={showModal} mensagem="Perfil de professor ativado!" />
+            <ModalSucesso
+                show={showModal}
+                titulo="PERFIL"
+                tituloAccent="ATIVADO"
+                sub="Bem-vindo ao modo personal trainer!"
+                cor="#4A90D9"
+            />
         </div>
     );
 }

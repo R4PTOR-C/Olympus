@@ -493,6 +493,19 @@ body.dark-mode {
     transition: border-color 0.2s, background 0.2s;
 }
 
+.uv-empty-day-btn {
+    cursor: pointer;
+    gap: 6px;
+}
+.uv-empty-day-btn:hover {
+    border-color: var(--uv-accent-border);
+    background: var(--uv-accent-dim);
+    color: var(--uv-accent);
+}
+.uv-empty-day-btn:active {
+    opacity: 0.7;
+}
+
 /* Feedback visual quando um card está sobre o droppable vazio */
 .uv-day-block.drag-over .uv-empty-day {
     border-color: var(--uv-accent-border);

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import '../../styles/NavbarInferior.css';
@@ -7,6 +7,17 @@ function NavbarInferior() {
     const location = useLocation();
     const navigate = useNavigate();
     const { userId, funcaoAtiva } = useContext(AuthContext);
+
+    const [keyboardOpen, setKeyboardOpen] = useState(false);
+    useEffect(() => {
+        const vv = window.visualViewport;
+        if (!vv) return;
+        const handler = () => setKeyboardOpen(vv.height < window.innerHeight * 0.75);
+        vv.addEventListener('resize', handler);
+        return () => vv.removeEventListener('resize', handler);
+    }, []);
+
+    if (keyboardOpen) return null;
 
     const isActive = (path) => location.pathname.startsWith(path);
 

@@ -6,6 +6,17 @@ import CalendarioData, { normalizarData } from '../components/CalendarioData';
 import '../../styles/Auth.css';
 import '../../styles/ModalEdicaoCampo.css';
 
+const maskCref = (v) => {
+    const clean = v.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
+    let r = '';
+    for (let i = 0; i < clean.length && i < 9; i++) {
+        if (i === 6) r += '-';
+        if (i === 7) r += '/';
+        r += clean[i];
+    }
+    return r;
+};
+
 const formatarDataExibicao = (iso) => {
     if (!iso) return null;
     return new Date(iso + 'T12:00:00').toLocaleDateString('pt-BR', {
@@ -315,7 +326,7 @@ function Professor_new() {
                                     type="text"
                                     className="auth-input"
                                     value={cref}
-                                    onChange={e => setCref(e.target.value)}
+                                    onChange={e => setCref(maskCref(e.target.value))}
                                     placeholder="000000-G/UF"
                                 />
                             </div>
