@@ -960,6 +960,25 @@ body.dark-mode .tf-select {
     margin-top: 1px;
 }
 
+/* ── LAZY MEDIA SKELETON ── */
+.tf-media-skeleton {
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+    background: linear-gradient(90deg,
+        var(--tf-surface-3) 25%,
+        var(--tf-surface-2) 50%,
+        var(--tf-surface-3) 75%
+    );
+    background-size: 200% 100%;
+    animation: tf-shimmer 1.4s infinite linear;
+}
+
+@keyframes tf-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
 /* ── BOTÃO + NOS CARDS DE EXERCÍCIO ── */
 .tf-ex-card {
     position: relative;

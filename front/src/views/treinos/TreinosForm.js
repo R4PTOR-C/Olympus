@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import ModalCarregando from '../components/ModalCarregando';
 import '../../styles/TreinosForm.css';
@@ -29,6 +29,42 @@ const GRUPOS_CONFIG = [
 const GRUPOS = GRUPOS_CONFIG.map(g => g.nome);
 
 const isVideo = (url) => url && (url.includes('/video/') || /\.(mp4|mov|webm)(\?|$)/i.test(url));
+
+function LazyMedia({ src, alt }) {
+    const ref    = useRef(null);
+    const [active, setActive] = useState(false);
+    const [loaded, setLoaded] = useState(false);
+    const vid = isVideo(src);
+
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const obs = new IntersectionObserver(
+            ([e]) => { if (e.isIntersecting) { setActive(true); obs.disconnect(); } },
+            { rootMargin: '150px' }
+        );
+        obs.observe(el);
+        return () => obs.disconnect();
+    }, []);
+
+    return (
+        <div ref={ref} style={{ width: '100%', alignSelf: 'stretch', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {!loaded && <div className="tf-media-skeleton" />}
+            {active && vid && (
+                <video src={src} autoPlay loop muted playsInline
+                    onCanPlay={() => setLoaded(true)}
+                    style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.25s' }}
+                />
+            )}
+            {active && !vid && (
+                <img src={src} alt={alt} loading="lazy"
+                    onLoad={() => setLoaded(true)}
+                    style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.25s' }}
+                />
+            )}
+        </div>
+    );
+}
 
 const normalizar = (str) => str?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() ?? '';
 
@@ -91,8 +127,17 @@ const TreinosForm = () => {
         });
     }, [id]);
 
-    const toggleGroup = (grupo) =>
-        setOpenGroups(prev => ({ ...prev, [grupo]: !prev[grupo] }));
+    const toggleGroup = (grupo) => {
+        setOpenGroups(prev => {
+            const cur = prev[grupo];
+            const busca = searchTerm.trim().length > 0;
+            if (busca) {
+                // durante busca: aberto por padrão → fechar; fechado → reabrir
+                return { ...prev, [grupo]: cur === false ? undefined : false };
+            }
+            return { ...prev, [grupo]: !cur };
+        });
+    };
 
     const handleAdicionarExercicio = (ex) => {
         if (!exerciciosSelecionados.some(s => s.id === ex.id)) {
@@ -341,11 +386,7 @@ const TreinosForm = () => {
                                     {exerciciosSelecionados.map(ex => (
                                         <div key={ex.id} className="tf-selected-card">
                                             <div className="tf-selected-gif">
-                                                {isVideo(ex.gif_url) ? (
-                                                    <video src={ex.gif_url} autoPlay loop muted playsInline />
-                                                ) : (
-                                                    <img src={ex.gif_url} alt={ex.nome_exercicio} />
-                                                )}
+                                                <LazyMedia src={ex.gif_url} alt={ex.nome_exercicio} />
                                             </div>
                                             <p className="tf-selected-name">{ex.nome_exercicio}</p>
 
@@ -416,10 +457,11 @@ const TreinosForm = () => {
                                 );
                                 if (!exerciciosGrupo.length) return null;
 
-                                const isOpen = !!openGroups[grupo] || searchTerm.trim().length > 0;
-                                const isExpanded = !!expandedGroups[grupo] || searchTerm.trim().length > 0;
-                                const visiveis = isExpanded ? exerciciosGrupo : exerciciosGrupo.slice(0, PAGE);
-                                const restante = exerciciosGrupo.length - PAGE;
+                                const searching = searchTerm.trim().length > 0;
+                                const isOpen = searching ? openGroups[grupo] !== false : !!openGroups[grupo];
+                                const pages = searching ? Infinity : (expandedGroups[grupo] || 1);
+                                const visiveis = searching ? exerciciosGrupo : exerciciosGrupo.slice(0, pages * PAGE);
+                                const restante = exerciciosGrupo.length - visiveis.length;
 
                                 return (
                                     <div className="tf-acc-item" key={grupo}>
@@ -449,11 +491,7 @@ const TreinosForm = () => {
                                                             onClick={() => { handleAdicionarExercicio(ex); setErros(p => ({ ...p, exercicios: null })); }}
                                                         >
                                                             <div className="tf-ex-gif">
-                                                                {isVideo(ex.gif_url) ? (
-                                                                    <video src={ex.gif_url} autoPlay loop muted playsInline />
-                                                                ) : (
-                                                                    <img src={ex.gif_url} alt={ex.nome_exercicio} />
-                                                                )}
+                                                                <LazyMedia src={ex.gif_url} alt={ex.nome_exercicio} />
                                                             </div>
                                                             <p className="tf-ex-name">{ex.nome_exercicio}</p>
                                                             <div className="tf-ex-add">
@@ -464,13 +502,13 @@ const TreinosForm = () => {
                                                         </div>
                                                     ))}
                                                 </div>
-                                                {!isExpanded && restante > 0 && (
+                                                {!searching && restante > 0 && (
                                                     <button
                                                         type="button"
                                                         className="tf-ver-mais"
-                                                        onClick={() => setExpandedGroups(p => ({ ...p, [grupo]: true }))}
+                                                        onClick={() => setExpandedGroups(p => ({ ...p, [grupo]: (p[grupo] || 1) + 1 }))}
                                                     >
-                                                        Ver mais {restante} exercício{restante !== 1 ? 's' : ''}
+                                                        Ver mais {Math.min(restante, PAGE)} exercício{Math.min(restante, PAGE) !== 1 ? 's' : ''}
                                                     </button>
                                                 )}
                                             </div>
