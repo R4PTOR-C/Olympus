@@ -87,16 +87,50 @@ router.post('/', upload.single('avatar'), async (req, res) => {
     }
 });
 
-// DELETE - remove usuário
+// DELETE - remove usuário e todos os dados relacionados
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     try {
+        await db.query('BEGIN');
+
+        // Séries e treinos realizados
+        await db.query('DELETE FROM series_usuario WHERE usuario_id = $1', [id]);
+        await db.query('DELETE FROM treinos_realizados WHERE usuario_id = $1', [id]);
+
+        // Exercícios dos treinos do usuário
+        await db.query(`
+            DELETE FROM treinos_exercicios
+            WHERE treino_id IN (SELECT id FROM treinos WHERE usuario_id = $1)
+        `, [id]);
+        await db.query('DELETE FROM treinos WHERE usuario_id = $1', [id]);
+
+        // Avaliações, cardio, vínculos, perfil de professor
+        await db.query('DELETE FROM avaliacoes_fisicas WHERE usuario_id = $1', [id]);
+        await db.query('DELETE FROM cardio_sessoes WHERE usuario_id = $1', [id]);
+        await db.query('DELETE FROM vinculos WHERE professor_id = $1 OR aluno_id = $1', [id]);
+        await db.query('DELETE FROM professores WHERE usuario_id = $1', [id]);
+
+        // Mensagens e chats
+        await db.query('DELETE FROM mensagens WHERE remetente_id = $1', [id]);
+        await db.query(`
+            DELETE FROM chats
+            WHERE usuario1_id = $1 OR usuario2_id = $1
+        `, [id]);
+
+        // Push subscriptions
+        await db.query('DELETE FROM push_subscriptions WHERE usuario_id = $1', [id]);
+
+        // Usuário
         const resultado = await db.query('DELETE FROM usuarios WHERE id = $1 RETURNING *', [id]);
         if (resultado.rowCount === 0) {
+            await db.query('ROLLBACK');
             return res.status(404).json({ error: 'Usuário não encontrado' });
         }
-        res.json({ message: 'Usuário deletado com sucesso', usuario: resultado.rows[0] });
+
+        await db.query('COMMIT');
+        res.json({ ok: true });
     } catch (err) {
+        await db.query('ROLLBACK');
         console.error(err);
         res.status(500).json({ error: 'Erro interno do servidor' });
     }

@@ -1,0 +1,130 @@
+.mac-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(5, 8, 15, 0.88);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.mac-sheet {
+    background: #0e1220;
+    border: 1px solid rgba(224, 92, 92, 0.2);
+    border-radius: 20px 20px 0 0;
+    padding: 32px 24px 40px;
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    animation: mac-slide-up 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes mac-slide-up {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.mac-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(224, 92, 92, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+.mac-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #e8edf5;
+    text-align: center;
+    margin: 0;
+}
+
+.mac-text {
+    font-size: 0.82rem;
+    color: rgba(200, 209, 220, 0.6);
+    text-align: center;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.mac-text strong {
+    color: #e05c5c;
+}
+
+.mac-text-small {
+    font-size: 0.78rem;
+    margin-top: 4px;
+}
+
+.mac-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: #e8edf5;
+    font-size: 0.88rem;
+    outline: none;
+    box-sizing: border-box;
+    margin-top: 4px;
+    transition: border-color 0.2s;
+}
+
+.mac-input:focus {
+    border-color: rgba(224, 92, 92, 0.4);
+}
+
+.mac-erro {
+    font-size: 0.78rem;
+    color: #e05c5c;
+    margin: 0;
+}
+
+.mac-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.mac-btn-cancel {
+    flex: 1;
+    padding: 13px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
+    color: rgba(200, 209, 220, 0.5);
+    font-size: 0.88rem;
+    cursor: pointer;
+}
+
+.mac-btn-confirm {
+    flex: 1;
+    padding: 13px;
+    border-radius: 10px;
+    border: none;
+    background: #e05c5c;
+    color: #fff;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.mac-btn-confirm:disabled {
+    background: rgba(224, 92, 92, 0.25);
+    color: rgba(255, 255, 255, 0.3);
+    cursor: not-allowed;
+}
+
+.mac-btn-confirm:not(:disabled):active {
+    opacity: 0.8;
+}

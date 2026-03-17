@@ -3,8 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import CropAvatar from '../components/CropAvatar';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
+import ModalApagarConta from '../components/ModalApagarConta';
 import PageStateHandler from '../components/PageStateHandler';
 import '../../styles/UsuariosEdit.css';
+import '../../styles/ModalApagarConta.css';
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
@@ -132,6 +134,7 @@ const ProfessoresEdit = () => {
     const navigate = useNavigate();
     const { updateUser, trocarFuncao, resetFuncaoAtiva } = useContext(AuthContext);
     const [funcaoExtraLoading, setFuncaoExtraLoading] = useState(false);
+    const [showApagarConta,   setShowApagarConta]   = useState(false);
 
     const [usuario,       setUsuario]       = useState(null);
     const [professor,     setProfessor]     = useState(null);
@@ -476,7 +479,25 @@ const ProfessoresEdit = () => {
                     />
                 )}
 
+                {/* ── Apagar conta ── */}
+                <div style={{ padding: '0 16px 32px' }}>
+                    <button
+                        onClick={() => setShowApagarConta(true)}
+                        style={{ width: '100%', padding: '12px', borderRadius: 10, border: '1px solid rgba(224,92,92,0.2)', background: 'transparent', color: 'rgba(224,92,92,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}
+                    >
+                        Apagar conta
+                    </button>
+                </div>
+
             </div>
+
+            {showApagarConta && (
+                <ModalApagarConta
+                    emailCorreto={usuario.email}
+                    usuarioId={id}
+                    onClose={() => setShowApagarConta(false)}
+                />
+            )}
         </PageStateHandler>
     );
 };

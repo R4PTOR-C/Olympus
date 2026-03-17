@@ -4,8 +4,10 @@ import { AuthContext } from '../../AuthContext';
 import CropAvatar from '../components/CropAvatar';
 import ModalCarregando from '../components/ModalCarregando';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
+import ModalApagarConta from '../components/ModalApagarConta';
 import PageStateHandler from '../components/PageStateHandler';
 import '../../styles/UsuariosEdit.css';
+import '../../styles/ModalApagarConta.css';
 
 const dadosPessoais = [
     { name: 'nome',             label: 'Nome',               tipo: 'text'   },
@@ -57,6 +59,7 @@ const UsuariosEdit = () => {
     const [error,             setError]             = useState(null);
     const [campoEditando,     setCampoEditando]     = useState(null);
     const [funcaoExtraLoading, setFuncaoExtraLoading] = useState(false);
+    const [showApagarConta,   setShowApagarConta]   = useState(false);
 
     useEffect(() => {
         fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`)
@@ -293,6 +296,16 @@ const UsuariosEdit = () => {
 
                 </div>
 
+                {/* ── Apagar conta ── */}
+                <div style={{ padding: '0 16px 32px' }}>
+                    <button
+                        onClick={() => setShowApagarConta(true)}
+                        style={{ width: '100%', padding: '12px', borderRadius: 10, border: '1px solid rgba(224,92,92,0.2)', background: 'transparent', color: 'rgba(224,92,92,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}
+                    >
+                        Apagar conta
+                    </button>
+                </div>
+
                 {/* Cropper de avatar */}
                 {showCropper && selectedFile && (
                     <CropAvatar
@@ -313,6 +326,14 @@ const UsuariosEdit = () => {
                 )}
 
             </div>
+
+            {showApagarConta && (
+                <ModalApagarConta
+                    emailCorreto={usuario.email}
+                    usuarioId={id}
+                    onClose={() => setShowApagarConta(false)}
+                />
+            )}
         </PageStateHandler>
     );
 };
