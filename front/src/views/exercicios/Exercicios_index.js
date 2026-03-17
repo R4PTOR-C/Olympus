@@ -21,10 +21,10 @@ function Exercicios_index() {
     const [diaSemana, setDiaSemana] = useState('');
     const [dataUltimoTreino, setDataUltimoTreino] = useState('');
     const [modoEdicao, setModoEdicao] = useState(false);
-    const [treinoRealizadoId, setTreinoRealizadoId] = useState(null);
+    const [treinoRealizadoId, setTreinoRealizadoId] = useState(null);  // sessão ativa (não finalizada)
+    const [ultimoFinalizadoId, setUltimoFinalizadoId] = useState(null); // último treino finalizado (para "Editar Hoje")
     const [mostrarModalHistorico, setMostrarModalHistorico] = useState(false);
     const [modalFinalizado, setModalFinalizado] = useState(false);
-    const [treinoFinalizadoHoje, setTreinoFinalizadoHoje] = useState(false);
 
     const dataFormatada = (() => {
         if (!dataUltimoTreino) return '';
@@ -32,7 +32,9 @@ function Exercicios_index() {
         return new Date(`${data}T00:00:00`).toLocaleDateString('pt-BR');
     })();
 
-    const isToday = dataUltimoTreino?.split('T')[0] === new Date().toISOString().split('T')[0];
+    const hoje = new Date();
+    const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+    const isToday = dataUltimoTreino?.split('T')[0] === hojeStr;
 
     // ── FETCH ──────────────────────────────────────────────────────────────
 
@@ -197,8 +199,6 @@ function Exercicios_index() {
             setTimeout(() => setModalFinalizado(false), 3000);
         } catch {
             console.error('Erro ao finalizar treino');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -238,7 +238,7 @@ function Exercicios_index() {
                     new Date(t.data) > new Date(a.data) ? t : a
                 );
                 setDataUltimoTreino(maisRecente.data);
-                setTreinoRealizadoId(maisRecente.id);
+                setUltimoFinalizadoId(maisRecente.id);
             }
         } catch {
             console.error('Erro ao buscar último treino finalizado');
@@ -276,6 +276,19 @@ function Exercicios_index() {
     // ── HELPERS ───────────────────────────────────────────────────────────
 
     const isVideo = (url) => url && (url.includes('/video/') || /\.(mp4|mov|webm)(\?|$)/i.test(url));
+
+    const handleBlur = (exercicioId) => {
+        const series = (formData[exercicioId] || []).map(s => ({
+            ...s,
+            // carga 0 é válida (peso corporal) — só limpa se vazio ou negativo
+            carga:      s.carga === '' || Number(s.carga) < 0 ? '' : s.carga,
+            // reps 0 não faz sentido — trata como não preenchido
+            repeticoes: Number(s.repeticoes) > 0 ? s.repeticoes : '',
+        }));
+        setFormData(prev => ({ ...prev, [exercicioId]: series }));
+        salvarSerie(exercicioId, series);
+        setEditingField(null);
+    };
 
     const isEditing = (exercicioId, numero_serie, campo) =>
         editingField?.exercicioId === exercicioId &&
@@ -336,8 +349,8 @@ function Exercicios_index() {
                             </svg>
                             Finalizar Treino
                         </button>
-                    ) : treinoRealizadoId && isToday ? (
-                        <button className="ex-btn-edit-today" onClick={() => setModoEdicao(true)}>
+                    ) : ultimoFinalizadoId && isToday ? (
+                        <button className="ex-btn-edit-today" onClick={() => { setModoEdicao(true); setTreinoRealizadoId(ultimoFinalizadoId); }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -461,10 +474,7 @@ function Exercicios_index() {
                                                                 className="ex-inline-input"
                                                                 value={serie.carga || ''}
                                                                 onChange={e => handleValChange(exercicio.exercicio_id, serie, 'carga', e.target.value)}
-                                                                onBlur={() => {
-                                                                    salvarSerie(exercicio.exercicio_id, formData[exercicio.exercicio_id]);
-                                                                    setEditingField(null);
-                                                                }}
+                                                                onBlur={() => handleBlur(exercicio.exercicio_id)}
                                                                 autoFocus
                                                             />
                                                         ) : (
@@ -488,10 +498,7 @@ function Exercicios_index() {
                                                                 className="ex-inline-input"
                                                                 value={serie.repeticoes || ''}
                                                                 onChange={e => handleValChange(exercicio.exercicio_id, serie, 'repeticoes', e.target.value)}
-                                                                onBlur={() => {
-                                                                    salvarSerie(exercicio.exercicio_id, formData[exercicio.exercicio_id]);
-                                                                    setEditingField(null);
-                                                                }}
+                                                                onBlur={() => handleBlur(exercicio.exercicio_id)}
                                                                 autoFocus
                                                             />
                                                         ) : (
