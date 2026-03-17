@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import CropAvatar from '../components/CropAvatar';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
@@ -129,7 +129,9 @@ const CAMPOS_PROFESSOR = new Set(['cref','especialidade','experiencia','descrica
 
 const ProfessoresEdit = () => {
     const { id } = useParams();
-    const { updateUser } = useContext(AuthContext);
+    const navigate = useNavigate();
+    const { updateUser, trocarFuncao, resetFuncaoAtiva } = useContext(AuthContext);
+    const [funcaoExtraLoading, setFuncaoExtraLoading] = useState(false);
 
     const [usuario,       setUsuario]       = useState(null);
     const [professor,     setProfessor]     = useState(null);
@@ -253,6 +255,45 @@ const ProfessoresEdit = () => {
     if (error)   return <div style={{ color: 'red', padding: '2rem' }}>Erro: {error}</div>;
     if (!usuario || !professor) return null;
 
+    const handleToggleFuncaoExtra = async () => {
+        const isAlunoPrimario = usuario.funcao === 'Aluno';
+
+        setFuncaoExtraLoading(true);
+        try {
+            await fetch(`${API}/usuarios/${id}/funcao-extra`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ funcao_extra: null }),
+            });
+            setUsuario(prev => ({ ...prev, funcao_extra: null }));
+            updateUser({ funcao_extra: null });
+            resetFuncaoAtiva();
+
+            if (isAlunoPrimario) {
+                // Aluno removendo o extra de professor → volta pro perfil de aluno
+                navigate(`/usuarios/edit/${id}`);
+            }
+            // Se era professor primário removendo aluno extra → fica na mesma tela
+        } catch { /* silencioso */ }
+        finally { setFuncaoExtraLoading(false); }
+    };
+
+    const handleAtivarAluno = async () => {
+        setFuncaoExtraLoading(true);
+        try {
+            await fetch(`${API}/usuarios/${id}/funcao-extra`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ funcao_extra: 'Aluno' }),
+            });
+            setUsuario(prev => ({ ...prev, funcao_extra: 'Aluno' }));
+            updateUser({ funcao_extra: 'Aluno' });
+            trocarFuncao();
+            navigate(`/usuarios/edit/${id}`);
+        } catch { /* silencioso */ }
+        finally { setFuncaoExtraLoading(false); }
+    };
+
     const dados = { ...usuario, ...professor };
     const avatarUrl = avatar ? URL.createObjectURL(avatar) : usuario.avatar || null;
 
@@ -354,6 +395,36 @@ const ProfessoresEdit = () => {
                             <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
                         </svg>
                     ), dadosProfissionais)}
+
+                    {/* ── Conta de Aluno ── */}
+                    <div className="ue-section">
+                        <div className="ue-section-title">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            Perfil de Aluno
+                        </div>
+                        <div className="ue-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 10 }}>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--ue-text-muted)', margin: 0, lineHeight: 1.5 }}>
+                                {usuario.funcao === 'Aluno'
+                                    ? 'Seu perfil principal é de aluno. Você está navegando como personal trainer.'
+                                    : usuario.funcao_extra === 'Aluno'
+                                        ? 'Você também tem um perfil de aluno. Pode alternar entre os modos no login ou pelo menu.'
+                                        : 'Quer usar o app também como aluno? Ative um perfil de aluno para sua conta.'}
+                            </p>
+                            <button
+                                className={`ue-btn-funcao-extra${(usuario.funcao === 'Aluno' || usuario.funcao_extra === 'Aluno') ? ' ativo' : ''}`}
+                                onClick={(usuario.funcao === 'Aluno' || usuario.funcao_extra === 'Aluno') ? handleToggleFuncaoExtra : handleAtivarAluno}
+                                disabled={funcaoExtraLoading}
+                            >
+                                {usuario.funcao === 'Aluno'
+                                    ? 'Remover perfil de professor'
+                                    : usuario.funcao_extra === 'Aluno'
+                                        ? 'Remover perfil de aluno'
+                                        : 'Ativar perfil de aluno'}
+                            </button>
+                        </div>
+                    </div>
 
                     {/* ── Localização ── */}
                     <div className="ue-section">

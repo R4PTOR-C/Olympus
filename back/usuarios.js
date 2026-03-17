@@ -39,7 +39,18 @@ router.get('/:id', async (req, res) => {
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Usuário não encontrado' });
         }
-        res.json(rows[0]);
+        const usuario = rows[0];
+
+        // Aluno com perfil de professor criado mas funcao_extra desatualizado → sincroniza
+        if (usuario.funcao === 'Aluno' && !usuario.funcao_extra) {
+            const profResult = await db.query('SELECT 1 FROM professores WHERE usuario_id = $1 LIMIT 1', [id]);
+            if (profResult.rows.length > 0) {
+                usuario.funcao_extra = 'Professor';
+                await db.query('UPDATE usuarios SET funcao_extra = $1 WHERE id = $2', ['Professor', id]);
+            }
+        }
+
+        res.json(usuario);
     } catch (err) {
         console.error("Erro ao buscar usuário:", err);
         res.status(500).json({ error: 'Erro interno do servidor' });
@@ -211,6 +222,22 @@ router.post('/reset-password/:token', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Erro ao redefinir senha' });
+    }
+});
+
+// PUT - define ou remove funcao_extra do usuário
+router.put('/:id/funcao-extra', async (req, res) => {
+    const { id } = req.params;
+    const { funcao_extra } = req.body; // null para remover
+    try {
+        await db.query(
+            'UPDATE usuarios SET funcao_extra = $1 WHERE id = $2',
+            [funcao_extra || null, id]
+        );
+        res.json({ ok: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao atualizar funcao_extra' });
     }
 });
 

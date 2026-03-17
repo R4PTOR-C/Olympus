@@ -9,7 +9,7 @@ import usePWAInstall from "../../hooks/usePWAInstall";
 function Navbar() {
     const user = useContext(AuthContext);
     const navigate = useNavigate();
-    const { userId, avatar, funcao, loggedIn, darkMode, mensagensNaoLidas } = useContext(AuthContext);
+    const { userId, avatar, funcao, funcao_extra, funcaoAtiva, trocarFuncao, loggedIn, darkMode, mensagensNaoLidas } = useContext(AuthContext);
 
     const { isInstallable, installApp } = usePWAInstall(); // 👈 AQUI
 
@@ -21,7 +21,7 @@ function Navbar() {
     };
 
     const homeLink =
-        funcao === 'Professor'
+        funcaoAtiva === 'Professor'
             ? '/usuarios'
             : `/home/${userId}`;
 
@@ -39,7 +39,7 @@ function Navbar() {
 
                 {/* Links centrais */}
                 <div className="d-none d-md-flex align-items-center gap-3">
-                    {funcao === 'Professor' ? (
+                    {funcaoAtiva === 'Professor' ? (
                         <>
                             <Link className="nav-link position-relative" to="/usuarios">
                                 Alunos
@@ -133,8 +133,24 @@ Hércules                            </button>
 
                                     <li><hr className="dropdown-divider" /></li>
 
+                                    {funcao_extra && (
+                                        <li>
+                                            <button className="dropdown-item" onClick={() => {
+                                                trocarFuncao();
+                                                const proximaFuncao = funcaoAtiva === funcao ? funcao_extra : funcao;
+                                                if (proximaFuncao === 'Professor') {
+                                                    navigate('/usuarios');
+                                                } else {
+                                                    navigate(`/home/${userId}`);
+                                                }
+                                            }}>
+                                                Trocar para modo {funcaoAtiva === funcao ? funcao_extra : funcao}
+                                            </button>
+                                        </li>
+                                    )}
+
                                     <li>
-                                        <Link className="dropdown-item" to={`/usuarios/edit/${userId}`}>
+                                        <Link className="dropdown-item" to={funcaoAtiva === 'Professor' ? `/professores/edit/${userId}` : `/usuarios/edit/${userId}`}>
                                             Perfil
                                         </Link>
                                     </li>

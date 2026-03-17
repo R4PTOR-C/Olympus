@@ -55,7 +55,7 @@ export default function ProcurarProfessor() {
             ]);
 
             setProcurando(userData.procurando || false);
-            setProfessores(profsData);
+            setProfessores(profsData.filter(p => p.id !== Number(userId)));
             setPendentes(pendData);
             setMeuProfessor(vinculoData);
             setHistorico(histData);

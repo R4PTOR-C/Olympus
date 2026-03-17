@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import CropAvatar from '../components/CropAvatar';
 import ModalCarregando from '../components/ModalCarregando';
@@ -46,20 +46,22 @@ const formatarValor = (campo, usuario) => {
 
 const UsuariosEdit = () => {
     const { id } = useParams();
-    const { updateUser } = useContext(AuthContext);
+    const navigate = useNavigate();
+    const { updateUser, trocarFuncao, resetFuncaoAtiva } = useContext(AuthContext);
 
     const [usuario,       setUsuario]       = useState(null);
     const [avatar,        setAvatar]        = useState(null);
     const [selectedFile,  setSelectedFile]  = useState(null);
     const [showCropper,   setShowCropper]   = useState(false);
-    const [loading,       setLoading]       = useState(true);
-    const [error,         setError]         = useState(null);
-    const [campoEditando, setCampoEditando] = useState(null);
+    const [loading,           setLoading]           = useState(true);
+    const [error,             setError]             = useState(null);
+    const [campoEditando,     setCampoEditando]     = useState(null);
+    const [funcaoExtraLoading, setFuncaoExtraLoading] = useState(false);
 
     useEffect(() => {
         fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`)
             .then(r => { if (!r.ok) throw new Error(`Erro ${r.status}`); return r.json(); })
-            .then(data => { const { funcao, ...rest } = data; setUsuario(rest); setLoading(false); })
+            .then(data => { setUsuario({ ...data, funcao_extra: data.funcao_extra || null }); setLoading(false); })
             .catch(err => { setError(err.toString()); setLoading(false); });
     }, [id]);
 
@@ -97,6 +99,34 @@ const UsuariosEdit = () => {
             updateUser?.({ userName: data.usuario.nome, avatar: data.usuario.avatar });
         } catch (err) { setError(err.toString()); }
         finally { setCampoEditando(null); }
+    };
+
+    const handleToggleFuncaoExtra = async () => {
+        const isProfessorPrimario = usuario.funcao === 'Professor';
+        const temProfessorExtra   = usuario.funcao_extra === 'Professor';
+
+        if (!isProfessorPrimario && !temProfessorExtra) {
+            // Aluno sem perfil de professor → onboarding
+            navigate('/completar-perfil-professor');
+            return;
+        }
+
+        setFuncaoExtraLoading(true);
+        try {
+            await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}/funcao-extra`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ funcao_extra: null }),
+            });
+            setUsuario(prev => ({ ...prev, funcao_extra: null }));
+            updateUser?.({ funcao_extra: null });
+            resetFuncaoAtiva();
+
+            if (isProfessorPrimario) {
+                navigate(`/professores/edit/${id}`);
+            }
+        } catch { /* silencioso */ }
+        finally { setFuncaoExtraLoading(false); }
     };
 
     if (loading) return <ModalCarregando show={true} />;
@@ -228,6 +258,37 @@ const UsuariosEdit = () => {
                                 </div>
                             );
                         })}
+                    </div>
+
+                    {/* ── Perfil de Professor ── */}
+                    <div className="ue-section">
+                        <div className="ue-section-title">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            Perfil de Personal Trainer
+                        </div>
+                        <div className="ue-field" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 10 }}>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--ue-text-muted)', margin: 0, lineHeight: 1.5 }}>
+                                {usuario.funcao === 'Professor'
+                                    ? 'Seu perfil principal é de personal trainer. Você está navegando como aluno.'
+                                    : usuario.funcao_extra === 'Professor'
+                                        ? 'Você também tem um perfil de personal trainer. Pode alternar entre os modos no login ou pelo menu.'
+                                        : 'É personal trainer? Ative um perfil de professor para gerenciar seus alunos.'}
+                            </p>
+                            <button
+                                className={`ue-btn-funcao-extra${(usuario.funcao === 'Professor' || usuario.funcao_extra === 'Professor') ? ' ativo' : ''}`}
+                                onClick={handleToggleFuncaoExtra}
+                                disabled={funcaoExtraLoading}
+                            >
+                                {usuario.funcao === 'Professor'
+                                    ? 'Remover perfil de aluno'
+                                    : usuario.funcao_extra === 'Professor'
+                                        ? 'Remover perfil de professor'
+                                        : 'Ativar perfil de professor'}
+                            </button>
+                        </div>
                     </div>
 
                 </div>

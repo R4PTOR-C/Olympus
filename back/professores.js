@@ -55,17 +55,26 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// POST - cria perfil de professor
+// POST - cria perfil de professor (upsert: recria se já existia)
 router.post('/', async (req, res) => {
     const { usuario_id, cref, especialidade, experiencia, descricao, preco_hora, cidade, estado, contato } = req.body;
 
     try {
         const result = await db.query(`
-      INSERT INTO professores 
-      (usuario_id, cref, especialidade, experiencia, descricao, preco_hora, cidade, estado, contato)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-      RETURNING *;
-    `, [usuario_id, cref, especialidade, experiencia, descricao, preco_hora, cidade, estado, contato]);
+            INSERT INTO professores
+              (usuario_id, cref, especialidade, experiencia, descricao, preco_hora, cidade, estado, contato)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+            ON CONFLICT (usuario_id) DO UPDATE SET
+              cref = EXCLUDED.cref,
+              especialidade = EXCLUDED.especialidade,
+              experiencia = EXCLUDED.experiencia,
+              descricao = EXCLUDED.descricao,
+              preco_hora = EXCLUDED.preco_hora,
+              cidade = EXCLUDED.cidade,
+              estado = EXCLUDED.estado,
+              contato = EXCLUDED.contato
+            RETURNING *;
+        `, [usuario_id, cref, especialidade, experiencia, descricao, preco_hora, cidade, estado, contato]);
 
         res.status(201).json(result.rows[0]);
     } catch (err) {

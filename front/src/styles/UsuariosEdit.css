@@ -261,3 +261,35 @@
     .ue-page { padding-bottom: 2rem; }
     .ue-name { font-size: 2.2rem; }
 }
+
+/* ── Botão ativar perfil extra ── */
+.ue-btn-funcao-extra {
+    background: var(--ue-accent-dim);
+    border: 1.5px solid var(--ue-accent-border);
+    color: var(--ue-accent);
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+.ue-btn-funcao-extra:active {
+    background: rgba(74, 144, 217, 0.2);
+    transform: scale(0.97);
+}
+
+.ue-btn-funcao-extra.ativo {
+    background: rgba(232, 64, 64, 0.08);
+    border-color: rgba(232, 64, 64, 0.3);
+    color: #E84040;
+}
+
+.ue-btn-funcao-extra:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

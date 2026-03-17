@@ -47,7 +47,7 @@ const Usuarios_index = () => {
 
             setProcurando(userData.procurando || false);
             setMeusAlunos(meusData);
-            setAlunosDisp(dispData);
+            setAlunosDisp(dispData.filter(a => a.id !== Number(userId)));
             setPendentes(pendData);
 
             // Inclui todos os pedidos pendentes (meus ou deles)

@@ -61,7 +61,7 @@ function Stepper({ value, onChange, min = 1, max = 30, label }) {
 const TreinosEdit = () => {
     const { id, treinoId } = useParams();
     const navigate = useNavigate();
-    const { userId, funcao } = useContext(AuthContext);
+    const { userId, funcaoAtiva } = useContext(AuthContext);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -78,7 +78,7 @@ const TreinosEdit = () => {
     const [pendingRemove, setPendingRemove] = useState(null);
 
     useEffect(() => {
-        if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
+        if (funcaoAtiva !== 'Professor' && parseInt(id) !== parseInt(userId)) {
             navigate(`/usuarios/view/${userId}`);
             return;
         }
@@ -112,7 +112,7 @@ const TreinosEdit = () => {
         };
 
         fetchAll();
-    }, [treinoId, id, userId, funcao, navigate]);
+    }, [treinoId, id, userId, funcaoAtiva, navigate]);
 
     const toggleGroup = (grupo) =>
         setOpenGroups(prev => ({ ...prev, [grupo]: !prev[grupo] }));

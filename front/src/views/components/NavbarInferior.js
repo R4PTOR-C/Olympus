@@ -6,12 +6,12 @@ import '../../styles/NavbarInferior.css';
 function NavbarInferior() {
     const location = useLocation();
     const navigate = useNavigate();
-    const { userId, funcao } = useContext(AuthContext);
+    const { userId, funcaoAtiva } = useContext(AuthContext);
 
     const isActive = (path) => location.pathname.startsWith(path);
 
     const herculesActive = isActive('/hercules');
-    const isProfessor = funcao === 'Professor';
+    const isProfessor = funcaoAtiva === 'Professor';
 
     // ── Navbar do Professor ──
     if (isProfessor) {

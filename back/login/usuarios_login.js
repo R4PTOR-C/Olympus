@@ -24,7 +24,7 @@ router.post('/login', async (req, res) => {
 
         // Gera o token JWT com informações do usuário
         const token = jwt.sign(
-            { userId: user.id, userName: user.nome, userFuncao: user.funcao, userAvatar: user.avatar },
+            { userId: user.id, userName: user.nome, userFuncao: user.funcao, userFuncaoExtra: user.funcao_extra || null, userAvatar: user.avatar },
             JWT_SECRET,
             { expiresIn: '7d' } // 7 dias
         );
@@ -32,9 +32,10 @@ router.post('/login', async (req, res) => {
         res.json({
             message: 'Login bem-sucedido',
             token,
-            userId: user.id, // 👈 adicione isso
+            userId: user.id,
             userName: user.nome,
             funcao: user.funcao,
+            funcao_extra: user.funcao_extra || null,
             avatar: user.avatar
         });
     } catch (err) {
@@ -63,14 +64,28 @@ function authenticateJWT(req, res, next) {
 }
 
 // Rota para verificar a sessão do usuário (substituída para JWT)
-router.get('/session', authenticateJWT, (req, res) => {
-    res.json({
-        loggedIn: true,
-        userName: req.user.userName,
-        userId: req.user.userId,
-        userFuncao: req.user.userFuncao,
-        userAvatar: req.user.userAvatar
-    });
+router.get('/session', authenticateJWT, async (req, res) => {
+    try {
+        const { rows } = await db.query('SELECT funcao_extra, avatar FROM usuarios WHERE id = $1', [req.user.userId]);
+        const fresh = rows[0] || {};
+        res.json({
+            loggedIn: true,
+            userName: req.user.userName,
+            userId: req.user.userId,
+            userFuncao: req.user.userFuncao,
+            userFuncaoExtra: fresh.funcao_extra || null,
+            userAvatar: fresh.avatar || req.user.userAvatar
+        });
+    } catch {
+        res.json({
+            loggedIn: true,
+            userName: req.user.userName,
+            userId: req.user.userId,
+            userFuncao: req.user.userFuncao,
+            userFuncaoExtra: req.user.userFuncaoExtra || null,
+            userAvatar: req.user.userAvatar
+        });
+    }
 });
 
 module.exports = router;

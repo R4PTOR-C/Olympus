@@ -39,12 +39,12 @@ function temScrollHorizontal(el) {
 export function useSwipeNavigation() {
     const navigate   = useNavigate();
     const location   = useLocation();
-    const { funcao, userId } = useContext(AuthContext);
+    const { funcaoAtiva, userId } = useContext(AuthContext);
 
     const touchStart = useRef(null);
 
     useEffect(() => {
-        const rotas = funcao === 'Professor'
+        const rotas = funcaoAtiva === 'Professor'
             ? ROTAS_PROFESSOR(userId)
             : ROTAS_ALUNO(userId);
 
@@ -87,5 +87,5 @@ export function useSwipeNavigation() {
             document.removeEventListener('touchstart', onTouchStart);
             document.removeEventListener('touchend',   onTouchEnd);
         };
-    }, [location.pathname, funcao, userId, navigate]);
+    }, [location.pathname, funcaoAtiva, userId, navigate]);
 }

@@ -34,6 +34,7 @@ import HerculesChat from "./views/hercules/HerculesChat";
 import ProfessoresList from "./views/professores/ProfessoresList";
 import ProcurarProfessor from "./views/professores/ProcurarProfessor";
 import ProfessoresEdit from "./views/professores/Professores_edit";
+import CompletarPerfilProfessor from "./views/professores/CompletarPerfilProfessor";
 import HistoricoAluno from "./views/professores/HistoricoAluno";
 import HistoricoAlunos from "./views/professores/HistoricoAlunos";
 import ChatView from "./views/chat/ChatView";
@@ -124,6 +125,7 @@ function AppContent() {
                 <Route path="/professores" element={<ProfessoresList />} />
                 <Route path="/procurar-professor" element={<ProtectedRoute><ProcurarProfessor /></ProtectedRoute>} />
                 <Route path="/professores/edit/:id" element={<ProtectedRoute><ProfessoresEdit /></ProtectedRoute>} />
+                <Route path="/completar-perfil-professor" element={<ProtectedRoute><CompletarPerfilProfessor /></ProtectedRoute>} />
                 <Route path="/chat/:chatId" element={<ChatView />} />
                 <Route path="/meus-chats" element={<ChatsList />} />
                 <Route path="/cardio/:id/new" element={<ProtectedRoute><CardioForm /></ProtectedRoute>} />

@@ -9,6 +9,7 @@ function Login() {
     const [senhaVis,    setSenhaVis]    = useState(false);
     const [loading,     setLoading]     = useState(false);
     const [erro,        setErro]        = useState(null);
+    const [pendingData, setPendingData] = useState(null);
     const navigate = useNavigate();
     const { login } = useContext(AuthContext);
 
@@ -36,9 +37,13 @@ function Login() {
             const data = await res.json();
 
             if (res.ok) {
-                login({ userName: data.userName, userId: data.userId, funcao: data.funcao, avatar: data.avatar }, data.token);
-                if (data.funcao === 'Professor') navigate('/usuarios');
-                else navigate(`/home/${data.userId}`);
+                if (data.funcao_extra) {
+                    setPendingData(data);
+                } else {
+                    login({ userName: data.userName, userId: data.userId, funcao: data.funcao, funcao_extra: null, avatar: data.avatar }, data.token);
+                    if (data.funcao === 'Professor') navigate('/usuarios');
+                    else navigate(`/home/${data.userId}`);
+                }
             } else {
                 setErro(data.error || 'Email ou senha incorretos.');
             }
@@ -49,7 +54,21 @@ function Login() {
         }
     };
 
+    const escolherModo = (funcaoEscolhida) => {
+        login({
+            userName: pendingData.userName,
+            userId: pendingData.userId,
+            funcao: pendingData.funcao,
+            funcao_extra: pendingData.funcao_extra,
+            avatar: pendingData.avatar,
+        }, pendingData.token, funcaoEscolhida);
+        setPendingData(null);
+        if (funcaoEscolhida === 'Professor') navigate('/usuarios');
+        else navigate(`/home/${pendingData.userId}`);
+    };
+
     return (
+        <>
         <div className="auth-page">
             <div className="auth-card">
 
@@ -127,6 +146,35 @@ function Login() {
 
             </div>
         </div>
+
+        {/* ── MODAL ESCOLHA DE MODO ── */}
+
+        {pendingData && (
+            <div className="auth-modal-overlay">
+                <div className="auth-modal">
+                    <img src="/logo2.png" alt="Olympus" className="auth-modal-logo" />
+                    <h2 className="auth-modal-title">Bem-vindo de volta!</h2>
+                    <p className="auth-modal-text">
+                        Notamos que sua conta possui perfis de <strong>{pendingData.funcao}</strong> e <strong>{pendingData.funcao_extra}</strong>. Como deseja entrar?
+                    </p>
+                    <div className="auth-modal-actions">
+                        <button
+                            className="auth-modal-btn primary"
+                            onClick={() => escolherModo(pendingData.funcao)}
+                        >
+                            {pendingData.funcao === 'Professor' ? '🏋️ Personal Trainer' : '💪 Aluno'}
+                        </button>
+                        <button
+                            className="auth-modal-btn secondary"
+                            onClick={() => escolherModo(pendingData.funcao_extra)}
+                        >
+                            {pendingData.funcao_extra === 'Professor' ? '🏋️ Personal Trainer' : '💪 Aluno'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+        </>
     );
 }
 

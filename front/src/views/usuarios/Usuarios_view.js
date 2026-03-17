@@ -29,7 +29,7 @@ const treinoImagemUrl = (imagem) =>
 const UsuariosView = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { userId, funcao } = useContext(AuthContext);
+    const { userId, funcaoAtiva } = useContext(AuthContext);
 
     const [usuario, setUsuario] = useState(null);
     const [treinos, setTreinos] = useState([]);
@@ -40,7 +40,7 @@ const UsuariosView = () => {
     const [pendingDelete, setPendingDelete] = useState(null);
 
     const carregarDados = useCallback(async () => {
-        if (funcao !== 'Professor' && parseInt(id) !== parseInt(userId)) {
+        if (funcaoAtiva !== 'Professor' && parseInt(id) !== parseInt(userId)) {
             navigate(`/usuarios/view/${userId}`);
             return;
         }
@@ -79,7 +79,7 @@ const UsuariosView = () => {
             setError(err.message);
             setLoading(false);
         }
-    }, [id, userId, funcao, navigate]);
+    }, [id, userId, funcaoAtiva, navigate]);
 
     useEffect(() => { carregarDados(); }, [carregarDados]);
     useSocketRefresh(carregarDados);

@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
     const [mensagensNaoLidas, setMensagensNaoLidas] = useState(0);
     const socketRef = useRef(null);
+    const [funcaoAtiva, setFuncaoAtiva] = useState(null);
 
     // ✅ Estado de dark mode
     const [darkMode, setDarkMode] = useState(() => {
@@ -63,8 +64,14 @@ export const AuthProvider = ({ children }) => {
                             userName: data.userName,
                             userId: data.userId,
                             funcao: data.userFuncao,
+                            funcao_extra: data.userFuncaoExtra || null,
                             avatar: data.userAvatar
                         });
+                        const saved = localStorage.getItem(`funcaoAtiva_${data.userId}`);
+                        const funcaoValida = (saved === data.userFuncao || saved === data.userFuncaoExtra)
+                            ? saved
+                            : data.userFuncao;
+                        setFuncaoAtiva(funcaoValida);
                         conectarSocket(data.userId);
                         subscribeParaPush(data.userId);
                     } else {
@@ -120,7 +127,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const login = (userData, token) => {
+    const login = (userData, token, funcaoInicial = null) => {
         console.log("[AuthContext] Login chamado →", userData);
         localStorage.setItem('token', token);
         setUser({
@@ -128,15 +135,38 @@ export const AuthProvider = ({ children }) => {
             userName: userData.userName,
             userId: userData.userId,
             funcao: userData.funcao,
+            funcao_extra: userData.funcao_extra || null,
             avatar: userData.avatar
         });
+        const fa = funcaoInicial || userData.funcao;
+        localStorage.setItem(`funcaoAtiva_${userData.userId}`, fa);
+        setFuncaoAtiva(fa);
         conectarSocket(userData.userId);
         subscribeParaPush(userData.userId);
+    };
+
+    const trocarFuncao = () => {
+        setUser(prev => {
+            const nova = funcaoAtiva === prev.funcao ? prev.funcao_extra : prev.funcao;
+            localStorage.setItem(`funcaoAtiva_${prev.userId}`, nova);
+            setFuncaoAtiva(nova);
+            return prev;
+        });
+    };
+
+    const resetFuncaoAtiva = () => {
+        setUser(prev => {
+            localStorage.setItem(`funcaoAtiva_${prev.userId}`, prev.funcao);
+            setFuncaoAtiva(prev.funcao);
+            return prev;
+        });
     };
 
     const logout = () => {
         console.log("[AuthContext] Logout chamado");
         localStorage.removeItem('token');
+        if (user.userId) localStorage.removeItem(`funcaoAtiva_${user.userId}`);
+        setFuncaoAtiva(null);
         setUser({ loggedIn: false, userName: '', userId: null, avatar: null });
         if (socketRef.current) { socketRef.current.disconnect(); socketRef.current = null; setSocket(null); }
     };
@@ -155,6 +185,9 @@ export const AuthProvider = ({ children }) => {
         <AuthContext.Provider
             value={{
                 ...user,
+                funcaoAtiva,
+                trocarFuncao,
+                resetFuncaoAtiva,
                 login,
                 logout,
                 updateUser,
