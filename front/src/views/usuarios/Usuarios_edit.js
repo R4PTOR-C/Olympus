@@ -5,9 +5,11 @@ import CropAvatar from '../components/CropAvatar';
 import ModalCarregando from '../components/ModalCarregando';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
 import ModalApagarConta from '../components/ModalApagarConta';
+import ModalConfirmar from '../components/ModalConfirmar';
 import PageStateHandler from '../components/PageStateHandler';
 import '../../styles/UsuariosEdit.css';
 import '../../styles/ModalApagarConta.css';
+import '../../styles/ModalConfirmar.css';
 
 const dadosPessoais = [
     { name: 'nome',             label: 'Nome',               tipo: 'text'   },
@@ -58,8 +60,9 @@ const UsuariosEdit = () => {
     const [loading,           setLoading]           = useState(true);
     const [error,             setError]             = useState(null);
     const [campoEditando,     setCampoEditando]     = useState(null);
-    const [funcaoExtraLoading, setFuncaoExtraLoading] = useState(false);
-    const [showApagarConta,   setShowApagarConta]   = useState(false);
+    const [funcaoExtraLoading,   setFuncaoExtraLoading]   = useState(false);
+    const [showApagarConta,      setShowApagarConta]      = useState(false);
+    const [showConfirmarRemover, setShowConfirmarRemover] = useState(false);
 
     useEffect(() => {
         fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`)
@@ -104,23 +107,19 @@ const UsuariosEdit = () => {
         finally { setCampoEditando(null); }
     };
 
-    const handleToggleFuncaoExtra = async () => {
+    const executarRemocaoFuncaoExtra = async () => {
         const isProfessorPrimario = usuario.funcao === 'Professor';
-        const temProfessorExtra   = usuario.funcao_extra === 'Professor';
-
-        if (!isProfessorPrimario && !temProfessorExtra) {
-            // Aluno sem perfil de professor → onboarding
-            navigate('/completar-perfil-professor');
-            return;
-        }
 
         setFuncaoExtraLoading(true);
         try {
-            await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}/funcao-extra`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ funcao_extra: null }),
-            });
+            await Promise.all([
+                fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}/funcao-extra`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ funcao_extra: null }),
+                }),
+                fetch(`${process.env.REACT_APP_API_BASE_URL}/professores/${id}`, { method: 'DELETE' }),
+            ]);
             setUsuario(prev => ({ ...prev, funcao_extra: null }));
             updateUser?.({ funcao_extra: null });
             resetFuncaoAtiva();
@@ -130,6 +129,18 @@ const UsuariosEdit = () => {
             }
         } catch { /* silencioso */ }
         finally { setFuncaoExtraLoading(false); }
+    };
+
+    const handleToggleFuncaoExtra = async () => {
+        const isProfessorPrimario = usuario.funcao === 'Professor';
+        const temProfessorExtra   = usuario.funcao_extra === 'Professor';
+
+        if (!isProfessorPrimario && !temProfessorExtra) {
+            navigate('/completar-perfil-professor');
+            return;
+        }
+
+        setShowConfirmarRemover(true);
     };
 
     if (loading) return <ModalCarregando show={true} />;
@@ -326,6 +337,17 @@ const UsuariosEdit = () => {
                 )}
 
             </div>
+
+            {showConfirmarRemover && (
+                <ModalConfirmar
+                    titulo="Remover perfil de professor?"
+                    mensagem="Seu perfil profissional (CREF, especialidade, bio) será apagado. Seus treinos não serão afetados. Tem certeza?"
+                    labelConfirmar="Remover"
+                    perigoso
+                    onConfirmar={() => { setShowConfirmarRemover(false); executarRemocaoFuncaoExtra(); }}
+                    onCancelar={() => setShowConfirmarRemover(false)}
+                />
+            )}
 
             {showApagarConta && (
                 <ModalApagarConta

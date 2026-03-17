@@ -4,9 +4,11 @@ import { AuthContext } from '../../AuthContext';
 import CropAvatar from '../components/CropAvatar';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
 import ModalApagarConta from '../components/ModalApagarConta';
+import ModalConfirmar from '../components/ModalConfirmar';
 import PageStateHandler from '../components/PageStateHandler';
 import '../../styles/UsuariosEdit.css';
 import '../../styles/ModalApagarConta.css';
+import '../../styles/ModalConfirmar.css';
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
@@ -133,8 +135,9 @@ const ProfessoresEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { updateUser, trocarFuncao, resetFuncaoAtiva } = useContext(AuthContext);
-    const [funcaoExtraLoading, setFuncaoExtraLoading] = useState(false);
-    const [showApagarConta,   setShowApagarConta]   = useState(false);
+    const [funcaoExtraLoading,   setFuncaoExtraLoading]   = useState(false);
+    const [showApagarConta,      setShowApagarConta]      = useState(false);
+    const [showConfirmarRemover, setShowConfirmarRemover] = useState(false);
 
     const [usuario,       setUsuario]       = useState(null);
     const [professor,     setProfessor]     = useState(null);
@@ -258,7 +261,7 @@ const ProfessoresEdit = () => {
     if (error)   return <div style={{ color: 'red', padding: '2rem' }}>Erro: {error}</div>;
     if (!usuario || !professor) return null;
 
-    const handleToggleFuncaoExtra = async () => {
+    const executarRemocaoFuncaoExtra = async () => {
         const isAlunoPrimario = usuario.funcao === 'Aluno';
 
         setFuncaoExtraLoading(true);
@@ -280,6 +283,8 @@ const ProfessoresEdit = () => {
         } catch { /* silencioso */ }
         finally { setFuncaoExtraLoading(false); }
     };
+
+    const handleToggleFuncaoExtra = () => setShowConfirmarRemover(true);
 
     const handleAtivarAluno = async () => {
         setFuncaoExtraLoading(true);
@@ -490,6 +495,19 @@ const ProfessoresEdit = () => {
                 </div>
 
             </div>
+
+            {showConfirmarRemover && (
+                <ModalConfirmar
+                    titulo={usuario.funcao === 'Aluno' ? 'Remover perfil de professor?' : 'Remover perfil de aluno?'}
+                    mensagem={usuario.funcao === 'Aluno'
+                        ? 'Seu perfil profissional (CREF, especialidade, bio) será apagado. Seus treinos não serão afetados. Tem certeza?'
+                        : 'O perfil de aluno será desativado. Seus treinos não serão afetados. Tem certeza?'}
+                    labelConfirmar="Remover"
+                    perigoso
+                    onConfirmar={() => { setShowConfirmarRemover(false); executarRemocaoFuncaoExtra(); }}
+                    onCancelar={() => setShowConfirmarRemover(false)}
+                />
+            )}
 
             {showApagarConta && (
                 <ModalApagarConta

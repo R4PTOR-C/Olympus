@@ -1,0 +1,79 @@
+.mcf-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(5, 8, 15, 0.88);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.mcf-sheet {
+    background: #0e1220;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 20px 20px 0 0;
+    padding: 28px 24px 40px;
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: mcf-slide-up 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes mcf-slide-up {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.mcf-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e8edf5;
+    margin: 0;
+}
+
+.mcf-text {
+    font-size: 0.82rem;
+    color: rgba(200, 209, 220, 0.6);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.mcf-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.mcf-btn-cancel {
+    flex: 1;
+    padding: 13px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
+    color: rgba(200, 209, 220, 0.5);
+    font-size: 0.88rem;
+    cursor: pointer;
+}
+
+.mcf-btn-confirm {
+    flex: 1;
+    padding: 13px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(74, 144, 217, 0.2);
+    color: #4A90D9;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.mcf-btn-confirm.perigoso {
+    background: rgba(224, 92, 92, 0.15);
+    color: #e05c5c;
+}
+
+.mcf-btn-confirm:active { opacity: 0.7; }

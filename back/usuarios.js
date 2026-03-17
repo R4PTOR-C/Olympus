@@ -41,15 +41,6 @@ router.get('/:id', async (req, res) => {
         }
         const usuario = rows[0];
 
-        // Aluno com perfil de professor criado mas funcao_extra desatualizado → sincroniza
-        if (usuario.funcao === 'Aluno' && !usuario.funcao_extra) {
-            const profResult = await db.query('SELECT 1 FROM professores WHERE usuario_id = $1 LIMIT 1', [id]);
-            if (profResult.rows.length > 0) {
-                usuario.funcao_extra = 'Professor';
-                await db.query('UPDATE usuarios SET funcao_extra = $1 WHERE id = $2', ['Professor', id]);
-            }
-        }
-
         res.json(usuario);
     } catch (err) {
         console.error("Erro ao buscar usuário:", err);
