@@ -79,6 +79,17 @@ const UsuariosEdit = () => {
         setShowCropper(true);
     };
 
+    const handleRemoverAvatar = async () => {
+        try {
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}/avatar`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Erro ao remover avatar');
+            const data = await res.json();
+            setAvatar(null);
+            setUsuario(prev => ({ ...prev, avatar: null }));
+            updateUser?.({ avatar: null });
+        } catch (err) { setError(err.toString()); }
+    };
+
     const handleCropped = async (croppedBlob) => {
         const file = new File([croppedBlob], 'avatar.jpeg', { type: 'image/jpeg' });
         setAvatar(file);
@@ -184,6 +195,11 @@ const UsuariosEdit = () => {
                             style={{ display: 'none' }}
                         />
                     </div>
+                    {avatarUrl && (
+                        <button className="ue-avatar-remove-btn" onClick={handleRemoverAvatar}>
+                            Remover foto
+                        </button>
+                    )}
 
                     <h1 className="ue-name">{usuario.nome}</h1>
 

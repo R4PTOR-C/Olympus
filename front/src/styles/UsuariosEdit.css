@@ -76,6 +76,20 @@
 
 .ue-avatar-edit-btn:active { transform: scale(0.92); }
 
+.ue-avatar-remove-btn {
+    margin-top: 8px;
+    background: transparent;
+    border: none;
+    color: rgba(224, 92, 92, 0.7);
+    font-size: 0.72rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    letter-spacing: 0.02em;
+    transition: color 0.15s;
+}
+
+.ue-avatar-remove-btn:hover { color: rgba(224, 92, 92, 1); }
+
 .ue-name {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.9rem;

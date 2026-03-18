@@ -250,6 +250,24 @@ router.post('/reset-password/:token', async (req, res) => {
     }
 });
 
+// DELETE - remove avatar do usuário
+router.delete('/:id/avatar', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const resultado = await db.query(
+            'UPDATE usuarios SET avatar = NULL WHERE id = $1 RETURNING *',
+            [id]
+        );
+        if (resultado.rowCount === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+        res.json({ message: 'Avatar removido com sucesso', usuario: resultado.rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+});
+
 // PUT - define ou remove funcao_extra do usuário
 router.put('/:id/funcao-extra', async (req, res) => {
     const { id } = req.params;

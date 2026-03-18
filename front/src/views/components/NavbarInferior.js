@@ -17,11 +17,11 @@ function NavbarInferior() {
         return () => vv.removeEventListener('resize', handler);
     }, []);
 
-    if (keyboardOpen) return null;
-
     const isActive = (path) => location.pathname.startsWith(path);
 
     const herculesActive = isActive('/hercules');
+
+    if (keyboardOpen && herculesActive) return null;
     const isProfessor = funcaoAtiva === 'Professor';
 
     // ── Navbar do Professor ──

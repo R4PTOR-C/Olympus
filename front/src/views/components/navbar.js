@@ -14,7 +14,6 @@ function Navbar() {
     const { isInstallable, installApp } = usePWAInstall(); // 👈 AQUI
 
 
-    const avatarUrl = avatar || '/default-avatar.png'; // imagem padrão opcional
 
     const handleLogout = () => {
         user.logout();
@@ -104,11 +103,20 @@ Hércules                            </button>
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false"
                                 >
-                                    <img
-                                        src={avatarUrl}
-                                        alt="Avatar do usuário"
-                                        className="navbar-avatar"
-                                    />
+                                    {avatar ? (
+                                        <img
+                                            src={avatar}
+                                            alt="Avatar do usuário"
+                                            className="navbar-avatar"
+                                        />
+                                    ) : (
+                                        <div className="navbar-avatar navbar-avatar-placeholder">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(74,144,217,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                                <circle cx="12" cy="7" r="4"/>
+                                            </svg>
+                                        </div>
+                                    )}
                                 </a>
 
                                 {/* Menu dropdown */}

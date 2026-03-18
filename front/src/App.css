@@ -16,42 +16,80 @@
 }
 
 /* ========================= */
-/* VARIÁVEIS DE TEMA         */
+/* VARIÁVEIS GLOBAIS         */
 /* ========================= */
 :root {
-    --color-bg: #ffffff;          /* fundo containers */
-    --color-text: #000000;        /* cor dos textos */
-    --color-primary: #19222B;
-    --color-primary-hover: #2f3840;
-
+    /* Estrutura */
     --topbar-h: 60px;
     --bottombar-h: 60px;
+
+    /* Accent */
+    --color-accent: #4A90D9;
+    --color-accent-light: #6AAFF0;
+    --color-accent-dim: rgba(74, 144, 217, 0.12);
+
+    /* Superfícies (light) */
+    --color-bg: #F0F3F8;
+    --color-surface: #FFFFFF;
+    --color-surface-2: #EBF0F7;
+    --color-surface-3: #DDE5F0;
+
+    /* Textos (light) */
+    --color-text: #19222B;
+    --color-text-muted: #5A6B82;
+    --color-text-dim: #9CAAB8;
+
+    /* Bordas / sombras (light) */
+    --color-border: rgba(0, 0, 0, 0.08);
+    --color-shadow: 0 2px 14px rgba(0, 0, 0, 0.07);
+    --color-shadow-hover: 0 4px 22px rgba(0, 0, 0, 0.12);
+
+    /* Feedback */
+    --color-red: #E84040;
+    --color-green: #2ECC71;
+
+    /* Radii */
+    --radius-lg: 18px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+
+    /* Legado — mantidos para compatibilidade com componentes antigos */
+    --color-primary: #19222B;
+    --color-primary-hover: #2f3840;
 }
 
+/* ── DARK MODE ── */
 body.dark-mode {
-    --color-bg: #2b2b2b;          /* fundo containers no escuro */
-    --color-text: #ffffff;        /* texto branco no escuro */
+    --color-bg: #0B0F14;
+    --color-surface: #111720;
+    --color-surface-2: #171E2A;
+    --color-surface-3: #1D2535;
+    --color-text: #E8EDF5;
+    --color-text-muted: #A4AEBF;
+    --color-text-dim: #7B8FA8;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+    --color-shadow-hover: 0 4px 22px rgba(0, 0, 0, 0.55);
 }
 
 /* ========================= */
 /* RESETS / BASE             */
 /* ========================= */
 html, body {
-    min-height: 100vh;  /* em vez de height: 100% */
+    min-height: 100vh;
     margin: 0;
     padding: 0;
+    font-family: 'Barlow', sans-serif;
     color: var(--color-text);
     background-color: var(--color-bg);
     background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-position: center;
+    -webkit-font-smoothing: antialiased;
 }
 
-
-input,
-textarea,
-select {
+input, textarea, select {
     font-size: 16px;
 }
 
@@ -59,18 +97,8 @@ h1, h2, h3, small {
     color: var(--color-text);
 }
 
-body.dark-mode .exercicios-container h4,
-body.dark-mode .exercicios-container span,
-body.dark-mode .exercicios-container small {
-    color: var(--color-text) !important; /* mantém legível no escuro */
-}
-
-body.dark-mode .exercicios-container .text-muted {
-    color: #cfd8dc !important; /* cinza-claro para contraste */
-}
-
 /* ========================= */
-/* NAVBARS / LAYOUT          */
+/* LAYOUT — NAVBARS          */
 /* ========================= */
 body.with-chrome {
     padding-top: var(--topbar-h);
@@ -85,64 +113,60 @@ body.no-chrome {
 /* CONTAINERS / CARDS        */
 /* ========================= */
 .container {
-    background-color: var(--color-bg);
-    border-radius: 15px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--color-shadow);
     padding: 1rem;
 }
 
 /* ========================= */
-/* BOTÕES / PAGINAÇÃO        */
+/* BOTÕES — BOOTSTRAP OVERRIDES */
 /* ========================= */
 .page-link {
-    background-color: var(--color-primary) !important;
-    color: white !important;
-    border: var(--color-primary);
+    background-color: var(--color-accent) !important;
+    color: #fff !important;
+    border-color: var(--color-accent) !important;
 }
 
 .btn-primary {
-    background-color: var(--color-primary) !important;
-    color: #c8d1d0 !important;
-    border: var(--color-primary);
+    background-color: var(--color-accent) !important;
+    color: #fff !important;
+    border-color: var(--color-accent) !important;
 }
+.btn-primary:hover,
 .btn-primary:active,
 .btn-primary.active,
 .show > .btn-primary.dropdown-toggle {
-    background-color: #19222B !important;
-    border-color: #19222B !important;
+    background-color: var(--color-accent-light) !important;
+    border-color: var(--color-accent-light) !important;
     color: #fff !important;
 }
 
 .btn-edit {
-    background-color: var(--color-primary) !important;
-    color: #c8d1d0 !important;
-    border: var(--color-primary);
+    background-color: var(--color-accent) !important;
+    color: #fff !important;
+    border-color: var(--color-accent) !important;
     margin-top: 20px;
     margin-bottom: 20px;
 }
 
 .btn-success,
 .btn-danger {
-    border: var(--color-primary);
     margin-top: 20px;
     margin-bottom: 20px;
 }
 
 .btn-outline-primary {
-    color: #19222B;
-    border-color: #19222B;
+    color: var(--color-accent);
+    border-color: var(--color-accent);
 }
 .btn-outline-primary:hover,
-.btn-outline-primary:focus {
-    background-color: #19222B;
-    color: #fff;
-    border-color: var(--color-primary);
-}
+.btn-outline-primary:focus,
 .btn-outline-primary:active,
 .btn-outline-primary.active,
 .show > .btn-outline-primary.dropdown-toggle {
-    background-color: #19222B !important;
-    border-color: #19222B !important;
+    background-color: var(--color-accent) !important;
+    border-color: var(--color-accent) !important;
     color: #fff !important;
 }
 
@@ -150,16 +174,16 @@ body.no-chrome {
 /* DROPDOWN                  */
 /* ========================= */
 .dropdown-menu {
-    background-color: var(--color-primary) !important;
-    border-color: var(--color-primary) !important;
+    background-color: var(--color-surface-2) !important;
+    border: 1px solid var(--color-border) !important;
 }
 .dropdown-menu .dropdown-item {
-    color: white !important;
+    color: var(--color-text) !important;
 }
 .dropdown-menu .dropdown-item:hover,
 .dropdown-menu .dropdown-item:active {
-    background-color: var(--color-primary-hover) !important;
-    color: white !important;
+    background-color: var(--color-accent-dim) !important;
+    color: var(--color-text) !important;
 }
 
 /* ========================= */
@@ -170,157 +194,102 @@ body.no-chrome {
     max-width: 720px;
     max-height: 90vh;
     overflow-y: auto;
-    background-color: #fff;
-    border-radius: 0.5rem;
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
     padding: 1.5rem;
+    color: var(--color-text);
 }
 
-body.dark-mode .modal-custom {
-    background-color: #2c2c2c;
-    color: #f8f9fa;
-}
 body.dark-mode .btn-close {
     filter: invert(1);
 }
 
 /* ========================= */
-/* RECHARTS                  */
-/* ========================= */
-
-/* ========================= */
-/* APP DEFAULT               */
-/* ========================= */
-.App {
-    text-align: center;
-}
-
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
-}
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
-}
-.App-header {
-    background-color: #282c34;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
-}
-
-/* ========================= */
-/* MEDIA QUERIES             */
-/* ========================= */
-@media (max-width: 768px) {
-    input,
-    textarea,
-    select {
-        font-size: 16px !important;
-    }
-}
-
-/* ========================= */
-/* DARK MODE                 */
+/* FORMULÁRIOS — DARK MODE   */
 /* ========================= */
 body.dark-mode .form-control,
 body.dark-mode .form-select,
 body.dark-mode textarea {
-    background-color: #3a3a3a;
-    color: #f8f9fa;
-    border: 1px solid #555;
+    background-color: var(--color-surface-2);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
 }
 body.dark-mode .form-control:focus,
 body.dark-mode .form-select:focus,
 body.dark-mode textarea:focus {
-    background-color: #444;
-    color: #fff;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 0.2rem rgba(25, 34, 43, 0.5);
+    background-color: var(--color-surface-3);
+    color: var(--color-text);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 0.2rem rgba(74, 144, 217, 0.2);
 }
 body.dark-mode .form-floating label {
-    color: #444;
+    color: var(--color-text-muted);
 }
 body.dark-mode .form-select option {
-    background-color: #3a3a3a;
-    color: #fff;
+    background-color: var(--color-surface-2);
+    color: var(--color-text);
 }
 
-/* Dark Mode - Cards */
+/* ========================= */
+/* CARDS — DARK MODE         */
+/* ========================= */
 body.dark-mode .card {
-    background-color: #1e1e1e !important;
+    background-color: var(--color-surface) !important;
     color: var(--color-text) !important;
-    border: 1px solid #444;
+    border: 1px solid var(--color-border);
 }
 body.dark-mode .card .text-muted {
-    color: #aaa !important;
-}
-
-/* Dark Mode - Colunas de dias */
-body.dark-mode .droppable-day {
-    background-color: #2c2c2c !important;
-    border-color: #444 !important;
+    color: var(--color-text-muted) !important;
 }
 
 /* ========================= */
-/* Cards de Exercícios - Dark Mode */
+/* EXERCÍCIOS — CARDS        */
 /* ========================= */
+body.dark-mode .exercicios-container h4,
+body.dark-mode .exercicios-container span,
+body.dark-mode .exercicios-container small {
+    color: var(--color-text) !important;
+}
+body.dark-mode .exercicios-container .text-muted {
+    color: var(--color-text-muted) !important;
+}
+
 body.dark-mode .exercicios-container .card {
-    background-color: #1f1f1f !important;  /* tom escuro neutro */
-    color: var(--color-text) !important;   /* texto branco definido no tema */
-    border: 1px solid #444;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    background-color: var(--color-surface) !important;
+    color: var(--color-text) !important;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--color-shadow);
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
-
 body.dark-mode .exercicios-container .card:hover {
-    background-color: #2b2b2b !important;
+    background-color: var(--color-surface-2) !important;
     transform: translateY(-3px);
 }
-
-/* título e corpo */
 body.dark-mode .exercicios-container .card .card-title {
     color: var(--color-text) !important;
 }
-
 body.dark-mode .exercicios-container .card .card-body {
-    color: #ddd !important;
+    color: var(--color-text-muted) !important;
 }
-
-/* inputs */
 body.dark-mode .exercicios-container .card input {
-    background-color: #2c2c2c;
-    color: #fff;
-    border: 1px solid #555;
+    background-color: var(--color-surface-2);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
 }
-
-/* ícones e spans dentro das séries */
 body.dark-mode .exercicios-container .card span {
-    color: #ddd;
+    color: var(--color-text-muted);
 }
 
-/* ========================= */
-/* GIFs dos Exercícios */
-/* ========================= */
 .exercicios-container .card-img-top {
-    border-radius: 12px; /* borda arredondada */
+    border-radius: var(--radius-sm);
     margin-bottom: 0.5rem;
-    background-color: white; /* leve contraste atrás do gif transparente */
-    padding: 6px; /* um respiro visual */
-}
-
-/* Dark Mode - GIFs */
-body.dark-mode .exercicios-container .card-img-top {
-    border-radius: 12px;
+    background-color: var(--color-surface-2);
     padding: 6px;
 }
 
-/* Ícones padrão (modo claro) */
+/* ========================= */
+/* ÍCONES DE EXERCÍCIO       */
+/* ========================= */
 .icone-exercicio {
     display: inline-block;
     width: 18px;
@@ -329,151 +298,98 @@ body.dark-mode .exercicios-container .card-img-top {
     margin-left: 4px;
     vertical-align: middle;
 }
+.icone-exercicio.peso  { content: url("../public/weight.png"); }
+.icone-exercicio.reps  { content: url("../public/reps.png"); }
+body.dark-mode .icone-exercicio.peso { content: url("../public/weight2.png"); }
+body.dark-mode .icone-exercicio.reps { content: url("../public/reps2.png"); }
 
-/* Peso */
-.icone-exercicio.peso {
-    content: url("../public/weight.png");
-}
-
-/* Repetições */
-.icone-exercicio.reps {
-    content: url("../public/reps.png");
-}
-
-/* Dark mode */
-body.dark-mode .icone-exercicio.peso {
-    content: url("../public/weight2.png");
-}
-
-body.dark-mode .icone-exercicio.reps {
-    content: url("../public/reps2.png");
-}
-
-
-
-/* Dark Mode - Botões */
-.dark-mode .btn-primary {
-    background-color: #c8d1d0 !important;
-    color: var(--color-primary) !important;
-}
-.dark-mode .btn-outline-primary {
-    color: #c8d1d0 !important;
-    border-color: #c8d1d0 !important;
-}
-.dark-mode .btn-edit {
-    background-color: #c8d1d0 !important;
-    color: var(--color-primary) !important;
-    border: var(--color-primary);
-}
-
-/* Dark Mode - Textos */
-.dark-mode p {
-    color: white !important;
-}
-
-/* Dark Mode - Recharts */
-.dark-mode .recharts-cartesian-grid line {
-    stroke: #444 !important;
-}
-.dark-mode .recharts-x-axis text,
-.dark-mode .recharts-y-axis text {
-    fill: #ddd !important;
-    font-size: 0.8rem;
-}
-.dark-mode .recharts-x-axis line,
-.dark-mode .recharts-y-axis line {
-    stroke: #666 !important;
-}
-.dark-mode .recharts-tooltip-wrapper {
-    background: #222 !important;
-    border: 1px solid #555 !important;
-    border-radius: 6px;
-    color: #eee !important;
-    padding: 6px;
-}
-.dark-mode .grafico-linha path {
-    stroke: #c8d1d0 !important;
-}
-
+.img-exercicio { border-radius: var(--radius-sm); }
 
 /* ========================= */
-/* ACCORDION - DARK MODE     */
+/* DIAS DA SEMANA — DARK     */
+/* ========================= */
+body.dark-mode .droppable-day {
+    background-color: var(--color-surface) !important;
+    border-color: var(--color-border) !important;
+}
+
+/* ========================= */
+/* ACCORDION — DARK MODE     */
 /* ========================= */
 body.dark-mode .accordion-item {
-    background-color: #2c2c2c !important;
-    border: 1px solid #444 !important;
-    color: #eee !important;
+    background-color: var(--color-surface) !important;
+    border: 1px solid var(--color-border) !important;
+    color: var(--color-text) !important;
 }
-
 body.dark-mode .accordion-button {
-    background-color: #333 !important;
-    color: #eee !important;
+    background-color: var(--color-surface-2) !important;
+    color: var(--color-text) !important;
 }
-
 body.dark-mode .accordion-button:not(.collapsed) {
-    background-color: #444 !important;
-    color: #fff !important;
-    box-shadow: inset 0 -1px 0 #444;
+    background-color: var(--color-surface-3) !important;
+    color: var(--color-text) !important;
+    box-shadow: inset 0 -1px 0 var(--color-border);
 }
-
 body.dark-mode .accordion-body {
-    background-color: #2c2c2c !important;
-    color: #ddd !important;
+    background-color: var(--color-surface) !important;
+    color: var(--color-text-muted) !important;
 }
-
-.img-exercicio {
-    border-radius: 12px; /* ajuste o valor conforme quiser */
-}
-
-.card.ativo {
-    transform: scale(1.15);
-    transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-    border: 2px solid #198754;
-}
-
-
-.card-ativo .btn {
-    width: 100%;                /* botão ocupa largura total */
-    margin-top: auto;           /* sempre embaixo */
-}
-.card-wrapper {
-    position: relative; /* container base */
-}
-
-.card-flutuante {
-    transition: transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
-    cursor: pointer;
-}
-
-.card-flutuante.ativo {
-    position: absolute;      /* sai do fluxo do grid */
-    top: -10px;              /* ajusta para flutuar */
-    left: -10px;
-    width: calc(100% + 20px); /* aumenta sem quebrar layout */
-    transform: scale(1.15);   /* crescimento */
-    z-index: 20;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-    border: 2px solid #198754;
-}
-
-.card-flutuante.ativo .btn {
-    position: absolute;
-    bottom: 10px;            /* sempre embaixo do card */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%;              /* botão centralizado e menor que o card */
-}
-
-
-
-
-
 
 /* ========================= */
-/* ANIMAÇÕES                 */
+/* RECHARTS — DARK MODE      */
 /* ========================= */
-@keyframes App-logo-spin {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+body.dark-mode .recharts-cartesian-grid line {
+    stroke: var(--color-border) !important;
+}
+body.dark-mode .recharts-x-axis text,
+body.dark-mode .recharts-y-axis text {
+    fill: var(--color-text-muted) !important;
+    font-size: 0.8rem;
+}
+body.dark-mode .recharts-x-axis line,
+body.dark-mode .recharts-y-axis line {
+    stroke: var(--color-border) !important;
+}
+body.dark-mode .recharts-tooltip-wrapper {
+    background: var(--color-surface-2) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-sm);
+    color: var(--color-text) !important;
+    padding: 6px;
+}
+body.dark-mode .grafico-linha path {
+    stroke: var(--color-accent) !important;
+}
+
+/* ========================= */
+/* TEXTOS GERAIS — DARK      */
+/* ========================= */
+body.dark-mode p {
+    color: var(--color-text) !important;
+}
+
+/* ========================= */
+/* BOTÕES — DARK MODE        */
+/* ========================= */
+body.dark-mode .btn-primary {
+    background-color: var(--color-accent) !important;
+    color: #fff !important;
+    border-color: var(--color-accent) !important;
+}
+body.dark-mode .btn-outline-primary {
+    color: var(--color-accent) !important;
+    border-color: var(--color-accent) !important;
+}
+body.dark-mode .btn-edit {
+    background-color: var(--color-accent) !important;
+    color: #fff !important;
+}
+
+/* ========================= */
+/* MEDIA QUERIES             */
+/* ========================= */
+@media (max-width: 768px) {
+    input, textarea, select {
+        font-size: 16px !important;
+    }
 }
