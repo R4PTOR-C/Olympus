@@ -1,11 +1,13 @@
 {
   "short_name": "Olympus",
   "name": "Olympus Treinos",
-  "start_url": ".",
+  "description": "Plataforma de treinos e acompanhamento físico",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "theme_color": "#002366",
-  "background_color": "#ffffff",
+  "theme_color": "#0E1117",
+  "background_color": "#0E1117",
   "icons": [
     {
       "src": "/icons/logo-192.png",
@@ -28,7 +30,8 @@
     {
       "src": "/screenshots/mobile-home.png",
       "sizes": "590x1280",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "narrow"
     },
     {
       "src": "/screenshots/desktop-home.png",

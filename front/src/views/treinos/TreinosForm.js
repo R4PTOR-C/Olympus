@@ -110,6 +110,10 @@ const TreinosForm = () => {
     const [openGroups, setOpenGroups] = useState({});
     const [expandedGroups, setExpandedGroups] = useState({});
     const [submitting, setSubmitting] = useState(false);
+    const [toastMsg, setToastMsg] = useState('');
+    const [toastKey, setToastKey] = useState(0);
+    const [toastVisible, setToastVisible] = useState(false);
+    const toastTimer = useRef(null);
 
     const PAGE = 8;
     const [diasOcupados, setDiasOcupados] = useState([]);
@@ -142,6 +146,11 @@ const TreinosForm = () => {
     const handleAdicionarExercicio = (ex) => {
         if (!exerciciosSelecionados.some(s => s.id === ex.id)) {
             setExerciciosSelecionados(prev => [...prev, { ...ex, series_alvo: 3, reps_alvo: 12 }]);
+            if (toastTimer.current) clearTimeout(toastTimer.current);
+            setToastMsg(ex.nome_exercicio);
+            setToastKey(k => k + 1);
+            setToastVisible(true);
+            toastTimer.current = setTimeout(() => setToastVisible(false), 1800);
         }
     };
 
@@ -534,6 +543,14 @@ const TreinosForm = () => {
 
                 </div>
             </form>
+            {toastVisible && (
+                <div key={toastKey} className="tf-toast">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    {toastMsg}
+                </div>
+            )}
         </div>
     );
 };

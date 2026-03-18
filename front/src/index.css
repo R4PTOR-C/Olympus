@@ -1,3 +1,12 @@
+/* ── Esconder scrollbar globalmente ── */
+*, *::before, *::after {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE/Edge legado */
+}
+*::-webkit-scrollbar {
+  display: none;               /* Chrome, Safari, Opera */
+}
+
 html {
   background: #0E1117;
   /* Impede o Android de forçar dark mode pelo sistema */

@@ -1,13 +1,60 @@
 // public/service-worker.js
 
+const CACHE_NAME = 'olympus-v1';
+
+// ── INSTALL: cacheia o shell do app ──────────────────────────────────────────
 self.addEventListener('install', (event) => {
-    console.log('[SW] Installed');
+    event.waitUntil(
+        caches.open(CACHE_NAME).then(cache =>
+            cache.addAll(['/', '/index.html'])
+        )
+    );
     self.skipWaiting();
 });
 
+// ── ACTIVATE: limpa caches antigas ──────────────────────────────────────────
 self.addEventListener('activate', (event) => {
-    console.log('[SW] Activated');
+    event.waitUntil(
+        caches.keys().then(keys =>
+            Promise.all(
+                keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+            )
+        )
+    );
     self.clients.claim();
+});
+
+// ── FETCH: cache-first para estáticos, network-first para API ───────────────
+self.addEventListener('fetch', (event) => {
+    const { request } = event;
+    const url = new URL(request.url);
+
+    // Ignora requisições não-GET e chamadas de API (outro domínio ou /api)
+    if (request.method !== 'GET') return;
+    if (url.origin !== self.location.origin) return;
+
+    // Navegação (SPA): tenta rede, cai no index.html em caso de offline
+    if (request.mode === 'navigate') {
+        event.respondWith(
+            fetch(request).catch(() => caches.match('/index.html'))
+        );
+        return;
+    }
+
+    // Estáticos (JS, CSS, imagens): cache-first
+    event.respondWith(
+        caches.match(request).then(cached => {
+            if (cached) return cached;
+            return fetch(request).then(response => {
+                if (!response || response.status !== 200 || response.type === 'opaque') {
+                    return response;
+                }
+                const clone = response.clone();
+                caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+                return response;
+            });
+        })
+    );
 });
 
 self.addEventListener('push', (event) => {
@@ -16,8 +63,8 @@ self.addEventListener('push', (event) => {
     event.waitUntil(
         self.registration.showNotification(data.title, {
             body: data.body,
-            icon: '/logo2.png',
-            badge: '/logo2.png',
+            icon: '/icons/logo-192.png',
+            badge: '/icons/logo-192.png',
             data: { url: data.url || '/' }
         })
     );

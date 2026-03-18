@@ -999,6 +999,40 @@ body.dark-mode .tf-select {
     box-shadow: 0 1px 6px rgba(74, 144, 217, 0.4);
 }
 
+/* ── TOAST ── */
+.tf-toast {
+    position: fixed;
+    bottom: 96px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(46, 204, 113, 0.95);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 100px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    z-index: 500;
+    white-space: nowrap;
+    max-width: calc(100vw - 32px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    animation: tf-toast-life 1.8s ease forwards;
+    pointer-events: none;
+}
+
+@keyframes tf-toast-life {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    12%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    78%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+}
+
 /* ── DESKTOP ── */
 @media (min-width: 768px) {
     .tf-page {
