@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import ModalSucesso from '../components/ModalSucesso';
+import LocationPicker from '../components/LocationPicker';
 import '../../styles/Auth.css';
 
 const API = process.env.REACT_APP_API_BASE_URL;
@@ -30,26 +31,9 @@ function CompletarPerfilProfessor() {
     const [estado,        setEstado]        = useState('');
     const [cidade,        setCidade]        = useState('');
 
-    const [estadosIBGE, setEstadosIBGE] = useState([]);
-    const [cidadesIBGE, setCidadesIBGE] = useState([]);
-
     const [loading,   setLoading]   = useState(false);
     const [erro,      setErro]      = useState(null);
     const [showModal, setShowModal] = useState(false);
-
-    useEffect(() => {
-        fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
-            .then(r => r.json())
-            .then(setEstadosIBGE)
-            .catch(() => {});
-    }, []);
-
-    const carregarCidades = (uf) => {
-        fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
-            .then(r => r.json())
-            .then(setCidadesIBGE)
-            .catch(() => {});
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -202,43 +186,12 @@ function CompletarPerfilProfessor() {
 
                         <p className="auth-section-label">Localização</p>
 
-                        <div className="auth-row">
-                            <div className="auth-field">
-                                <label className="auth-label" htmlFor="estado">Estado</label>
-                                <div className="auth-select-wrap">
-                                    <select
-                                        id="estado"
-                                        className="auth-select"
-                                        value={estado}
-                                        onChange={e => { setEstado(e.target.value); setCidade(''); carregarCidades(e.target.value); }}
-                                        required
-                                    >
-                                        <option value="">UF</option>
-                                        {estadosIBGE.map(uf => (
-                                            <option key={uf.id} value={uf.sigla}>{uf.sigla}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="auth-field">
-                                <label className="auth-label" htmlFor="cidade">Cidade</label>
-                                <div className="auth-select-wrap">
-                                    <select
-                                        id="cidade"
-                                        className="auth-select"
-                                        value={cidade}
-                                        onChange={e => setCidade(e.target.value)}
-                                        disabled={!estado}
-                                        required
-                                    >
-                                        <option value="">{estado ? 'Selecione' : 'Escolha o estado'}</option>
-                                        {cidadesIBGE.map(c => (
-                                            <option key={c.id} value={c.nome}>{c.nome}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+                        <LocationPicker
+                            estado={estado}
+                            cidade={cidade}
+                            onEstadoChange={setEstado}
+                            onCidadeChange={setCidade}
+                        />
 
                         <button type="submit" className="auth-btn" disabled={loading}>
                             {loading ? 'Salvando...' : 'Ativar perfil de professor'}

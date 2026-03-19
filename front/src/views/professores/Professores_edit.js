@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import CropAvatar from '../components/CropAvatar';
+import LocationPicker from '../components/LocationPicker';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
 import ModalApagarConta from '../components/ModalApagarConta';
 import ModalConfirmar from '../components/ModalConfirmar';
@@ -29,82 +30,6 @@ const dadosProfissionais = [
     { name: 'contato',       label: 'Contato',             tipo: 'text'   },
 ];
 
-// ── Modal de Localização (UF → Cidade cascata) ──
-function ModalLocalizacao({ estadoAtual, cidadeAtual, onClose, onSave }) {
-    const [estados,  setEstados]  = useState([]);
-    const [cidades,  setCidades]  = useState([]);
-    const [uf,       setUf]       = useState(estadoAtual || '');
-    const [cidade,   setCidade]   = useState(cidadeAtual || '');
-    const [loadingC, setLoadingC] = useState(false);
-
-    useEffect(() => {
-        fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
-            .then(r => r.json()).then(setEstados).catch(() => {});
-    }, []);
-
-    useEffect(() => {
-        if (!uf) { setCidades([]); setCidade(''); return; }
-        setLoadingC(true);
-        fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
-            .then(r => r.json())
-            .then(data => { setCidades(data); setLoadingC(false); })
-            .catch(() => setLoadingC(false));
-    }, [uf]);
-
-    const handleUfChange = (e) => { setUf(e.target.value); setCidade(''); };
-
-    const selectStyle = {
-        width: '100%', background: 'var(--h-surface-2)',
-        border: '1.5px solid var(--h-border)', borderRadius: 'var(--h-radius-md)',
-        padding: '13px 16px', fontFamily: "'Barlow', sans-serif",
-        fontSize: '1rem', color: 'var(--h-text)', outline: 'none',
-        appearance: 'none', WebkitAppearance: 'none',
-    };
-
-    return (
-        <div className="mec-overlay" onClick={onClose}>
-            <div className="mec-sheet" onClick={e => e.stopPropagation()}>
-                <div className="mec-header">
-                    <div className="mec-header-info">
-                        <div className="mec-label">Editando</div>
-                        <div className="mec-title">Localização</div>
-                    </div>
-                    <button className="mec-close-btn" onClick={onClose} aria-label="Fechar">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                    </button>
-                </div>
-                <div className="mec-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div>
-                        <p style={{ fontSize: '0.72rem', color: 'var(--h-text-dim)', marginBottom: 6, fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Estado</p>
-                        <div style={{ position: 'relative' }}>
-                            <select style={selectStyle} value={uf} onChange={handleUfChange}>
-                                <option value="">Selecione o estado</option>
-                                {estados.map(e => <option key={e.id} value={e.sigla}>{e.sigla} — {e.nome}</option>)}
-                            </select>
-                            <svg style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--h-text-dim)" strokeWidth="2.5" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
-                        </div>
-                    </div>
-                    <div>
-                        <p style={{ fontSize: '0.72rem', color: 'var(--h-text-dim)', marginBottom: 6, fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Cidade</p>
-                        <div style={{ position: 'relative' }}>
-                            <select style={{ ...selectStyle, opacity: !uf ? 0.5 : 1 }} value={cidade} onChange={e => setCidade(e.target.value)} disabled={!uf || loadingC}>
-                                <option value="">{loadingC ? 'Carregando...' : uf ? 'Selecione a cidade' : 'Escolha o estado primeiro'}</option>
-                                {cidades.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
-                            </select>
-                            <svg style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--h-text-dim)" strokeWidth="2.5" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
-                        </div>
-                    </div>
-                </div>
-                <div className="mec-footer">
-                    <button className="mec-btn-cancel" onClick={onClose}>Cancelar</button>
-                    <button className="mec-btn-save" onClick={() => onSave(uf, cidade)} disabled={!uf || !cidade}>Salvar</button>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 const formatarData = (str) => {
     if (!str) return null;
@@ -475,14 +400,13 @@ const ProfessoresEdit = () => {
                     />
                 )}
 
-                {modalLocalizacao && (
-                    <ModalLocalizacao
-                        estadoAtual={professor.estado}
-                        cidadeAtual={professor.cidade}
-                        onClose={() => setModalLocalizacao(false)}
-                        onSave={handleSalvarLocalizacao}
-                    />
-                )}
+                <LocationPicker
+                    isOpen={modalLocalizacao}
+                    onClose={() => setModalLocalizacao(false)}
+                    estado={professor.estado || ''}
+                    cidade={professor.cidade || ''}
+                    onSelect={handleSalvarLocalizacao}
+                />
 
                 {/* ── Apagar conta ── */}
                 <div style={{ padding: '0 16px 32px' }}>

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import CropAvatar from '../components/CropAvatar';
 import ModalSucesso from '../components/ModalSucesso';
+import LocationPicker from '../components/LocationPicker';
 import CalendarioData, { normalizarData } from '../components/CalendarioData';
 import '../../styles/Auth.css';
 import '../../styles/ModalEdicaoCampo.css';
@@ -54,22 +55,6 @@ function Professor_new() {
     const [showModal,    setShowModal]    = useState(false);
     const [calAberto,    setCalAberto]    = useState(false);
 
-    const [estadosIBGE, setEstadosIBGE] = useState([]);
-    const [cidadesIBGE, setCidadesIBGE] = useState([]);
-
-    useEffect(() => {
-        fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
-            .then(r => r.json())
-            .then(setEstadosIBGE)
-            .catch(() => {});
-    }, []);
-
-    const carregarCidades = (uf) => {
-        fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
-            .then(r => r.json())
-            .then(setCidadesIBGE)
-            .catch(() => {});
-    };
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -399,48 +384,12 @@ function Professor_new() {
                         {/* ── Localização ── */}
                         <p className="auth-section-label">Localização</p>
 
-                        <div className="auth-row">
-                            <div className="auth-field">
-                                <label className="auth-label" htmlFor="estado-prof">Estado</label>
-                                <div className="auth-select-wrap">
-                                    <select
-                                        id="estado-prof"
-                                        className="auth-select"
-                                        value={estado}
-                                        onChange={e => {
-                                            setEstado(e.target.value);
-                                            setCidade('');
-                                            carregarCidades(e.target.value);
-                                        }}
-                                        required
-                                    >
-                                        <option value="">UF</option>
-                                        {estadosIBGE.map(uf => (
-                                            <option key={uf.id} value={uf.sigla}>{uf.sigla}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="auth-field">
-                                <label className="auth-label" htmlFor="cidade-prof">Cidade</label>
-                                <div className="auth-select-wrap">
-                                    <select
-                                        id="cidade-prof"
-                                        className="auth-select"
-                                        value={cidade}
-                                        onChange={e => setCidade(e.target.value)}
-                                        disabled={!estado}
-                                        required
-                                    >
-                                        <option value="">{estado ? 'Selecione' : 'Escolha o estado'}</option>
-                                        {cidadesIBGE.map(c => (
-                                            <option key={c.id} value={c.nome}>{c.nome}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+                        <LocationPicker
+                            estado={estado}
+                            cidade={cidade}
+                            onEstadoChange={setEstado}
+                            onCidadeChange={setCidade}
+                        />
 
                         <button type="submit" className="auth-btn" disabled={loading}>
                             {loading ? 'Cadastrando...' : 'Cadastrar Professor'}

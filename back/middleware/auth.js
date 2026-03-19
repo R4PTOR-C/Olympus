@@ -25,8 +25,9 @@ function requireVinculo(paramName = 'usuarioId') {
             // Próprio usuário sempre pode acessar seus dados
             if (parseInt(userId) === targetId) return next();
 
-            // Professor precisa ter vínculo ativo
-            if (userFuncao === 'Professor') {
+            // Professor precisa ter vínculo ativo (funcao principal ou extra)
+            const isProfessor = userFuncao === 'Professor' || req.user.userFuncaoExtra === 'Professor';
+            if (isProfessor) {
                 const { rows } = await db.query(
                     `SELECT id FROM vinculos
                      WHERE professor_id = $1 AND aluno_id = $2 AND status = 'ativo'`,
@@ -46,7 +47,8 @@ function requireVinculo(paramName = 'usuarioId') {
 async function verificarVinculo(req, alunoId) {
     const { userId, userFuncao } = req.user;
     if (parseInt(userId) === parseInt(alunoId)) return true;
-    if (userFuncao === 'Professor') {
+    const isProfessor = userFuncao === 'Professor' || req.user?.userFuncaoExtra === 'Professor';
+    if (isProfessor) {
         const { rows } = await db.query(
             `SELECT id FROM vinculos
              WHERE professor_id = $1 AND aluno_id = $2 AND status = 'ativo'`,
