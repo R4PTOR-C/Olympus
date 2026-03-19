@@ -152,7 +152,7 @@ function Login() {
         {pendingData && (
             <div className="auth-modal-overlay">
                 <div className="auth-modal">
-                    <img src="/logo2.png" alt="Olympus" className="auth-modal-logo" />
+                    <img src="/logo_branca.png" alt="Olympus" className="auth-modal-logo" />
                     <h2 className="auth-modal-title">Bem-vindo de volta!</h2>
                     <p className="auth-modal-text">
                         Notamos que sua conta possui perfis de <strong>{pendingData.funcao}</strong> e <strong>{pendingData.funcao_extra}</strong>. Como deseja entrar?

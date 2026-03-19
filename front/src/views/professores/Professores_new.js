@@ -408,7 +408,7 @@ function Professor_new() {
 
             </div>
 
-            <ModalSucesso show={showModal} mensagem="Professor cadastrado com sucesso!" />
+            <ModalSucesso show={showModal} titulo="CADASTRO" tituloAccent="REALIZADO" sub="Bem-vindo à plataforma!" />
         </div>
     );
 }

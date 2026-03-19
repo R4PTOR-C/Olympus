@@ -339,7 +339,7 @@ function Usuarios_new() {
 
             </div>
 
-            <ModalSucesso show={showModal} mensagem="Conta criada com sucesso!" />
+            <ModalSucesso show={showModal} titulo="CONTA" tituloAccent="CRIADA" sub="Bem-vindo ao Olympus!" />
         </div>
     );
 }
