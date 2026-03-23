@@ -81,6 +81,16 @@ function Exercicios_index() {
     };
 
     useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden && editingField) {
+                handleBlur(editingField.exercicioId);
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [editingField, formData]);
+
+    useEffect(() => {
         const verificarTreinoAtivo = async () => {
             try {
                 const res = await fetch(
@@ -470,7 +480,8 @@ function Exercicios_index() {
                                                     <td>
                                                         {modoEdicao && isEditing(exercicio.exercicio_id, serie.numero_serie, 'carga') ? (
                                                             <input
-                                                                type="number"
+                                                                type="text"
+                                                                inputMode="decimal"
                                                                 className="ex-inline-input"
                                                                 value={serie.carga || ''}
                                                                 onChange={e => handleValChange(exercicio.exercicio_id, serie, 'carga', e.target.value)}
@@ -494,7 +505,8 @@ function Exercicios_index() {
                                                     <td>
                                                         {modoEdicao && isEditing(exercicio.exercicio_id, serie.numero_serie, 'repeticoes') ? (
                                                             <input
-                                                                type="number"
+                                                                type="text"
+                                                                inputMode="decimal"
                                                                 className="ex-inline-input"
                                                                 value={serie.repeticoes || ''}
                                                                 onChange={e => handleValChange(exercicio.exercicio_id, serie, 'repeticoes', e.target.value)}
