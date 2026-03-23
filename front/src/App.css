@@ -1,25 +1,4 @@
 /* ========================= */
-/* BLOQUEIO DE ROTAÇÃO       */
-/* ========================= */
-#root {
-    transition: transform 0.35s ease, width 0.35s ease, height 0.35s ease;
-}
-
-@media screen and (orientation: landscape) and (max-width: 1024px) {
-    #root {
-        position: fixed;
-        top: 100%;
-        left: 0;
-        width: 100vh;
-        height: 100vw;
-        transform: rotate(-90deg);
-        transform-origin: top left;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-}
-
-/* ========================= */
 /* FONTES PERSONALIZADAS     */
 /* ========================= */
 @font-face {

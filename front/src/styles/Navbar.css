@@ -2,158 +2,229 @@
 /* NAVBAR SUPERIOR — OLYMPUS       */
 /* =============================== */
 
-.navbar {
+.nb-top {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1030;
     height: 60px;
-    padding: 0 !important;
-}
-
-.custom-navbar-bg {
-    background: rgba(14, 17, 23, 0.97) !important;
+    z-index: 1030;
+    background: rgba(14, 17, 23, 0.97);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
-    color: #E8EDF5 !important;
-}
-
-.custom-navbar-bg .container-fluid {
-    height: 60px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    display: flex;
+    align-items: center;
     padding: 0 18px 0 12px;
+    gap: 0;
 }
 
 /* ── LOGO ── */
-.custom-navbar-bg .navbar-brand {
-    padding: 0 !important;
-    margin: 0 !important;
-    line-height: 1;
-    display: flex !important;
+.nb-logo {
+    display: flex;
     align-items: center;
-    height: 60px;
+    text-decoration: none;
+    padding: 0;
+    margin-right: 12px;
+    flex-shrink: 0;
 }
 
-.navbar-logo-texto {
-    height: 40px;       /* era 60px — tenta valores entre 40px e 55px */
+.nb-logo-img {
+    height: 38px;
     width: auto;
-    max-width: 160px;   /* evita esticar demais */
+    max-width: 150px;
     object-fit: contain;
-    object-position: left center;
     display: block;
 }
-@media (max-width: 576px) {
-    .navbar-logo-texto {
-        height: 35px;
-    }
+
+/* ── ITEMS ROW ── */
+.nb-items {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    justify-content: center;
 }
 
-/* ── LINKS CENTRAIS (desktop) ── */
-.custom-navbar-bg .nav-link {
+/* ── SINGLE NAV ITEM ── */
+.nb-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 14px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    text-decoration: none;
+    min-width: 64px;
+}
+
+.nb-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nb-item:active {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.nb-item.active {
+    background: rgba(74, 144, 217, 0.1);
+}
+
+.nb-icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+}
+
+.nb-label {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.78rem !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #A4AEBF !important;
-    padding: 6px 10px !important;
-    border-radius: 8px;
-    transition: color 0.18s, background 0.18s !important;
-}
-
-.custom-navbar-bg .nav-link:hover,
-.custom-navbar-bg .nav-link.active {
-    color: #E8EDF5 !important;
-    background: rgba(255, 255, 255, 0.06);
-}
-
-/* ── BOTÕES (desktop aluno) ── */
-.custom-navbar-bg .btn-outline-light {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.75rem !important;
-    font-weight: 700 !important;
+    font-size: 0.6rem;
+    font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #A4AEBF !important;
-    border: 1px solid rgba(255,255,255,0.12) !important;
-    background: transparent !important;
-    border-radius: 8px !important;
-    padding: 5px 12px !important;
-    transition: all 0.18s !important;
+    color: #7B8FA8;
+    transition: color 0.18s;
+    line-height: 1;
+    white-space: nowrap;
 }
 
-.custom-navbar-bg .btn-outline-light:hover {
-    color: #E8EDF5 !important;
-    border-color: rgba(74,144,217,0.5) !important;
-    background: rgba(74,144,217,0.08) !important;
+.nb-item.active .nb-label {
+    color: #4A90D9;
+}
+
+/* ── BADGE / DOT ── */
+.nb-dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #00E5FF;
+    box-shadow: 0 0 6px #00E5FF, 0 0 12px #00E5FF;
+    animation: neon-pulse 1.4s ease-in-out infinite;
+}
+
+.nb-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    background: #E84040;
+    color: #fff;
+    font-size: 0.55rem;
+    font-weight: 700;
+    min-width: 15px;
+    height: 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    line-height: 1;
+}
+
+@keyframes neon-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 4px #00E5FF, 0 0 10px #00E5FF; }
+    50%       { opacity: 0.4; transform: scale(1.4); box-shadow: 0 0 8px #00E5FF, 0 0 20px #00E5FF; }
 }
 
 /* ── AVATAR ── */
-.custom-navbar-bg .navbar-avatar {
+.nb-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.nb-avatar-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nb-avatar {
     width: 34px;
     height: 34px;
     border-radius: 50%;
     object-fit: cover;
     border: 1.5px solid rgba(74, 144, 217, 0.4);
-    cursor: pointer;
     transition: border-color 0.18s;
-}
-
-.custom-navbar-bg .navbar-avatar:hover {
-    border-color: #4A90D9;
-}
-
-.custom-navbar-bg .navbar-avatar-placeholder {
-    background: linear-gradient(135deg, #1C2436, #2c3e50);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* ── DROPDOWN MENU ── */
-.dropdown-menu {
-    background: #1C2436 !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
-    padding: 6px !important;
-    min-width: 180px !important;
+.nb-avatar-btn:hover .nb-avatar {
+    border-color: #4A90D9;
 }
 
-.dropdown-menu .dropdown-item {
+.nb-avatar-placeholder {
+    background: linear-gradient(135deg, #1C2436, #2c3e50);
+}
+
+/* ── DROPDOWN ── */
+.nb-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: #1C2436;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    padding: 6px;
+    min-width: 190px;
+    list-style: none;
+    margin: 0;
+    z-index: 1040;
+}
+
+.nb-dd-item {
     font-family: 'Barlow', sans-serif;
-    font-size: 0.85rem !important;
-    font-weight: 500 !important;
-    color: #8A9AB8 !important;
-    border-radius: 8px !important;
-    padding: 8px 12px !important;
-    transition: all 0.15s !important;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #8A9AB8;
+    border-radius: 8px;
+    padding: 8px 12px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.15s;
 }
 
-.dropdown-menu .dropdown-item:hover,
-.dropdown-menu .dropdown-item:active {
-    background: rgba(74, 144, 217, 0.12) !important;
-    color: #E8EDF5 !important;
+.nb-dd-item:hover {
+    background: rgba(74, 144, 217, 0.12);
+    color: #E8EDF5;
 }
 
-.dropdown-menu .dropdown-item.text-danger {
+.nb-dd-danger {
     color: #E84040 !important;
 }
 
-.dropdown-menu .dropdown-item.text-danger:hover {
+.nb-dd-danger:hover {
     background: rgba(232, 64, 64, 0.12) !important;
     color: #ff6060 !important;
 }
 
-.dropdown-menu hr.dropdown-divider {
-    border-color: rgba(255,255,255,0.07) !important;
-    margin: 4px 0 !important;
-}
-
-/* Tema escuro label no dropdown */
-.dropdown-menu .dropdown-item.d-flex {
-    color: #8A9AB8 !important;
+.nb-dd-divider {
+    border-color: rgba(255, 255, 255, 0.07);
+    margin: 4px 0;
 }
 
 /* ── DROPDOWN ANIMATION ── */
@@ -165,62 +236,4 @@
 @keyframes navDropDown {
     from { opacity: 0; transform: translateY(-8px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* ── DOT NEON PISCANDO ── */
-.navbar-dot-neon {
-    position: absolute;
-    top: 2px;
-    right: 0px;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #00E5FF;
-    box-shadow: 0 0 6px #00E5FF, 0 0 12px #00E5FF;
-    animation: neon-pulse 1.4s ease-in-out infinite;
-    pointer-events: none;
-}
-
-@keyframes neon-pulse {
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-        box-shadow: 0 0 4px #00E5FF, 0 0 10px #00E5FF;
-    }
-    50% {
-        opacity: 0.4;
-        transform: scale(1.4);
-        box-shadow: 0 0 8px #00E5FF, 0 0 20px #00E5FF, 0 0 30px #00E5FF;
-    }
-}
-
-/* ── BADGE MENSAGENS ── */
-.navbar-badge {
-    position: absolute;
-    top: -4px;
-    right: -6px;
-    background: #E84040;
-    color: #fff;
-    font-size: 0.6rem;
-    font-weight: 700;
-    min-width: 16px;
-    height: 16px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 3px;
-    line-height: 1;
-    pointer-events: none;
-}
-
-/* ── TOGGLE (mobile collapse) ── */
-.navbar-toggler-custom {
-    border-color: rgba(255,255,255,0.15);
-    border-radius: 8px;
-    padding: 4px 8px;
-}
-
-.navbar-toggler-custom .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(107,122,153,1)' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
 }

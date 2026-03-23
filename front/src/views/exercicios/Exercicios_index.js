@@ -25,6 +25,7 @@ function Exercicios_index() {
     const [ultimoFinalizadoId, setUltimoFinalizadoId] = useState(null); // último treino finalizado (para "Editar Hoje")
     const [mostrarModalHistorico, setMostrarModalHistorico] = useState(false);
     const [modalFinalizado, setModalFinalizado] = useState(false);
+    const [avisoTreinoAtivo, setAvisoTreinoAtivo] = useState(false);
 
     const lastBlurRef   = useRef(null);   // fix 6: dedup blur
     const pendingSaveRef = useRef(null);  // fix 4: aguarda save antes de finalizar
@@ -174,6 +175,19 @@ function Exercicios_index() {
     };
 
     const handleNovoTreino = async () => {
+        try {
+            const checkRes = await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treino-ativo`,
+                { credentials: 'include' }
+            );
+            const checkData = await checkRes.json();
+            if (checkData.ativo && Number(checkData.treino_id) !== Number(treinoId)) {
+                setAvisoTreinoAtivo(true);
+                setTimeout(() => setAvisoTreinoAtivo(false), 4000);
+                return;
+            }
+        } catch { /* ignora */ }
+
         try {
             const res = await fetch(
                 `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/iniciar`,
@@ -405,6 +419,16 @@ function Exercicios_index() {
                     )}
                 </div>
 
+                {/* ── AVISO: TREINO JÁ EM ANDAMENTO ── */}
+                {avisoTreinoAtivo && (
+                    <div className="ex-aviso-ativo">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        Você já tem um treino em andamento. Finalize-o antes de iniciar outro.
+                    </div>
+                )}
+
                 {/* Barra de status modo edição */}
                 {modoEdicao && (
                     <div className="ex-editing-bar">
@@ -495,11 +519,14 @@ function Exercicios_index() {
                                                 <th></th>
                                                 <th>Reps</th>
                                                 {modoEdicao && <th></th>}
+                                                {modoEdicao && <th></th>}
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {series.map((serie, index) => (
-                                                <tr key={index}>
+                                            {series.map((serie, index) => {
+                                                const isDone = modoEdicao && serie.carga !== '' && serie.carga !== null && serie.repeticoes !== '' && serie.repeticoes !== null;
+                                                return (
+                                                <tr key={index} className={isDone ? 'ex-serie-done' : ''}>
 
                                                     {/* Número */}
                                                     <td className="ex-serie-num">{serie.numero_serie}ª</td>
@@ -551,6 +578,17 @@ function Exercicios_index() {
                                                         )}
                                                     </td>
 
+                                                    {/* Check */}
+                                                    {modoEdicao && (
+                                                        <td className="ex-check-cell">
+                                                            {isDone && (
+                                                                <svg className="ex-check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                    <polyline points="20 6 9 17 4 12"/>
+                                                                </svg>
+                                                            )}
+                                                        </td>
+                                                    )}
+
                                                     {/* Remover */}
                                                     {modoEdicao && (
                                                         <td>
@@ -564,7 +602,8 @@ function Exercicios_index() {
                                                         </td>
                                                     )}
                                                 </tr>
-                                            ))}
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                     </div>

@@ -273,7 +273,7 @@ function Home() {
                             {/* COLUNA: Treino do Dia */}
                             <div>
                                 <div className="h-sec-header">
-                                    <span className="h-sec-title">Treino do Dia</span>
+                                    <span className="h-sec-title"> do Dia</span>
                                 </div>
 
                                 {treinoDoDia ? (

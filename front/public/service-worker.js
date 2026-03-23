@@ -57,6 +57,34 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
+// ── TIMER DE DESCANSO ────────────────────────────────────────────────────────
+let timerTimeoutId = null;
+
+self.addEventListener('message', (event) => {
+    if (event.data?.type === 'SCHEDULE_TIMER') {
+        if (timerTimeoutId) clearTimeout(timerTimeoutId);
+        const delay = event.data.delay; // ms
+        timerTimeoutId = setTimeout(() => {
+            timerTimeoutId = null;
+            self.registration.showNotification('Olympus — Descanso concluído', {
+                body: 'Hora da próxima série! 💪',
+                icon: '/icons/logo-192.png',
+                badge: '/icons/logo-192.png',
+                tag: 'timer-descanso',
+                renotify: true,
+                vibrate: [200, 100, 200, 100, 200],
+            });
+        }, delay);
+    }
+
+    if (event.data?.type === 'CANCEL_TIMER') {
+        if (timerTimeoutId) {
+            clearTimeout(timerTimeoutId);
+            timerTimeoutId = null;
+        }
+    }
+});
+
 self.addEventListener('push', (event) => {
     let data = { title: 'Olympus', body: 'Nova notificação', url: '/' };
     try { data = event.data.json(); } catch (_) {}
