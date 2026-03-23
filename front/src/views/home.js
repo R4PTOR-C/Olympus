@@ -25,6 +25,7 @@ function Home() {
     const { darkMode } = useContext(AuthContext);
     const [user, setUser] = useState({ loggedIn: false, userName: '', userId: null });
     const [treinos, setTreinos] = useState([]);
+    const [treinoAtivo, setTreinoAtivo] = useState(null);
     const [exerciciosTreinoDoDia, setExerciciosTreinoDoDia] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -47,7 +48,7 @@ function Home() {
             .then(data => {
                 if (data.loggedIn) {
                     setUser({ loggedIn: true, userName: data.userName, userId: data.userId });
-                    fetchTreinos(data.userId, token); // setLoading(false) happens inside fetchTreinos
+                    fetchTreinos(data.userId, token);
                 } else {
                     setLoading(false);
                 }
@@ -66,7 +67,23 @@ function Home() {
 
     useSocketRefresh(refresh);
 
+    const fetchTreinoAtivo = async (userId, token) => {
+        console.log('[Home] fetchTreinoAtivo chamado, userId:', userId);
+        try {
+            const res = await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treino-ativo`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            setTreinoAtivo(data.ativo ? data : null);
+        } catch {
+            console.error('Erro ao buscar treino ativo');
+        }
+    };
+
     const fetchTreinos = async (userId, token) => {
+        console.log('[Home] fetchTreinos chamado, userId:', userId);
         try {
             const response = await fetch(
                 `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos`,
@@ -79,6 +96,8 @@ function Home() {
             const today = getToday();
             const treinoDoDia = data.find(t => t.dia_semana === today);
             if (treinoDoDia) fetchExerciciosTreino(treinoDoDia.id, token);
+
+            fetchTreinoAtivo(userId, token);
         } catch {
             setError('Erro ao buscar os treinos');
         } finally {
@@ -189,6 +208,31 @@ function Home() {
                                 );
                             })}
                         </div>
+
+                        {/* ── BANNER: TREINO EM ANDAMENTO ── */}
+                        {treinoAtivo && (
+                            <div
+                                className={`h-active-banner${treinoAtivo.isToday ? ' today' : ' other-day'}`}
+                                onClick={() => navigate(`/treinos/${treinoAtivo.treino_id}/exercicios`)}
+                            >
+                                <div className="h-active-left">
+                                    <div className="h-active-badge">
+                                        <span className="h-active-dot" />
+                                        {treinoAtivo.isToday
+                                            ? 'Em andamento'
+                                            : `Iniciado em ${new Date(treinoAtivo.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`
+                                        }
+                                    </div>
+                                    <div className="h-active-name">{treinoAtivo.nome_treino}</div>
+                                </div>
+                                <button className="h-active-cta">
+                                    Continuar
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5,3 19,12 5,21"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
 
                         {/* ── BANNER: SEM TREINOS ── */}
                         {treinos.length === 0 && (

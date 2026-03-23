@@ -527,6 +527,93 @@ body.dark-mode .h-muscle-wrap img {
 
 .h-week-day.has-workout .h-wd-dot { background: var(--h-red); }
 
+/* ── BANNER: TREINO EM ANDAMENTO ── */
+.h-active-banner {
+    margin: 0 16px 16px;
+    padding: 14px 16px;
+    border-radius: var(--h-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    animation: h-fadeUp 0.3s ease both;
+}
+
+.h-active-banner:active { transform: scale(0.985); }
+
+.h-active-banner.today {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    box-shadow: 0 2px 12px rgba(34, 197, 94, 0.1);
+}
+
+.h-active-banner.other-day {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    box-shadow: 0 2px 12px rgba(245, 158, 11, 0.1);
+}
+
+.h-active-left { flex: 1; min-width: 0; }
+
+.h-active-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.h-active-banner.today .h-active-badge { color: #22c55e; }
+.h-active-banner.other-day .h-active-badge { color: #f59e0b; }
+
+.h-active-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: h-blink 1.5s ease-in-out infinite;
+}
+
+.h-active-banner.today .h-active-dot { background: #22c55e; box-shadow: 0 0 5px #22c55e; }
+.h-active-banner.other-day .h-active-dot { background: #f59e0b; box-shadow: 0 0 5px #f59e0b; }
+
+.h-active-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--h-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.h-active-cta {
+    flex-shrink: 0;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.15s;
+}
+
+.h-active-cta:active { opacity: 0.8; }
+
+.h-active-banner.today .h-active-cta { background: #22c55e; color: #fff; }
+.h-active-banner.other-day .h-active-cta { background: #f59e0b; color: #fff; }
+
 /* ── UPCOMING LIST ── */
 .h-upcoming-list {
     display: flex;

@@ -490,30 +490,39 @@ router.post('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/seri
 
 router.get('/usuarios/:usuarioId/treinos/:treinoId/exercicios/:exercicioId/series', async (req, res) => {
     const { usuarioId, treinoId, exercicioId } = req.params;
-    const { data } = req.query;
+    const { data, treino_realizado_id } = req.query;
 
     try {
         let result;
-        if (data) {
+        if (treino_realizado_id) {
             result = await db.query(
                 `SELECT numero_serie, carga, repeticoes, data_treino
-             FROM series_usuario
-             WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3 AND data_treino = $4
-             ORDER BY numero_serie`,
+                 FROM series_usuario
+                 WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3
+                   AND treino_realizado_id = $4
+                 ORDER BY numero_serie`,
+                [usuarioId, treinoId, exercicioId, treino_realizado_id]
+            );
+        } else if (data) {
+            result = await db.query(
+                `SELECT numero_serie, carga, repeticoes, data_treino
+                 FROM series_usuario
+                 WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3 AND data_treino = $4
+                 ORDER BY numero_serie`,
                 [usuarioId, treinoId, exercicioId, data]
             );
         } else {
-            // Busca a data mais recente
             result = await db.query(
                 `SELECT numero_serie, carga, repeticoes, data_treino
-             FROM series_usuario
-             WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3
-             AND data_treino = (
-                SELECT MAX(data_treino)
-                FROM series_usuario
-                WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3
-             )
-             ORDER BY numero_serie`,
+                 FROM series_usuario
+                 WHERE usuario_id = $1 AND treino_id = $2 AND exercicio_id = $3
+                 AND treino_realizado_id = (
+                     SELECT id FROM treinos_realizados
+                     WHERE usuario_id = $1 AND treino_id = $2
+                     ORDER BY data DESC, id DESC
+                     LIMIT 1
+                 )
+                 ORDER BY numero_serie`,
                 [usuarioId, treinoId, exercicioId]
             );
         }
@@ -556,6 +565,20 @@ router.post('/usuarios/:usuarioId/treinos/:treinoId/iniciar', async (req, res) =
     }
 });
 
+router.post('/treinos_realizados/:id/reabrir', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query(
+            `UPDATE treinos_realizados SET finalizado_em = NULL WHERE id = $1`,
+            [id]
+        );
+        res.status(200).json({ message: 'Treino reaberto.' });
+    } catch (error) {
+        console.error('Erro ao reabrir treino:', error);
+        res.status(500).json({ error: 'Erro ao reabrir treino.' });
+    }
+});
+
 router.post('/treinos_realizados/:id/finalizar', async (req, res) => {
     const { id } = req.params;
 
@@ -571,6 +594,31 @@ router.post('/treinos_realizados/:id/finalizar', async (req, res) => {
     } catch (error) {
         console.error('Erro ao finalizar treino:', error);
         res.status(500).json({ error: 'Erro ao finalizar treino.' });
+    }
+});
+
+router.get('/usuarios/:usuarioId/treino-ativo', async (req, res) => {
+    const { usuarioId } = req.params;
+    try {
+        const { rows } = await db.query(
+            `SELECT tr.id AS treino_realizado_id, tr.treino_id, tr.data,
+                    t.nome_treino, t.imagem, t.grupo_muscular, t.dia_semana
+             FROM treinos_realizados tr
+             JOIN treinos t ON t.id = tr.treino_id
+             WHERE tr.usuario_id = $1 AND tr.finalizado_em IS NULL
+             ORDER BY tr.data DESC
+             LIMIT 1`,
+            [usuarioId]
+        );
+        if (rows.length > 0) {
+            const days = ["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
+            const todayName = days[new Date().getDay()];
+            return res.json({ ativo: true, isToday: rows[0].dia_semana === todayName, ...rows[0] });
+        }
+        return res.json({ ativo: false });
+    } catch (error) {
+        console.error('Erro ao buscar treino ativo:', error);
+        res.status(500).json({ error: 'Erro ao buscar treino ativo.' });
     }
 });
 

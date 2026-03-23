@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -26,6 +26,9 @@ function Exercicios_index() {
     const [mostrarModalHistorico, setMostrarModalHistorico] = useState(false);
     const [modalFinalizado, setModalFinalizado] = useState(false);
 
+    const lastBlurRef   = useRef(null);   // fix 6: dedup blur
+    const pendingSaveRef = useRef(null);  // fix 4: aguarda save antes de finalizar
+
     const dataFormatada = (() => {
         if (!dataUltimoTreino) return '';
         const [data] = dataUltimoTreino.split('T');
@@ -38,7 +41,7 @@ function Exercicios_index() {
 
     // ── FETCH ──────────────────────────────────────────────────────────────
 
-    const fetchExercicios = async () => {
+    const fetchExercicios = async (sessionId = null) => {
         try {
             const response = await fetch(
                 `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios`,
@@ -51,10 +54,10 @@ function Exercicios_index() {
             const exerciciosComSeries = await Promise.all(
                 data.map(async (exercicio) => {
                     try {
-                        const res = await fetch(
-                            `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicio.exercicio_id}/series`,
-                            { credentials: 'include' }
-                        );
+                        const seriesUrl = sessionId
+                            ? `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicio.exercicio_id}/series?treino_realizado_id=${sessionId}`
+                            : `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicio.exercicio_id}/series`;
+                        const res = await fetch(seriesUrl, { credentials: 'include' });
                         let series = res.ok ? await res.json() : [];
                         const countExistente = series.length;
                         if (countExistente < 3) {
@@ -100,12 +103,14 @@ function Exercicios_index() {
                 if (!res.ok) throw new Error();
                 const data = await res.json();
                 if (data.ativo) {
-                    setModoEdicao(true);
                     setTreinoRealizadoId(data.treinoRealizadoId);
+                    setModoEdicao(true);
+                    return data.treinoRealizadoId;
                 }
             } catch {
                 console.error('Erro ao verificar treino ativo');
             }
+            return null;
         };
 
         const fetchTreinoInfo = async () => {
@@ -120,10 +125,12 @@ function Exercicios_index() {
             }
         };
 
-        verificarTreinoAtivo();
-        buscarUltimoTreinoFinalizado(userId, treinoId);
-        fetchTreinoInfo();
-        fetchExercicios();
+        (async () => {
+            const sessionId = await verificarTreinoAtivo();
+            buscarUltimoTreinoFinalizado(userId, treinoId);
+            fetchTreinoInfo();
+            fetchExercicios(sessionId);
+        })();
     }, [treinoId, userId]);
 
     // ── HANDLERS ──────────────────────────────────────────────────────────
@@ -175,8 +182,8 @@ function Exercicios_index() {
             const data = await res.json();
             if (!res.ok) throw new Error();
 
-            setModoEdicao(true);
             setTreinoRealizadoId(data.treinoRealizado.id);
+            setModoEdicao(true);
 
             const novoFormData = {};
             const exerciciosComSeriesVazias = exercicios.map(ex => {
@@ -196,6 +203,8 @@ function Exercicios_index() {
 
     const handleFinalizarTreino = async () => {
         if (!treinoRealizadoId) return;
+        if (editingField) await handleBlur(editingField.exercicioId); // fix 4: fecha campo aberto
+        if (pendingSaveRef.current) await pendingSaveRef.current;     // fix 4: aguarda save em flight
         try {
             await fetch(
                 `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos_realizados/${treinoRealizadoId}/finalizar`,
@@ -213,25 +222,30 @@ function Exercicios_index() {
     };
 
     const salvarSerie = async (exercicioId, series) => {
+        if (!treinoRealizadoId) return; // fix 1: nunca salva sem sessão vinculada
+        const promise = fetch(
+            `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicioId}/series`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    series: series.map(s => ({
+                        ...s,
+                        carga: s.carga === '' ? null : Number(s.carga),
+                        repeticoes: s.repeticoes === '' ? null : Number(s.repeticoes)
+                    })),
+                    treino_realizado_id: treinoRealizadoId
+                }),
+            }
+        );
+        pendingSaveRef.current = promise; // fix 4: rastreia save em flight
         try {
-            await fetch(
-                `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicioId}/series`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        series: series.map(s => ({
-                            ...s,
-                            carga: s.carga === '' ? null : Number(s.carga),
-                            repeticoes: s.repeticoes === '' ? null : Number(s.repeticoes)
-                        })),
-                        treino_realizado_id: treinoRealizadoId
-                    }),
-                }
-            );
+            await promise;
         } catch {
             console.error('Erro ao salvar série');
+        } finally {
+            if (pendingSaveRef.current === promise) pendingSaveRef.current = null;
         }
     };
 
@@ -287,17 +301,24 @@ function Exercicios_index() {
 
     const isVideo = (url) => url && (url.includes('/video/') || /\.(mp4|mov|webm)(\?|$)/i.test(url));
 
-    const handleBlur = (exercicioId) => {
-        const series = (formData[exercicioId] || []).map(s => ({
+    const handleBlur = async (exercicioId) => {
+        // fix 6: ignora blur duplicado dentro de 300ms
+        if (lastBlurRef.current === exercicioId) return;
+        lastBlurRef.current = exercicioId;
+        setTimeout(() => { if (lastBlurRef.current === exercicioId) lastBlurRef.current = null; }, 300);
+
+        setEditingField(null);
+
+        if (!formData[exercicioId]) return;
+
+        const series = formData[exercicioId].map(s => ({
             ...s,
-            // carga 0 é válida (peso corporal) — só limpa se vazio ou negativo
-            carga:      s.carga === '' || Number(s.carga) < 0 ? '' : s.carga,
-            // reps 0 não faz sentido — trata como não preenchido
-            repeticoes: Number(s.repeticoes) > 0 ? s.repeticoes : '',
+            // fix 5: rejeita NaN; carga 0 é válida, reps 0 não
+            carga:      (s.carga === '' || isNaN(Number(s.carga)) || Number(s.carga) < 0) ? '' : s.carga,
+            repeticoes: (Number(s.repeticoes) > 0 && !isNaN(Number(s.repeticoes)))        ? s.repeticoes : '',
         }));
         setFormData(prev => ({ ...prev, [exercicioId]: series }));
-        salvarSerie(exercicioId, series);
-        setEditingField(null);
+        await salvarSerie(exercicioId, series);
     };
 
     const isEditing = (exercicioId, numero_serie, campo) =>
@@ -360,7 +381,14 @@ function Exercicios_index() {
                             Finalizar Treino
                         </button>
                     ) : ultimoFinalizadoId && isToday ? (
-                        <button className="ex-btn-edit-today" onClick={() => { setModoEdicao(true); setTreinoRealizadoId(ultimoFinalizadoId); }}>
+                        <button className="ex-btn-edit-today" onClick={async () => {
+                            await fetch(
+                                `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos_realizados/${ultimoFinalizadoId}/reabrir`,
+                                { method: 'POST', credentials: 'include' }
+                            );
+                            setModoEdicao(true);
+                            setTreinoRealizadoId(ultimoFinalizadoId);
+                        }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
