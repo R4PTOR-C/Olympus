@@ -83,6 +83,21 @@ self.addEventListener('message', (event) => {
             timerTimeoutId = null;
         }
     }
+
+    if (event.data?.type === 'SHOW_TIMER_NOTIFICATION') {
+        if (timerTimeoutId) {
+            clearTimeout(timerTimeoutId);
+            timerTimeoutId = null;
+        }
+        self.registration.showNotification('Olympus — Descanso concluído', {
+            body: 'Hora da próxima série! 💪',
+            icon: '/icons/logo-192.png',
+            badge: '/icons/logo-192.png',
+            tag: 'timer-descanso',
+            renotify: true,
+            vibrate: [200, 100, 200, 100, 200],
+        });
+    }
 });
 
 self.addEventListener('push', (event) => {

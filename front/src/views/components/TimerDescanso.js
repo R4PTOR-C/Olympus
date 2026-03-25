@@ -13,6 +13,15 @@ async function scheduleNotification(delayMs) {
     } catch (_) {}
 }
 
+async function showNotificationNow() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'granted') return;
+    try {
+        const sw = await navigator.serviceWorker.ready;
+        sw.active?.postMessage({ type: 'SHOW_TIMER_NOTIFICATION' });
+    } catch (_) {}
+}
+
 async function cancelNotification() {
     try {
         const sw = await navigator.serviceWorker.ready;
@@ -65,6 +74,13 @@ export default function TimerDescanso() {
         }
         return () => clearInterval(intervalRef.current);
     }, [running, syncFromEndTime]);
+
+    // Dispara notificação imediatamente quando o timer termina
+    useEffect(() => {
+        if (done) {
+            showNotificationNow();
+        }
+    }, [done]);
 
     // Resync quando o usuário volta à aba
     useEffect(() => {
