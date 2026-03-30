@@ -1,157 +1,204 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+    Box, TextField, InputAdornment, Chip, Stack, Typography,
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    TablePagination, IconButton, Tooltip, CircularProgress, Paper,
+    Dialog, DialogContent
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+const GRUPOS = ['Todos', 'Peitoral', 'Bíceps', 'Tríceps', 'Costas', 'Ombros', 'Pernas', 'Abdômen', 'Panturrilha'];
 
 const Exercicios_tabela = () => {
-    const [exercicios, setExercicios] = useState([]);
-    const [filteredExercicios, setFilteredExercicios] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState("");
-
+    const navigate = useNavigate();
     const apiUrl = process.env.REACT_APP_API_BASE_URL;
 
+    const [exercicios, setExercicios]   = useState([]);
+    const [loading, setLoading]         = useState(true);
+    const [search, setSearch]           = useState('');
+    const [grupoFiltro, setGrupoFiltro] = useState('Todos');
+    const [page, setPage]               = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(50);
+    const [gifModal, setGifModal]       = useState(null); // url do gif expandido
+
     useEffect(() => {
-        setLoading(true);
         fetch(`${apiUrl}/exercicios`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erro na resposta do servidor');
-                }
-                return response.json();
-            })
-            .then(data => {
-                setExercicios(data);
-                setFilteredExercicios(data);
-                setLoading(false);
-            })
-            .catch(error => {
-                console.error("Erro ao buscar dados dos exercícios:", error);
-                setError("Erro ao carregar dados dos exercícios. Tente novamente mais tarde.");
-                setLoading(false);
-            });
+            .then(r => r.json())
+            .then(data => setExercicios(data))
+            .finally(() => setLoading(false));
     }, [apiUrl]);
 
+    const filtered = useMemo(() => {
+        const term = search.toLowerCase();
+        return exercicios.filter(e => {
+            const matchGrupo = grupoFiltro === 'Todos' || e.grupo_muscular === grupoFiltro;
+            const matchSearch = !term ||
+                e.nome_exercicio?.toLowerCase().includes(term) ||
+                e.grupo_muscular?.toLowerCase().includes(term);
+            return matchGrupo && matchSearch;
+        });
+    }, [exercicios, search, grupoFiltro]);
+
+    const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
     const handleDelete = (id) => {
-        if (window.confirm("Tem certeza que deseja deletar este exercício?")) {
-            fetch(`${apiUrl}/exercicios/${id}`, {
-                method: 'DELETE',
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Erro ao deletar o exercício');
-                    }
-                    setExercicios(exercicios.filter(exercicio => exercicio.id !== id));
-                    setFilteredExercicios(filteredExercicios.filter(exercicio => exercicio.id !== id));
-                })
-                .catch(error => {
-                    console.error("Erro ao deletar o exercício:", error);
-                    setError("Erro ao tentar deletar o exercício. Tente novamente.");
-                });
-        }
+        if (!window.confirm('Deletar este exercício?')) return;
+        fetch(`${apiUrl}/exercicios/${id}`, { method: 'DELETE' })
+            .then(r => {
+                if (r.ok) setExercicios(prev => prev.filter(e => e.id !== id));
+            });
     };
 
-    const handleSearch = (e) => {
-        const term = e.target.value;
-        setSearchTerm(term);
+    const isVideo = (url) => /\.(mp4|mov|webm)(\?|$)/i.test(url) || url?.includes('/video/');
 
-        if (term) {
-            const filtered = exercicios.filter(exercicio =>
-                (exercicio.nome_exercicio && exercicio.nome_exercicio.toLowerCase().includes(term.toLowerCase())) ||
-                (exercicio.grupo_muscular && exercicio.grupo_muscular.toLowerCase().includes(term.toLowerCase()))
-            );
-            setFilteredExercicios(filtered);
-        } else {
-            setFilteredExercicios(exercicios);
-        }
-    };
-
-    if (loading) return <div>Carregando...</div>;
-    if (error) return <div className="text-danger">Erro: {error}</div>;
+    if (loading) return (
+        <Box display="flex" justifyContent="center" mt={8}>
+            <CircularProgress />
+        </Box>
+    );
 
     return (
-        <div className="container mt-5">
-            <h1 className="text-2xl font-bold mb-4">Exercícios</h1>
+        <Box sx={{ px: 2, pb: 6 }}>
 
-            {/* Campo de pesquisa */}
-            <div className="mb-4">
-                <input
-                    type="text"
-                    placeholder="Buscar por nome ou grupo muscular..."
-                    className="form-control"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                />
-            </div>
+            {/* Busca */}
+            <TextField
+                fullWidth
+                placeholder="Buscar por nome ou grupo..."
+                value={search}
+                onChange={e => { setSearch(e.target.value); setPage(0); }}
+                size="small"
+                sx={{ mb: 2 }}
+                InputProps={{
+                    startAdornment: (
+                        <InputAdornment position="start">
+                            <SearchIcon fontSize="small" />
+                        </InputAdornment>
+                    ),
+                }}
+            />
 
-            {/* Tabela para telas maiores */}
-            <div className="table-responsive d-none d-lg-block">
-                <table className="table table-hover">
-                    <thead className="bg-gray-200">
-                    <tr>
-                        <th>ID</th>
-                        <th>Nome</th>
-                        <th>Grupo Muscular</th>
-                        <th>Nível</th>
-                        <th>GIF</th>
-                        <th>Ações</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {filteredExercicios.map(exercicio => (
-                        <tr key={exercicio.id}>
-                            <td>{exercicio.id}</td>
-                            <td>{exercicio.nome_exercicio}</td>
-                            <td>{exercicio.grupo_muscular}</td>
-                            <td>{exercicio.nivel}</td>
-                            <td>
-                                {exercicio.gif_url ? (
-                                    <a href={exercicio.gif_url} target="_blank" rel="noopener noreferrer">
-                                        Ver mídia
-                                    </a>
-                                ) : (
-                                    'Sem mídia'
-                                )}
-                            </td>
-                            <td>
-                                <Link to={`/exercicios/edit/${exercicio.id}`} className="btn btn-warning btn-sm me-2">Editar</Link>
-                                <Link to={`/exercicios/view/${exercicio.id}`} className="btn btn-info btn-sm me-2">Ver</Link>
-                                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(exercicio.id)}>Deletar</button>
-                            </td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Cards para telas menores */}
-            <div className="d-lg-none">
-                {filteredExercicios.map(exercicio => (
-                    <div key={exercicio.id} className="card mb-3">
-                        <div className="card-body">
-                            <h5 className="card-title">{exercicio.nome_exercicio}</h5>
-                            <p><strong>ID:</strong> {exercicio.id}</p>
-                            <p><strong>Grupo Muscular:</strong> {exercicio.grupo_muscular}</p>
-                            <p><strong>Nível:</strong> {exercicio.nivel}</p>
-                            <p>
-                                <strong>GIF:</strong>{" "}
-                                {exercicio.gif_url ? (
-                                    <a href={exercicio.gif_url} target="_blank" rel="noopener noreferrer">
-                                        Ver mídia
-                                    </a>
-                                ) : (
-                                    'Sem mídia'
-                                )}
-                            </p>
-                            <div className="mt-2">
-                                <Link to={`/exercicios/edit/${exercicio.id}`} className="btn btn-warning btn-sm me-2">Editar</Link>
-                                <Link to={`/exercicios/view/${exercicio.id}`} className="btn btn-info btn-sm me-2">Ver</Link>
-                                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(exercicio.id)}>Deletar</button>
-                            </div>
-                        </div>
-                    </div>
+            {/* Filtro por grupo */}
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+                {GRUPOS.map(g => (
+                    <Chip
+                        key={g}
+                        label={g}
+                        size="small"
+                        onClick={() => { setGrupoFiltro(g); setPage(0); }}
+                        color={grupoFiltro === g ? 'primary' : 'default'}
+                        variant={grupoFiltro === g ? 'filled' : 'outlined'}
+                    />
                 ))}
-            </div>
-        </div>
+            </Stack>
+
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                {filtered.length} exercício{filtered.length !== 1 ? 's' : ''}
+            </Typography>
+
+            {/* Tabela */}
+            <TableContainer component={Paper} variant="outlined">
+                <Table size="small">
+                    <TableHead>
+                        <TableRow sx={{ '& th': { fontWeight: 700, whiteSpace: 'nowrap' } }}>
+                            <TableCell>GIF</TableCell>
+                            <TableCell>Nome</TableCell>
+                            <TableCell>Grupo</TableCell>
+                            <TableCell>Nível</TableCell>
+                            <TableCell align="right">Ações</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {paginated.map(ex => (
+                            <TableRow key={ex.id} hover>
+
+                                {/* Thumbnail */}
+                                <TableCell sx={{ width: 64, p: '4px 8px' }}>
+                                    {ex.gif_url ? (
+                                        isVideo(ex.gif_url) ? (
+                                            <video
+                                                src={ex.gif_url}
+                                                autoPlay loop muted playsInline
+                                                style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 4, cursor: 'pointer' }}
+                                                onClick={() => setGifModal(ex.gif_url)}
+                                            />
+                                        ) : (
+                                            <img
+                                                src={ex.gif_url}
+                                                alt=""
+                                                style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 4, cursor: 'pointer' }}
+                                                onClick={() => setGifModal(ex.gif_url)}
+                                            />
+                                        )
+                                    ) : (
+                                        <Box sx={{ width: 56, height: 56, bgcolor: '#222', borderRadius: 1 }} />
+                                    )}
+                                </TableCell>
+
+                                {/* Nome */}
+                                <TableCell>
+                                    <Typography variant="body2">{ex.nome_exercicio}</Typography>
+                                    <Typography variant="caption" color="text.secondary">#{ex.id}</Typography>
+                                </TableCell>
+
+                                {/* Grupo */}
+                                <TableCell>
+                                    <Typography variant="body2" noWrap>{ex.grupo_muscular}</Typography>
+                                </TableCell>
+
+                                {/* Nível */}
+                                <TableCell>
+                                    <Typography variant="body2" noWrap color="text.secondary">
+                                        {ex.nivel || '—'}
+                                    </Typography>
+                                </TableCell>
+
+                                {/* Ações */}
+                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                                    <Tooltip title="Editar">
+                                        <IconButton size="small" onClick={() => navigate(`/exercicios/edit/${ex.id}`)}>
+                                            <EditIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title="Deletar">
+                                        <IconButton size="small" color="error" onClick={() => handleDelete(ex.id)}>
+                                            <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+
+            <TablePagination
+                component="div"
+                count={filtered.length}
+                page={page}
+                onPageChange={(_, p) => setPage(p)}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={e => { setRowsPerPage(+e.target.value); setPage(0); }}
+                rowsPerPageOptions={[25, 50, 100]}
+                labelRowsPerPage="Por página:"
+                labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
+            />
+
+            {/* Modal GIF expandido */}
+            <Dialog open={!!gifModal} onClose={() => setGifModal(null)} maxWidth="sm">
+                <DialogContent sx={{ p: 0, bgcolor: '#111' }}>
+                    {gifModal && (
+                        isVideo(gifModal) ? (
+                            <video src={gifModal} autoPlay loop muted playsInline style={{ width: '100%', display: 'block' }} />
+                        ) : (
+                            <img src={gifModal} alt="" style={{ width: '100%', display: 'block' }} />
+                        )
+                    )}
+                </DialogContent>
+            </Dialog>
+        </Box>
     );
 };
 

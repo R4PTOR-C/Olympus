@@ -67,6 +67,20 @@ function Home() {
 
     useSocketRefresh(refresh);
 
+    const handleAbandonarTreino = async () => {
+        if (!treinoAtivo?.treino_realizado_id) return;
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos_realizados/${treinoAtivo.treino_realizado_id}/finalizar`,
+                { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+            );
+            if (res.ok) setTreinoAtivo(null);
+        } catch {
+            console.error('Erro ao abandonar treino');
+        }
+    };
+
     const fetchTreinoAtivo = async (userId, token) => {
         console.log('[Home] fetchTreinoAtivo chamado, userId:', userId);
         try {
@@ -273,7 +287,7 @@ function Home() {
                             {/* COLUNA: Treino do Dia */}
                             <div>
                                 <div className="h-sec-header">
-                                    <span className="h-sec-title"> do Dia</span>
+                                    <span className="h-sec-title">Treino do Dia</span>
                                 </div>
 
                                 {treinoDoDia ? (

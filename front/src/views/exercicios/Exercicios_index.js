@@ -220,10 +220,11 @@ function Exercicios_index() {
         if (editingField) await handleBlur(editingField.exercicioId); // fix 4: fecha campo aberto
         if (pendingSaveRef.current) await pendingSaveRef.current;     // fix 4: aguarda save em flight
         try {
-            await fetch(
+            const res = await fetch(
                 `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos_realizados/${treinoRealizadoId}/finalizar`,
                 { method: 'POST', credentials: 'include' }
             );
+            if (!res.ok) throw new Error(`Erro ao finalizar: ${res.status}`);
             setModoEdicao(false);
             setTreinoRealizadoId(null);
             await Promise.all([fetchExercicios(), buscarUltimoTreinoFinalizado(userId, treinoId)]);

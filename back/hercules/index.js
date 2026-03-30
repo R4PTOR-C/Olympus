@@ -11,7 +11,7 @@ const { handleResponder }        = require("./handlers/responder");
 
 const router = express.Router();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const MODEL  = process.env.OPENAI_MODEL || "gpt-5-mini";
+const MODEL  = process.env.OPENAI_MODEL || "gpt-5.4";
 const MAX_ITER = 6;
 
 const SYSTEM_PROMPT = `Você é Hércules, treinador virtual do Olympus. Responda sempre em português.

@@ -1,0 +1,338 @@
+[
+  {
+    "id": 1243,
+    "nome_exercicio": "Abdominal",
+    "grupo_muscular": "Abdômen",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 969,
+    "nome_exercicio": "Cadeira De Rodas Avançada Com Kettlebell",
+    "grupo_muscular": "Abdômen",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 374,
+    "nome_exercicio": "Elevação De Quadril Em Prancha",
+    "grupo_muscular": "Abdômen",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 371,
+    "nome_exercicio": "Elevação De Quadril Em Prancha",
+    "grupo_muscular": "Abdômen",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1326,
+    "nome_exercicio": "Inclinação Pélvica Em Pé",
+    "grupo_muscular": "Abdômen",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 962,
+    "nome_exercicio": "Limpadores Isométricos",
+    "grupo_muscular": "Abdômen",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 976,
+    "nome_exercicio": "Press Inclinada Com Kettlebell",
+    "grupo_muscular": "Abdômen",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1262,
+    "nome_exercicio": "Rosca Martelo",
+    "grupo_muscular": "Abdômen",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1307,
+    "nome_exercicio": "Rotação Com Halter",
+    "grupo_muscular": "Abdômen",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 548,
+    "nome_exercicio": "Toque Dos Dedos Dos Pés Com Torção",
+    "grupo_muscular": "Abdômen",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1236,
+    "nome_exercicio": "Toque Nos Dedos Lateral",
+    "grupo_muscular": "Abdômen",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1048,
+    "nome_exercicio": "Torção Em Pé Na Máquina",
+    "grupo_muscular": "Abdômen",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1295,
+    "nome_exercicio": "Rosca De Punho Sentado Com Barra",
+    "grupo_muscular": "Antebraço",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 780,
+    "nome_exercicio": "Rotação Com Um Braço Sentado Com Halter",
+    "grupo_muscular": "Antebraço",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 777,
+    "nome_exercicio": "Rosca De Punho Neutra Sentado Com Halter",
+    "grupo_muscular": "Bíceps",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 654,
+    "nome_exercicio": "Rosca Direta Com Halter Em Pé Na Bola De Exercício",
+    "grupo_muscular": "Bíceps",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 861,
+    "nome_exercicio": "Alongamento Lateral Deitado Com Bola Suíça",
+    "grupo_muscular": "Costas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1013,
+    "nome_exercicio": "Alongamento Lateral De Joelhos",
+    "grupo_muscular": "Costas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1201,
+    "nome_exercicio": "Alongamento Lateral De Latíssimo Com Rolo",
+    "grupo_muscular": "Costas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1123,
+    "nome_exercicio": "Alongamento Lateral Do Pescoço",
+    "grupo_muscular": "Costas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1325,
+    "nome_exercicio": "Alongamento Lateral Em Pé",
+    "grupo_muscular": "Costas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1229,
+    "nome_exercicio": "Alongamento Lateral No Chão",
+    "grupo_muscular": "Costas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1097,
+    "nome_exercicio": "Extensão Lombar Na Máquina V2",
+    "grupo_muscular": "Costas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1248,
+    "nome_exercicio": "Rotação Na Barra",
+    "grupo_muscular": "Costas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1207,
+    "nome_exercicio": "Dips De Escápula",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 230,
+    "nome_exercicio": "Elevação Frontal E Pullover Com Barra",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1297,
+    "nome_exercicio": "Encolhimento Com Barra",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 189,
+    "nome_exercicio": "Encolhimento Com Faixa",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1263,
+    "nome_exercicio": "Encolhimento Com Smith",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 603,
+    "nome_exercicio": "Encolhimento Declinado Com Halter",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 604,
+    "nome_exercicio": "Encolhimento Declinado Com Halter V. 2",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 304,
+    "nome_exercicio": "Encolhimento De Ombros Com Barra",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 485,
+    "nome_exercicio": "Encolhimento De Ombros Com Corda",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 791,
+    "nome_exercicio": "Encolhimento De Ombros Com Halter",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1088,
+    "nome_exercicio": "Encolhimento De Ombros Na Máquina",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 645,
+    "nome_exercicio": "Encolhimento Inclinado Com Halter",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1208,
+    "nome_exercicio": "Flexão De Escápula",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 996,
+    "nome_exercicio": "Passagem De Kettlebell Pelas Pernas",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 437,
+    "nome_exercicio": "Remada Alta Unilateral Reta Na Polia (Ajoelhado)",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 525,
+    "nome_exercicio": "Remada Em Pé Na Polia",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1038,
+    "nome_exercicio": "Shrug Sem Pegada Na Máquina",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1039,
+    "nome_exercicio": "Shrug Sem Pegada V. 2 Na Máquina",
+    "grupo_muscular": "Ombros",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1323,
+    "nome_exercicio": "Alongamento De Panturrilha Em Pé",
+    "grupo_muscular": "Panturrilha",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 998,
+    "nome_exercicio": "Flexão Com Kettlebell",
+    "grupo_muscular": "Peitoral",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 338,
+    "nome_exercicio": "Supino Com Pausa Com Barra",
+    "grupo_muscular": "Peitoral",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 390,
+    "nome_exercicio": "Supino Declinado Unilateral",
+    "grupo_muscular": "Peitoral",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 339,
+    "nome_exercicio": "Supino Inverso Com Pausa Com Barra",
+    "grupo_muscular": "Peitoral",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 307,
+    "nome_exercicio": "Agachamento Lateral V. 2 Com Barra",
+    "grupo_muscular": "Pernas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1396,
+    "nome_exercicio": "Avanço Com Peso",
+    "grupo_muscular": "Pernas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 736,
+    "nome_exercicio": "Extensão De Quadril Com Pullover Com Halter Em Bola De Exercício",
+    "grupo_muscular": "Pernas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1095,
+    "nome_exercicio": "Ponte Londrina",
+    "grupo_muscular": "Pernas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1327,
+    "nome_exercicio": "Rosca Unilateral Em Pé",
+    "grupo_muscular": "Pernas",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 602,
+    "nome_exercicio": "Desenvolvimento Declinado Com Halter",
+    "grupo_muscular": "Tríceps",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 787,
+    "nome_exercicio": "Extensão De Tríceps Com Um Braço Acima Da Cabeça Com Pegada Inversa Sentado Com Halter",
+    "grupo_muscular": "Tríceps",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 1233,
+    "nome_exercicio": "Flexão Lateral",
+    "grupo_muscular": "Tríceps",
+    "motivo": "GPT não encontrou correspondência"
+  },
+  {
+    "id": 764,
+    "nome_exercicio": "Kickback Alternado Com Braços Flexionados Sentado Com Halter",
+    "grupo_muscular": "Tríceps",
+    "motivo": "GPT não encontrou correspondência"
+  }
+]
