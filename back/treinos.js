@@ -597,6 +597,40 @@ router.post('/treinos_realizados/:id/finalizar', async (req, res) => {
     }
 });
 
+// ── OBSERVAÇÕES POR EXERCÍCIO ──────────────────────────────────────────────
+
+router.get('/treinos_realizados/:treinoRealizadoId/obs', async (req, res) => {
+    const { treinoRealizadoId } = req.params;
+    try {
+        const { rows } = await db.query(
+            `SELECT exercicio_id, observacao FROM obs_exercicio WHERE treino_realizado_id = $1`,
+            [treinoRealizadoId]
+        );
+        res.json(rows);
+    } catch (error) {
+        console.error('Erro ao buscar observações:', error);
+        res.status(500).json({ error: 'Erro ao buscar observações.' });
+    }
+});
+
+router.post('/treinos_realizados/:treinoRealizadoId/exercicios/:exercicioId/obs', async (req, res) => {
+    const { treinoRealizadoId, exercicioId } = req.params;
+    const { observacao } = req.body;
+    try {
+        await db.query(
+            `INSERT INTO obs_exercicio (treino_realizado_id, exercicio_id, observacao)
+             VALUES ($1, $2, $3)
+             ON CONFLICT (treino_realizado_id, exercicio_id)
+             DO UPDATE SET observacao = EXCLUDED.observacao, updated_at = NOW()`,
+            [treinoRealizadoId, exercicioId, observacao]
+        );
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Erro ao salvar observação:', error);
+        res.status(500).json({ error: 'Erro ao salvar observação.' });
+    }
+});
+
 router.get('/usuarios/:usuarioId/treino-ativo', async (req, res) => {
     const { usuarioId } = req.params;
     try {

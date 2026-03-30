@@ -27,6 +27,9 @@ function Exercicios_index() {
     const [modalFinalizado, setModalFinalizado] = useState(false);
     const [avisoTreinoAtivo, setAvisoTreinoAtivo] = useState(false);
 
+    const [obsData, setObsData] = useState({});
+    const [obsModal, setObsModal] = useState({ open: false, exercicioId: null, text: '' });
+
     const lastBlurRef   = useRef(null);   // fix 6: dedup blur
     const pendingSaveRef = useRef(null);  // fix 4: aguarda save antes de finalizar
 
@@ -131,6 +134,7 @@ function Exercicios_index() {
             buscarUltimoTreinoFinalizado(userId, treinoId);
             fetchTreinoInfo();
             fetchExercicios(sessionId);
+            if (sessionId) fetchObs(sessionId);
         })();
     }, [treinoId, userId]);
 
@@ -336,6 +340,42 @@ function Exercicios_index() {
         await salvarSerie(exercicioId, series);
     };
 
+    const fetchObs = async (sessionId) => {
+        try {
+            const res = await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos_realizados/${sessionId}/obs`,
+                { credentials: 'include' }
+            );
+            if (!res.ok) return;
+            const data = await res.json();
+            const map = {};
+            data.forEach(o => { map[o.exercicio_id] = o.observacao; });
+            setObsData(map);
+        } catch {
+            console.error('Erro ao buscar observações');
+        }
+    };
+
+    const handleSaveObs = async () => {
+        const { exercicioId, text } = obsModal;
+        setObsData(prev => ({ ...prev, [exercicioId]: text }));
+        setObsModal({ open: false, exercicioId: null, text: '' });
+        if (!treinoRealizadoId) return;
+        try {
+            await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos_realizados/${treinoRealizadoId}/exercicios/${exercicioId}/obs`,
+                {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ observacao: text }),
+                }
+            );
+        } catch {
+            console.error('Erro ao salvar observação');
+        }
+    };
+
     const isEditing = (exercicioId, numero_serie, campo) =>
         editingField?.exercicioId === exercicioId &&
         editingField?.numero_serie === numero_serie &&
@@ -485,30 +525,43 @@ function Exercicios_index() {
                                 <div className="ex-card-body">
                                     <h2 className="ex-ex-name">{exercicio.nome_exercicio}</h2>
 
-                                    {/* Meta de séries/reps */}
-                                    {(exercicio.series_alvo || exercicio.reps_alvo) && (
-                                        <div style={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: 6,
-                                            padding: '4px 10px',
-                                            borderRadius: 20,
-                                            background: 'var(--ex-accent-dim)',
-                                            border: '1px solid var(--ex-accent-border)',
-                                            marginBottom: 10,
-                                            fontSize: '0.75rem',
-                                            color: 'var(--ex-accent)',
-                                            fontWeight: 700,
-                                            letterSpacing: '0.04em',
-                                        }}>
-                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                                            </svg>
-                                            Meta:{exercicio.series_alvo ? ` ${exercicio.series_alvo} séries` : ''}
-                                            {exercicio.series_alvo && exercicio.reps_alvo ? ' × ' : ''}
-                                            {exercicio.reps_alvo ? `${exercicio.reps_alvo} reps` : ''}
-                                        </div>
-                                    )}
+                                    {/* Meta + botão obs */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+                                        {(exercicio.series_alvo || exercicio.reps_alvo) && (
+                                            <div style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 6,
+                                                padding: '4px 10px',
+                                                borderRadius: 20,
+                                                background: 'var(--ex-accent-dim)',
+                                                border: '1px solid var(--ex-accent-border)',
+                                                fontSize: '0.75rem',
+                                                color: 'var(--ex-accent)',
+                                                fontWeight: 700,
+                                                letterSpacing: '0.04em',
+                                            }}>
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                                </svg>
+                                                Meta:{exercicio.series_alvo ? ` ${exercicio.series_alvo} séries` : ''}
+                                                {exercicio.series_alvo && exercicio.reps_alvo ? ' × ' : ''}
+                                                {exercicio.reps_alvo ? `${exercicio.reps_alvo} reps` : ''}
+                                            </div>
+                                        )}
+                                        {modoEdicao && (
+                                            <button
+                                                className={`ex-obs-btn${obsData[exercicio.exercicio_id] ? ' has-obs' : ''}`}
+                                                onClick={() => setObsModal({ open: true, exercicioId: exercicio.exercicio_id, text: obsData[exercicio.exercicio_id] || '' })}
+                                                title="Observação"
+                                            >
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
 
                                 {/* Tabela de séries */}
                                     <div className="ex-series-wrap">
@@ -645,6 +698,26 @@ function Exercicios_index() {
                     />
                 )}
                 <ModalSucesso show={modalFinalizado} mensagem="Treino finalizado com sucesso!" />
+
+                {/* ── MODAL DE OBSERVAÇÃO ── */}
+                {obsModal.open && (
+                    <div className="ex-obs-overlay" onClick={handleSaveObs}>
+                        <div className="ex-obs-modal" onClick={e => e.stopPropagation()}>
+                            <div className="ex-obs-modal-header">
+                                <span>{exercicios.find(e => e.exercicio_id === obsModal.exercicioId)?.nome_exercicio}</span>
+                                <button className="ex-obs-close" onClick={handleSaveObs}>✕</button>
+                            </div>
+                            <textarea
+                                className="ex-obs-textarea"
+                                value={obsModal.text}
+                                onChange={e => setObsModal(prev => ({ ...prev, text: e.target.value }))}
+                                placeholder="Ex: substituí pela versão com halteres, parei na falha na 3ª série, drop set 40→30→20kg..."
+                                autoFocus
+                            />
+                            <button className="ex-obs-save" onClick={handleSaveObs}>Salvar</button>
+                        </div>
+                    </div>
+                )}
             </div>
         </PageStateHandler>
     );
