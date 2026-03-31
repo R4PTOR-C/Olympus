@@ -293,16 +293,15 @@ function Exercicios_index() {
 
     // ── AUTO-SCROLL durante drag ───────────────────────────────────────────
 
-    const startDragScroll = (e) => {
-        const clientY = e.touches ? e.touches[0]?.clientY : e.clientY;
-        if (clientY == null) return;
-
-        const ZONE   = 130; // px da borda para ativar scroll
-        const MAX_SP = 18;  // velocidade máxima px/frame
+    const startDragScroll = () => {
+        const ZONE   = 140;
+        const MAX_SP = 28;
 
         clearInterval(dragScrollRef.current);
         dragScrollRef.current = setInterval(() => {
-            const y = window.lastDragY ?? clientY;
+            const y = window.lastDragY;
+            if (y == null) return;
+
             const distTop = y;
             const distBot = window.innerHeight - y;
 
