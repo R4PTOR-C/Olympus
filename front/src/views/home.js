@@ -138,6 +138,13 @@ function Home() {
         return days[new Date().getDay()];
     };
 
+    const getGreeting = () => {
+        const h = new Date().getHours();
+        if (h < 12) return 'Bom dia';
+        if (h < 18) return 'Boa tarde';
+        return 'Boa noite';
+    };
+
     const treinoImagemUrl = (imagem) =>
         `${process.env.REACT_APP_API_BASE_URL}/uploads/${imagem}`;
 
@@ -197,6 +204,18 @@ function Home() {
                     </>
                 ) : user.loggedIn ? (
                     <>
+                        {/* ── DESKTOP HERO ── */}
+                        <div className="h-desktop-hero">
+                            <div className="h-desktop-hero-left">
+                                <div className="h-desktop-hero-greeting">{getGreeting()}</div>
+                                <h1 className="h-desktop-hero-name">{user.userName.split(' ')[0]}</h1>
+                            </div>
+                            <div className="h-desktop-hero-right">
+                                <div className="h-desktop-hero-day">{today}</div>
+                                <div className="h-desktop-hero-date">{dateRange}</div>
+                            </div>
+                        </div>
+
                         {/* ── WEEK STRIP ── */}
                         <div className="h-week-header">
                             <span className="h-week-header-title">Semana</span>

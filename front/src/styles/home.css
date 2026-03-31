@@ -819,38 +819,113 @@ body.dark-mode .h-muscle-wrap img {
     to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── DESKTOP HERO (hidden on mobile) ── */
+.h-desktop-hero { display: none; }
+
 /* ── DESKTOP ── */
 @media (min-width: 768px) {
     .home-wrapper {
-        max-width: 900px;
+        max-width: 1140px;
         margin: 0 auto;
-        padding-bottom: 2rem;
+        padding: 0 36px 3rem;
     }
 
+    /* Hero greeting */
+    .h-desktop-hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 36px 0 24px;
+        border-bottom: 1px solid var(--h-border);
+        margin-bottom: 28px;
+    }
+
+    .h-desktop-hero-greeting {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--h-accent);
+        margin-bottom: 4px;
+    }
+
+    .h-desktop-hero-name {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 3.2rem;
+        letter-spacing: 0.04em;
+        line-height: 1;
+        color: var(--h-text);
+        margin: 0;
+    }
+
+    .h-desktop-hero-right { text-align: right; }
+
+    .h-desktop-hero-day {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.1rem;
+        letter-spacing: 0.06em;
+        color: var(--h-text);
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .h-desktop-hero-date {
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--h-text-muted);
+    }
+
+    /* Week header + strip */
+    .h-week-header {
+        padding: 0 0 10px;
+    }
+
+    .h-week-header-title {
+        font-size: 1.3rem;
+    }
+
+    .h-week-strip {
+        padding: 0 0 28px;
+        gap: 8px;
+    }
+
+    .h-week-day {
+        padding: 12px 6px 10px;
+        border-radius: 12px;
+    }
+
+    .h-wd-label {
+        font-size: 0.62rem;
+        margin-bottom: 8px;
+    }
+
+    /* Banner */
+    .h-active-banner {
+        margin: 0 0 24px;
+        padding: 16px 20px;
+        border-radius: var(--h-radius-lg);
+    }
+
+    /* Grid principal 3:2 */
     .h-desktop-grid {
         display: grid;
-        grid-template-columns: 1fr 300px;
-        gap: 1.5rem;
-        padding: 0 20px;
+        grid-template-columns: 3fr 2fr;
+        gap: 28px;
+        align-items: start;
     }
 
-    .h-desktop-grid > div:first-child {
-        min-width: 0;
-    }
-
-    .h-desktop-grid .h-sec-header,
-    .h-desktop-grid .h-today-card,
-    .h-desktop-grid .h-rest-card,
-    .h-desktop-grid .h-week-strip {
+    .h-desktop-grid .h-sec-header {
         padding-left: 0;
         padding-right: 0;
+    }
+
+    .h-desktop-grid .h-today-card,
+    .h-desktop-grid .h-rest-card {
         margin-left: 0;
         margin-right: 0;
-    }
-
-    .h-desktop-grid .h-week-strip {
-        padding-left: 0;
-        padding-right: 0;
     }
 
     .h-desktop-grid .h-upcoming-list {
@@ -858,12 +933,49 @@ body.dark-mode .h-muscle-wrap img {
         padding-right: 0;
     }
 
-    .h-today-name {
-        font-size: 1.7rem;
+    .h-desktop-grid .h-empty-upcoming {
+        margin-left: 0;
+        margin-right: 0;
     }
 
-    .h-greeting-title {
-        font-size: 2.5rem;
+    /* Today card — hero maior */
+    .h-muscle-wrap {
+        width: 108px;
+        height: 108px;
+        border-radius: 16px;
+    }
+
+    .h-muscle-wrap img {
+        width: 90px;
+        height: 90px;
+    }
+
+    .h-today-hero {
+        padding: 28px 24px 22px;
+        gap: 22px;
+    }
+
+    .h-today-name {
+        font-size: 2rem;
+    }
+
+    .h-today-body {
+        padding: 16px 22px 22px;
+    }
+
+    /* Upcoming */
+    .h-upc-thumb {
+        width: 54px;
+        height: 54px;
+    }
+
+    .h-upc-thumb img {
+        width: 44px;
+        height: 44px;
+    }
+
+    .h-upc-name {
+        font-size: 1.05rem;
     }
 }
 

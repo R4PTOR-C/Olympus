@@ -535,3 +535,75 @@ body.dark-mode {
         font-size: 0.88rem;
     }
 }
+
+/* ── DESKTOP — dois painéis ── */
+@media (min-width: 900px) {
+    .hc-container {
+        max-width: 100%;
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        grid-template-rows: auto 1fr auto;
+        height: calc(100svh - var(--topbar-h, 64px));
+        overflow: hidden;
+    }
+
+    /* Oculta o overlay translúcido */
+    .hc-sidebar-overlay {
+        display: none !important;
+    }
+
+    /* Sidebar se torna coluna esquerda fixa */
+    .hc-sidebar-drawer {
+        position: relative !important;
+        transform: none !important;
+        width: 260px !important;
+        height: 100% !important;
+        top: auto !important;
+        left: auto !important;
+        bottom: auto !important;
+        box-shadow: none !important;
+        grid-column: 1;
+        grid-row: 1 / -1;
+        border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
+        background: #0e1218 !important;
+    }
+
+    /* Header na coluna direita */
+    .hc-header {
+        grid-column: 2;
+        grid-row: 1;
+        border-radius: 0;
+    }
+
+    /* Área de mensagens na coluna direita */
+    .hc-body {
+        grid-column: 2;
+        grid-row: 2;
+        padding-bottom: 16px;
+    }
+
+    /* Input bar na coluna direita, sem posicionamento fixo */
+    .hc-input-bar {
+        position: relative !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        width: auto !important;
+        transform: none !important;
+        max-width: none;
+        margin: 0;
+        grid-column: 2;
+        grid-row: 3;
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    /* Esconde o botão de menu hambúrguer */
+    .hc-menu-btn {
+        display: none !important;
+    }
+
+    /* Bolhas podem ser um pouco maiores */
+    .hc-bubble {
+        max-width: 68%;
+    }
+}

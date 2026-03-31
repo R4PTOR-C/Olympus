@@ -30,8 +30,9 @@ function Exercicios_index() {
     const [obsData, setObsData] = useState({});
     const [obsModal, setObsModal] = useState({ open: false, exercicioId: null, text: '' });
 
-    const lastBlurRef   = useRef(null);   // fix 6: dedup blur
+    const lastBlurRef    = useRef(null);   // fix 6: dedup blur
     const pendingSaveRef = useRef(null);  // fix 4: aguarda save antes de finalizar
+    const dragScrollRef  = useRef(null);  // auto-scroll durante drag
 
     const dataFormatada = (() => {
         if (!dataUltimoTreino) return '';
@@ -290,17 +291,48 @@ function Exercicios_index() {
 
     // ── DRAG AND DROP ─────────────────────────────────────────────────────
 
-    const handleReorder = async (result) => {
-        if (!result.destination) return;
-        const from = result.source.index;
-        const to = result.destination.index;
-        if (from === to) return;
+    // ── AUTO-SCROLL durante drag ───────────────────────────────────────────
 
-        const novaOrdem = [...exercicios];
-        const [moved] = novaOrdem.splice(from, 1);
-        novaOrdem.splice(to, 0, moved);
-        setExercicios(novaOrdem);
+    const startDragScroll = (e) => {
+        const clientY = e.touches ? e.touches[0]?.clientY : e.clientY;
+        if (clientY == null) return;
 
+        const ZONE   = 130; // px da borda para ativar scroll
+        const MAX_SP = 18;  // velocidade máxima px/frame
+
+        clearInterval(dragScrollRef.current);
+        dragScrollRef.current = setInterval(() => {
+            const y = window.lastDragY ?? clientY;
+            const distTop = y;
+            const distBot = window.innerHeight - y;
+
+            let speed = 0;
+            if (distTop < ZONE)      speed = -Math.round(MAX_SP * (1 - distTop / ZONE));
+            else if (distBot < ZONE) speed =  Math.round(MAX_SP * (1 - distBot / ZONE));
+
+            if (speed !== 0) window.scrollBy({ top: speed, behavior: 'instant' });
+        }, 16);
+    };
+
+    const stopDragScroll = () => {
+        clearInterval(dragScrollRef.current);
+        dragScrollRef.current = null;
+    };
+
+    // Rastreia posição Y atual do dedo/mouse durante drag
+    useEffect(() => {
+        const track = (e) => {
+            window.lastDragY = e.touches ? e.touches[0]?.clientY : e.clientY;
+        };
+        window.addEventListener('mousemove', track);
+        window.addEventListener('touchmove', track, { passive: true });
+        return () => {
+            window.removeEventListener('mousemove', track);
+            window.removeEventListener('touchmove', track);
+        };
+    }, []);
+
+    const salvarOrdem = async (novaOrdem) => {
         try {
             await fetch(
                 `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos/${treinoId}/exercicios/ordem`,
@@ -315,6 +347,20 @@ function Exercicios_index() {
             console.error('Erro ao salvar ordem');
         }
     };
+
+    const handleReorder = async (result) => {
+        if (!result.destination) return;
+        const from = result.source.index;
+        const to = result.destination.index;
+        if (from === to) return;
+
+        const novaOrdem = [...exercicios];
+        const [moved] = novaOrdem.splice(from, 1);
+        novaOrdem.splice(to, 0, moved);
+        setExercicios(novaOrdem);
+        await salvarOrdem(novaOrdem);
+    };
+
 
     // ── HELPERS ───────────────────────────────────────────────────────────
 
@@ -479,7 +525,7 @@ function Exercicios_index() {
                 )}
 
                 {/* ── LISTA DE EXERCÍCIOS ── */}
-                <DragDropContext onDragEnd={handleReorder}>
+                <DragDropContext onDragStart={startDragScroll} onDragEnd={(r) => { stopDragScroll(); handleReorder(r); }}>
                 <Droppable droppableId="ex-list">
                     {(droppableProvided, droppableSnapshot) => (
                     <div

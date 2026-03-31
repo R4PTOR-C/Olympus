@@ -360,14 +360,82 @@
     margin-top: 2px;
 }
 
-/* ── DESKTOP ── */
+/* ── DESKTOP SM ── */
 @media (min-width: 600px) {
-    .hx-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 0 20px 14px; }
+    .hx-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        padding: 0 20px 14px;
+    }
     .hx-gif-wrap { height: 160px; }
     .hx-gif-wrap img, .hx-gif-wrap video { height: 140px; }
 }
 
+/* ── DESKTOP ── */
 @media (min-width: 900px) {
-    .hx-wrapper { padding-bottom: 2rem; }
-    .hx-grid { grid-template-columns: repeat(4, 1fr); }
+    .hx-wrapper {
+        max-width: 1140px;
+        padding-bottom: 3rem;
+    }
+
+    /* Header */
+    .hx-page-header {
+        padding: 32px 32px 8px;
+    }
+
+    .hx-page-title {
+        font-size: 2rem;
+        letter-spacing: 0.08em;
+    }
+
+    /* Tabs: pills, não esticadas */
+    .hx-tabs {
+        padding: 12px 32px 20px;
+        gap: 8px;
+    }
+
+    .hx-tab {
+        flex: none;
+        padding: 9px 22px;
+        font-size: 0.75rem;
+    }
+
+    /* Grid musculação — 4 colunas */
+    .hx-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        padding: 0 32px 20px;
+    }
+
+    .hx-gif-wrap { height: 150px; }
+    .hx-gif-wrap img, .hx-gif-wrap video { height: 130px; }
+
+    /* Resumo cardio — 4 stats lado a lado */
+    .hx-cardio-resumo {
+        grid-template-columns: repeat(4, 1fr);
+        padding: 0 32px 0;
+        gap: 12px;
+    }
+
+    .hx-cardio-stat-val {
+        font-size: 2rem;
+    }
+
+    /* Lista cardio/avaliações — 2 colunas */
+    .hx-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 16px 32px;
+    }
+
+    .hx-list-card {
+        margin: 0;
+    }
+
+    /* Empty state */
+    .hx-empty {
+        margin: 0 32px;
+        grid-column: 1 / -1;
+    }
 }

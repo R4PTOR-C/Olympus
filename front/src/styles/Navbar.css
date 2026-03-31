@@ -237,3 +237,62 @@
     from { opacity: 0; transform: translateY(-8px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* ── DESKTOP ── */
+@media (min-width: 768px) {
+    .nb-top {
+        height: 64px;
+        padding: 0 28px;
+    }
+
+    .nb-logo-img {
+        height: 40px;
+    }
+
+    .nb-items {
+        gap: 4px;
+    }
+
+    /* Item horizontal: ícone + label lado a lado */
+    .nb-item {
+        flex-direction: row;
+        gap: 7px;
+        padding: 8px 16px;
+        border-radius: 10px;
+        min-width: unset;
+        position: relative;
+    }
+
+    .nb-label {
+        font-size: 0.78rem;
+        letter-spacing: 0.04em;
+        font-weight: 600;
+    }
+
+    /* Indicador ativo: linha na base da navbar */
+    .nb-item.active {
+        background: transparent;
+    }
+
+    .nb-item.active::after {
+        content: '';
+        position: absolute;
+        bottom: -10px; /* encosta na borda inferior da navbar */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 24px;
+        height: 2px;
+        border-radius: 2px 2px 0 0;
+        background: #4A90D9;
+    }
+
+    .nb-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    /* Avatar maior no desktop */
+    .nb-avatar {
+        width: 36px;
+        height: 36px;
+    }
+}

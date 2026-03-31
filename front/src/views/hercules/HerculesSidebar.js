@@ -109,8 +109,8 @@ function HerculesSidebar({ aberta, conversas, conversaAtiva, onSelecionar, onNov
 
     return (
         <>
-            <div style={s.overlay} onClick={onFechar} />
-            <div style={s.drawer} ref={sidebarRef}>
+            <div style={s.overlay} className="hc-sidebar-overlay" onClick={onFechar} />
+            <div style={s.drawer} className="hc-sidebar-drawer" ref={sidebarRef}>
                 <div style={s.header}>
                     <p style={s.titulo}>Conversas</p>
                     <button style={s.btnFechar} onClick={onFechar}>
