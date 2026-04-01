@@ -468,7 +468,7 @@ function Home() {
                         </div>
 
                         {/* ── MAPA MUSCULAR DA SEMANA ── */}
-                        <div style={styles.weekSection}>
+                        <div style={styles.weekSection} className="h-week-body-section">
                             <div style={styles.weekHeader}>
                                 <span style={styles.weekTitle}>Músculos desta semana</span>
                                 {Object.keys(musculosSemana).length === 0 && (

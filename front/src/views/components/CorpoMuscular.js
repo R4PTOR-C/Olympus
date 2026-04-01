@@ -81,7 +81,7 @@ export default function CorpoMuscular({ dados = {} }) {
                     <Model
                         data={anterior}
                         highlightedColors={COLORS}
-                        bodyColor="#1a1a2e"
+                        bodyColor="#6b6b8a"
                         onClick={handleClick}
                         style={{ width: '100%' }}
                     />
@@ -91,7 +91,7 @@ export default function CorpoMuscular({ dados = {} }) {
                     <Model
                         data={posterior}
                         highlightedColors={COLORS}
-                        bodyColor="#1a1a2e"
+                        bodyColor="#6b6b8a"
                         type="posterior"
                         onClick={handleClick}
                         style={{ width: '100%' }}

@@ -938,6 +938,12 @@ body.dark-mode .h-muscle-wrap img {
         margin-right: 0;
     }
 
+    .h-week-body-section {
+        max-width: 480px;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
     /* Today card — hero maior */
     .h-muscle-wrap {
         width: 108px;

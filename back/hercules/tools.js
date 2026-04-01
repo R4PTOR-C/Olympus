@@ -122,6 +122,96 @@ const TOOLS = [
     {
         type: "function",
         function: {
+            name: "editar_treino",
+            description: "Edita um treino existente do usuário: substitui, adiciona, remove exercícios ou altera séries/reps. Use quando o usuário pedir para trocar, mudar, adicionar ou remover um exercício de um treino.",
+            parameters: {
+                type: "object",
+                properties: {
+                    dia_semana: {
+                        type: "string",
+                        enum: ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"],
+                        description: "Dia da semana do treino a editar.",
+                    },
+                    operacao: {
+                        type: "string",
+                        enum: ["substituir", "adicionar", "remover", "alterar_series"],
+                        description: "Operação: substituir (troca um exercício por outro), adicionar (inclui novo), remover (exclui um), alterar_series (muda séries/reps).",
+                    },
+                    exercicio_atual: {
+                        type: "string",
+                        description: "Nome do exercício a ser removido/substituído/alterado.",
+                    },
+                    exercicio_novo: {
+                        type: "string",
+                        description: "Nome do novo exercício (para substituir ou adicionar).",
+                    },
+                    series: { type: "integer", description: "Número de séries." },
+                    reps:   { type: "integer", description: "Número de repetições." },
+                },
+                required: ["dia_semana", "operacao"],
+            },
+        },
+    },
+    {
+        type: "function",
+        function: {
+            name: "criar_periodizacao",
+            description: "Cria um plano de periodização de treino de múltiplas semanas (4, 6, 8 ou 12 semanas) com progressão de carga e volume. Use quando o usuário pedir um plano de evolução, periodização ou progressão.",
+            parameters: {
+                type: "object",
+                properties: {
+                    semanas: {
+                        type: "integer",
+                        enum: [4, 6, 8, 12],
+                        description: "Duração do plano em semanas.",
+                    },
+                    tipo: {
+                        type: "string",
+                        enum: ["linear", "ondulatória", "block"],
+                        description: "Tipo de periodização. Linear: aumento gradual de carga. Ondulatória: varia volume/intensidade por sessão. Block: fases distintas de adaptação.",
+                    },
+                },
+                required: ["semanas"],
+            },
+        },
+    },
+    {
+        type: "function",
+        function: {
+            name: "comparar_periodos",
+            description: "Compara o desempenho do usuário entre dois períodos: volume, consistência, cargas e cardio. Use quando perguntar como foi este mês vs o anterior, esta semana vs a passada, ou qualquer comparação temporal.",
+            parameters: {
+                type: "object",
+                properties: {
+                    periodo1: {
+                        type: "string",
+                        enum: ["esta_semana","semana_passada","este_mes","mes_passado","ultimas_4_semanas","ultimas_8_semanas"],
+                        description: "Primeiro período (mais recente).",
+                    },
+                    periodo2: {
+                        type: "string",
+                        enum: ["esta_semana","semana_passada","este_mes","mes_passado","ultimas_4_semanas","ultimas_8_semanas"],
+                        description: "Segundo período (para comparar).",
+                    },
+                },
+                required: ["periodo1", "periodo2"],
+            },
+        },
+    },
+    {
+        type: "function",
+        function: {
+            name: "analisar_historico",
+            description: "Analisa o histórico de treinos do usuário nas últimas 8 semanas. Retorna volume por grupo muscular, progressão de carga por exercício, consistência semanal e tendências. Use quando o usuário pedir feedback, análise, avaliação do progresso ou perguntar se está evoluindo.",
+            parameters: {
+                type: "object",
+                properties: {},
+            },
+        },
+    },
+    {
+        type: "function",
+        function: {
             name: "responder",
             description: "Responde cumprimentos, perguntas gerais sobre fitness ou redireciona assuntos fora de escopo.",
             parameters: {
