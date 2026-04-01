@@ -17,6 +17,7 @@
     "lodash": "^4.17.21",
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",
+    "react-body-highlighter": "^2.0.5",
     "react-calendar": "^5.1.0",
     "react-dom": "^18.3.1",
     "react-dragula": "^1.1.17",

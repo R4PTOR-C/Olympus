@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import GraficoMuscular from './GraficoMuscular';
+import CorpoMuscular from './CorpoMuscular';
 
 const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                 'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -8,18 +9,35 @@ export default function ModalMapaMuscular({ userId, onClose }) {
     const [dados, setDados] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const mesAtual = MONTHS[new Date().getMonth()];
+    const hoje = new Date();
+    const [mes, setMes] = useState(hoje.getMonth() + 1);
+    const [ano, setAno] = useState(hoje.getFullYear());
+
+    const mesNome = MONTHS[mes - 1];
+    const ehMesAtual = mes === hoje.getMonth() + 1 && ano === hoje.getFullYear();
+
+    const irMesAnterior = () => {
+        if (mes === 1) { setMes(12); setAno(a => a - 1); }
+        else setMes(m => m - 1);
+    };
+    const irProximoMes = () => {
+        if (ehMesAtual) return;
+        if (mes === 12) { setMes(1); setAno(a => a + 1); }
+        else setMes(m => m + 1);
+    };
 
     useEffect(() => {
+        setLoading(true);
+        setDados(null);
         const token = localStorage.getItem('token');
         fetch(
-            `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/musculos-mes`,
+            `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/musculos-mes?mes=${mes}&ano=${ano}`,
             { headers: { Authorization: `Bearer ${token}` } }
         )
             .then(r => r.json())
             .then(data => { setDados(data); setLoading(false); })
             .catch(() => setLoading(false));
-    }, [userId]);
+    }, [userId, mes, ano]);
 
     const temDados = dados && Object.keys(dados).length > 0;
 
@@ -32,7 +50,26 @@ export default function ModalMapaMuscular({ userId, onClose }) {
                 <div style={styles.header}>
                     <div>
                         <div style={styles.title}>Mapa Muscular</div>
-                        <div style={styles.subtitle}>{mesAtual}</div>
+                        <div style={styles.navRow}>
+                            <button style={styles.navBtn} onClick={irMesAnterior}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" strokeWidth="2.5"
+                                    strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="15 18 9 12 15 6"/>
+                                </svg>
+                            </button>
+                            <span style={styles.subtitle}>
+                                {mesNome}{ano !== hoje.getFullYear() ? ` ${ano}` : ''}
+                            </span>
+                            <button style={{ ...styles.navBtn, opacity: ehMesAtual ? 0.2 : 1 }}
+                                onClick={irProximoMes} disabled={ehMesAtual}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" strokeWidth="2.5"
+                                    strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <button style={styles.closeBtn} onClick={onClose}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -58,11 +95,14 @@ export default function ModalMapaMuscular({ userId, onClose }) {
                                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                             </svg>
                             <p style={{ color: '#3a3a58', fontSize: 13, marginTop: 12, textAlign: 'center' }}>
-                                Nenhum treino registrado em {mesAtual}.
+                                Nenhum treino registrado em {mesNome}.
                             </p>
                         </div>
                     ) : (
-                        <GraficoMuscular dados={dados} />
+                        <>
+                            <GraficoMuscular dados={dados} />
+                            <CorpoMuscular dados={dados} />
+                        </>
                     )}
                 </div>
 
@@ -113,10 +153,18 @@ const styles = {
         fontSize: '1.3rem', letterSpacing: '0.06em',
         color: '#e8edf5',
     },
+    navRow: {
+        display: 'flex', alignItems: 'center', gap: 6, marginTop: 4,
+    },
+    navBtn: {
+        background: 'none', border: 'none', cursor: 'pointer',
+        color: '#4A90D9', padding: 2, lineHeight: 0,
+        display: 'flex', alignItems: 'center',
+    },
     subtitle: {
         fontSize: 12, color: '#4A90D9',
         fontWeight: 600, letterSpacing: '0.08em',
-        textTransform: 'uppercase', marginTop: 2,
+        textTransform: 'uppercase',
     },
     closeBtn: {
         background: 'none', border: 'none', cursor: 'pointer',

@@ -788,7 +788,7 @@ router.get('/usuarios/:usuarioId/exercicios/:exercicioId/historico', authenticat
 
 
 // Séries por grupo muscular no mês atual (escala absoluta para radar chart)
-router.get('/usuarios/:usuarioId/musculos-mes', authenticate, async (req, res) => {
+router.get('/usuarios/:usuarioId/musculos-semana', authenticate, async (req, res) => {
     const { usuarioId } = req.params;
     try {
         const result = await db.query(`
@@ -796,11 +796,40 @@ router.get('/usuarios/:usuarioId/musculos-mes', authenticate, async (req, res) =
             FROM series_usuario su
             JOIN exercicios e ON e.id = su.exercicio_id
             WHERE su.usuario_id = $1
-              AND su.data_treino >= DATE_TRUNC('month', CURRENT_DATE)
-              AND su.data_treino < DATE_TRUNC('month', CURRENT_DATE) + INTERVAL '1 month'
+              AND su.data_treino >= DATE_TRUNC('week', CURRENT_DATE)
+              AND su.data_treino < DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 week'
             GROUP BY e.grupo_muscular
             ORDER BY total_series DESC
         `, [usuarioId]);
+
+        const dados = {};
+        result.rows.forEach(row => {
+            dados[row.grupo_muscular] = parseInt(row.total_series);
+        });
+
+        res.json(dados);
+    } catch (error) {
+        console.error('Erro ao buscar músculos da semana:', error);
+        res.status(500).json({ error: 'Erro ao buscar dados musculares.' });
+    }
+});
+
+router.get('/usuarios/:usuarioId/musculos-mes', authenticate, async (req, res) => {
+    const { usuarioId } = req.params;
+    const mes = parseInt(req.query.mes) || new Date().getMonth() + 1;
+    const ano = parseInt(req.query.ano) || new Date().getFullYear();
+    const dataRef = `${ano}-${String(mes).padStart(2, '0')}-01`;
+    try {
+        const result = await db.query(`
+            SELECT e.grupo_muscular, COUNT(su.id) AS total_series
+            FROM series_usuario su
+            JOIN exercicios e ON e.id = su.exercicio_id
+            WHERE su.usuario_id = $1
+              AND su.data_treino >= DATE_TRUNC('month', $2::date)
+              AND su.data_treino < DATE_TRUNC('month', $2::date) + INTERVAL '1 month'
+            GROUP BY e.grupo_muscular
+            ORDER BY total_series DESC
+        `, [usuarioId, dataRef]);
 
         const dados = {};
         result.rows.forEach(row => {

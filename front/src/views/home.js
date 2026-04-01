@@ -5,6 +5,7 @@ import { AuthContext } from "../AuthContext";
 import '../styles/home.css';
 import PullToRefresh from './components/PullToRefresh';
 import useSocketRefresh from '../hooks/useSocketRefresh';
+import CorpoMuscular from './components/CorpoMuscular';
 
 const WEEK = [
     { short: 'Seg', full: 'Segunda-feira', jsDay: 1 },
@@ -29,6 +30,7 @@ function Home() {
     const [exerciciosTreinoDoDia, setExerciciosTreinoDoDia] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [musculosSemana, setMusculosSemana] = useState({});
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -112,10 +114,25 @@ function Home() {
             if (treinoDoDia) fetchExerciciosTreino(treinoDoDia.id, token);
 
             fetchTreinoAtivo(userId, token);
+            fetchMusculosSemana(userId, token);
         } catch {
             setError('Erro ao buscar os treinos');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchMusculosSemana = async (userId, token) => {
+        try {
+            const res = await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/musculos-semana`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            if (!res.ok) return;
+            const data = await res.json();
+            setMusculosSemana(data);
+        } catch {
+            console.error('Erro ao buscar músculos da semana');
         }
     };
 
@@ -449,6 +466,18 @@ function Home() {
                             </div>
 
                         </div>
+
+                        {/* ── MAPA MUSCULAR DA SEMANA ── */}
+                        <div style={styles.weekSection}>
+                            <div style={styles.weekHeader}>
+                                <span style={styles.weekTitle}>Músculos desta semana</span>
+                                {Object.keys(musculosSemana).length === 0 && (
+                                    <span style={styles.weekEmpty}>Nenhum treino registrado</span>
+                                )}
+                            </div>
+                            <CorpoMuscular dados={musculosSemana} />
+                        </div>
+
                     </>
                 ) : (
                     <p style={{ color: 'var(--h-text)', padding: '2rem' }}>Você não está logado.</p>
@@ -457,5 +486,31 @@ function Home() {
         </PageStateHandler>
     );
 }
+
+const styles = {
+    weekSection: {
+        margin: '8px 20px 0',
+        background: 'var(--h-bg)',
+        borderRadius: 16,
+        border: '1px solid var(--h-border)',
+        overflow: 'hidden',
+    },
+    weekHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '12px 14px 0',
+    },
+    weekTitle: {
+        fontSize: 12,
+        fontWeight: 700,
+        color: 'var(--h-text)',
+        letterSpacing: '0.02em',
+    },
+    weekEmpty: {
+        fontSize: 11,
+        color: 'var(--h-text-muted)',
+    },
+};
 
 export default Home;

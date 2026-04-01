@@ -40,6 +40,7 @@ import HistoricoAlunos from "./views/professores/HistoricoAlunos";
 import ChatView from "./views/chat/ChatView";
 import ChatsList from "./views/chat/ChatsList";
 import CardioForm from "./views/cardio/CardioForm";
+import TestBodyMap from "./views/test/TestBodyMap";
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }) {
@@ -129,6 +130,7 @@ function AppContent() {
                 <Route path="/chat/:chatId" element={<ChatView />} />
                 <Route path="/meus-chats" element={<ChatsList />} />
                 <Route path="/cardio/:id/new" element={<ProtectedRoute><CardioForm /></ProtectedRoute>} />
+                <Route path="/test-body" element={<TestBodyMap />} />
 
             </Routes>
 
