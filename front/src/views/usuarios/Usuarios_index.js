@@ -2,11 +2,66 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import useSocketRefresh from '../../hooks/useSocketRefresh';
+import PlanosModal from '../professores/PlanosModal';
 import '../../styles/home.css';
 import '../../styles/AlunosIndex.css';
 import '../../styles/Vinculos.css';
 
 const API = process.env.REACT_APP_API_BASE_URL;
+
+function PlanoBanner({ statusPlano, onVerPlanos }) {
+    if (!statusPlano) return null;
+    const { plano, total_alunos, limite } = statusPlano;
+    if (!limite) return null;
+
+    const pct       = total_alunos / limite;
+    const restantes = limite - total_alunos;
+    const atingido  = total_alunos >= limite;
+    const alerta    = !atingido && pct >= 0.7;
+    const cor       = atingido ? '#FC8181' : alerta ? '#F6AD55' : '#4A90D9';
+    const nomePlano = plano.charAt(0).toUpperCase() + plano.slice(1);
+
+    return (
+        <div style={{
+            margin: '0 16px 14px',
+            padding: '12px 14px',
+            background: atingido ? 'rgba(252,129,129,0.07)' : alerta ? 'rgba(246,173,85,0.07)' : 'rgba(74,144,217,0.06)',
+            border: `1px solid ${atingido ? 'rgba(252,129,129,0.25)' : alerta ? 'rgba(246,173,85,0.25)' : 'rgba(74,144,217,0.15)'}`,
+            borderRadius: 14,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+        }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={cor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: cor, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.03em' }}>
+                        {total_alunos}/{limite} alunos · Plano {nomePlano}
+                    </span>
+                </div>
+                <button onClick={onVerPlanos} style={{ background: 'none', border: 'none', color: cor, fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', fontFamily: "'Barlow', sans-serif", padding: 0 }}>
+                    Ver planos →
+                </button>
+            </div>
+
+            <div style={{ height: 4, background: 'rgba(128,128,128,0.15)', borderRadius: 99, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${Math.min(pct * 100, 100)}%`, background: cor, borderRadius: 99, transition: 'width 0.6s ease' }} />
+            </div>
+
+            <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', fontFamily: "'Barlow', sans-serif" }}>
+                {atingido
+                    ? 'Limite atingido. Assine um plano para adicionar mais alunos.'
+                    : alerta
+                    ? `Restam apenas ${restantes} vaga${restantes !== 1 ? 's' : ''} no plano gratuito.`
+                    : `${restantes} vagas disponíveis no plano gratuito.`
+                }
+            </span>
+        </div>
+    );
+}
 
 function AvatarPlaceholder({ size = 48 }) {
     return (
@@ -21,8 +76,9 @@ function AvatarPlaceholder({ size = 48 }) {
 const Usuarios_index = () => {
     const { userId, clearMensagensNaoLidas } = useContext(AuthContext);
     const navigate = useNavigate();
+    const token    = localStorage.getItem('token');
 
-    const [aba,             setAba]             = useState('meus');   // 'meus' | 'disponiveis' | 'pendentes'
+    const [aba,             setAba]             = useState('meus');
     const [procurando,      setProcurando]      = useState(false);
     const [meusAlunos,      setMeusAlunos]      = useState([]);
     const [alunosDisp,      setAlunosDisp]      = useState([]);
@@ -30,27 +86,31 @@ const Usuarios_index = () => {
     const [pedidosEnviados, setPedidosEnviados] = useState(new Set());
     const [searchTerm,      setSearchTerm]      = useState('');
     const [loading,         setLoading]         = useState(true);
+    const [statusPlano,     setStatusPlano]     = useState(null);
+    const [modalPlanos,     setModalPlanos]     = useState(false);
 
     const carregar = useCallback(async () => {
         setLoading(true);
         try {
-            const [userRes, meusRes, dispRes, pendRes] = await Promise.all([
-                fetch(`${API}/usuarios/${userId}`),
-                fetch(`${API}/vinculos/meus-alunos/${userId}`),
-                fetch(`${API}/vinculos/alunos-disponiveis`),
-                fetch(`${API}/vinculos/pendentes/${userId}`),
+            const headers = { Authorization: `Bearer ${token}` };
+            const [userRes, meusRes, dispRes, pendRes, planoRes] = await Promise.all([
+                fetch(`${API}/usuarios/${userId}`,                              { headers }),
+                fetch(`${API}/vinculos/meus-alunos/${userId}`,                 { headers }),
+                fetch(`${API}/vinculos/alunos-disponiveis`,                    { headers }),
+                fetch(`${API}/vinculos/pendentes/${userId}`,                   { headers }),
+                fetch(`${API}/vinculos/professor/${userId}/status-plano`,      { headers }),
             ]);
 
-            const [userData, meusData, dispData, pendData] = await Promise.all([
-                userRes.json(), meusRes.json(), dispRes.json(), pendRes.json(),
+            const [userData, meusData, dispData, pendData, planoData] = await Promise.all([
+                userRes.json(), meusRes.json(), dispRes.json(), pendRes.json(), planoRes.json(),
             ]);
 
             setProcurando(userData.procurando || false);
             setMeusAlunos(meusData);
             setAlunosDisp(dispData.filter(a => a.id !== Number(userId)));
             setPendentes(pendData);
+            setStatusPlano(planoData);
 
-            // Inclui todos os pedidos pendentes (meus ou deles)
             const enviados = new Set(pendData.map(p => p.aluno_id));
             setPedidosEnviados(enviados);
         } catch (err) {
@@ -58,7 +118,7 @@ const Usuarios_index = () => {
         } finally {
             setLoading(false);
         }
-    }, [userId]);
+    }, [userId, token]);
 
     useEffect(() => { carregar(); clearMensagensNaoLidas(); }, [carregar]);
     useSocketRefresh(carregar);
@@ -80,10 +140,15 @@ const Usuarios_index = () => {
         try {
             const res = await fetch(`${API}/vinculos`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ professor_id: userId, aluno_id: alunoId, iniciado_por: userId }),
             });
-            if (res.ok) setPedidosEnviados(prev => new Set([...prev, alunoId]));
+            if (res.ok) {
+                setPedidosEnviados(prev => new Set([...prev, alunoId]));
+            } else {
+                const data = await res.json();
+                if (data.code === 'LIMITE_PLANO') setModalPlanos(true);
+            }
         } catch (err) {
             console.error('Erro ao enviar pedido:', err);
         }
@@ -133,6 +198,19 @@ const Usuarios_index = () => {
                     {loading ? 'Carregando...' : `${meusAlunos.length} aluno${meusAlunos.length !== 1 ? 's' : ''} vinculado${meusAlunos.length !== 1 ? 's' : ''}`}
                 </p>
             </div>
+
+            {/* ── BANNER PLANO ── */}
+            {!loading && (
+                <PlanoBanner statusPlano={statusPlano} onVerPlanos={() => setModalPlanos(true)} />
+            )}
+
+            {/* ── MODAL PLANOS ── */}
+            {modalPlanos && (
+                <PlanosModal
+                    planoAtual={statusPlano?.plano || 'gratuito'}
+                    onClose={() => setModalPlanos(false)}
+                />
+            )}
 
             {/* ── TOGGLE PROCURANDO ── */}
             <div className={`vk-toggle-bar${procurando ? ' active' : ''}`}>

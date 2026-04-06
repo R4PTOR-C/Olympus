@@ -4,6 +4,29 @@ const db      = require('./db');
 const { enviarPush } = require('./push');
 const router  = express.Router();
 
+const LIMITES_PLANO = { gratuito: 10, pro: 50, elite: null };
+
+// ─────────────────────────────────────────
+// STATUS DO PLANO DO PROFESSOR
+// GET /vinculos/professor/:professorId/status-plano
+// ─────────────────────────────────────────
+router.get('/professor/:professorId/status-plano', async (req, res) => {
+    const { professorId } = req.params;
+    try {
+        const [planRes, countRes] = await Promise.all([
+            db.query(`SELECT plano FROM professores WHERE usuario_id = $1`, [professorId]),
+            db.query(`SELECT COUNT(*) FROM vinculos WHERE professor_id = $1 AND status = 'ativo'`, [professorId]),
+        ]);
+        const plano        = planRes.rows[0]?.plano || 'gratuito';
+        const total_alunos = parseInt(countRes.rows[0]?.count || 0);
+        const limite       = LIMITES_PLANO[plano] ?? null;
+        res.json({ plano, total_alunos, limite, pode_adicionar: limite === null || total_alunos < limite });
+    } catch (err) {
+        console.error('Erro ao buscar status do plano:', err);
+        res.status(500).json({ error: 'Erro interno.' });
+    }
+});
+
 // ─────────────────────────────────────────
 // TOGGLE PROCURANDO
 // PATCH /vinculos/procurando/:userId
@@ -81,6 +104,17 @@ router.get('/alunos-disponiveis', async (req, res) => {
 router.post('/', async (req, res) => {
     const { professor_id, aluno_id, iniciado_por } = req.body;
     try {
+        // Verifica limite do plano do professor
+        const [planRes, countRes] = await Promise.all([
+            db.query(`SELECT plano FROM professores WHERE usuario_id = $1`, [professor_id]),
+            db.query(`SELECT COUNT(*) FROM vinculos WHERE professor_id = $1 AND status = 'ativo'`, [professor_id]),
+        ]);
+        const plano  = planRes.rows[0]?.plano || 'gratuito';
+        const limite = LIMITES_PLANO[plano] ?? null;
+        if (limite !== null && parseInt(countRes.rows[0].count) >= limite) {
+            return res.status(403).json({ error: 'Limite de alunos do plano atingido.', code: 'LIMITE_PLANO' });
+        }
+
         // Verifica se o aluno já tem vínculo ativo
         const ativo = await db.query(
             `SELECT id FROM vinculos WHERE aluno_id = $1 AND status = 'ativo'`,

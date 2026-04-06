@@ -16,14 +16,17 @@ function AvatarPlaceholder() {
 
 function HistoricoAlunos() {
     const { userId } = useContext(AuthContext);
-    const navigate = useNavigate();
+    const navigate   = useNavigate();
+    const token      = localStorage.getItem('token');
 
     const [alunos,  setAlunos]  = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchAlunos = useCallback(async () => {
         try {
-            const res = await fetch(`${API}/vinculos/meus-alunos/${userId}`);
+            const res = await fetch(`${API}/vinculos/meus-alunos/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             const data = await res.json();
             setAlunos(Array.isArray(data) ? data : []);
         } catch (err) {
@@ -31,7 +34,7 @@ function HistoricoAlunos() {
         } finally {
             setLoading(false);
         }
-    }, [userId]);
+    }, [userId, token]);
 
     useEffect(() => { fetchAlunos(); }, [fetchAlunos]);
 
@@ -41,7 +44,7 @@ function HistoricoAlunos() {
 
                 {/* ── HEADER ── */}
                 <div className="hx-page-header">
-                    <span className="hx-page-title">Histórico</span>
+                    <span className="hx-page-title">Meus Alunos</span>
                     {!loading && alunos.length > 0 && (
                         <span className="hx-page-count">
                             {alunos.length} aluno{alunos.length !== 1 ? 's' : ''}
