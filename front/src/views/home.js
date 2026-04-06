@@ -6,6 +6,7 @@ import '../styles/home.css';
 import PullToRefresh from './components/PullToRefresh';
 import useSocketRefresh from '../hooks/useSocketRefresh';
 import CorpoMuscular from './components/CorpoMuscular';
+import AguaWidget from './components/AguaWidget';
 
 const WEEK = [
     { short: 'Seg', full: 'Segunda-feira', jsDay: 1 },
@@ -466,6 +467,9 @@ function Home() {
                             </div>
 
                         </div>
+
+                        {/* ── WIDGET HIDRATAÇÃO ── */}
+                        <AguaWidget userId={user.userId} />
 
                         {/* ── MAPA MUSCULAR DA SEMANA ── */}
                         <div style={styles.weekSection} className="h-week-body-section">
