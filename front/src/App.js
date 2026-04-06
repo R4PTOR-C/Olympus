@@ -3,7 +3,8 @@ import React, { useContext, useEffect } from 'react';
 import { useSwipeNavigation } from './hooks/useSwipeNavigation';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import Usuarios_index from './views/usuarios/Usuarios_index';
-import Usuarios_new from "./views/usuarios/Usuarios_new";
+// import Usuarios_new from "./views/usuarios/Usuarios_new"; // substituído pelo Onboarding
+import Onboarding from "./views/usuarios/Onboarding";
 import Usuarios_view from "./views/usuarios/Usuarios_view";
 import Login from "./views/login";
 import Home from "./views/home";
@@ -101,7 +102,8 @@ function AppContent() {
                 <Route path="/" element={
                     loggedIn ? <Navigate to={`/home/${userId}`} /> : <Login />
                 } />
-                <Route path="/sign-in" element={<Usuarios_new />} />
+                <Route path="/sign-in" element={<Onboarding />} />
+                <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/sign-in_professor" element={<Professor_new />} />
                 <Route path="/home/:id" element={<ProtectedRoute><Home /></ProtectedRoute>} />
                 <Route path="/usuarios" element={<ProtectedRoute><Usuarios_index /></ProtectedRoute>} />

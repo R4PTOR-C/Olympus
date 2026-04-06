@@ -539,9 +539,17 @@ router.post('/usuarios/:usuarioId/treinos/:treinoId/iniciar', async (req, res) =
     const dataHoje = new Date().toISOString().split('T')[0];
 
     try {
+        // Finaliza qualquer treino em aberto de dias anteriores
+        await db.query(
+            `UPDATE treinos_realizados
+             SET finalizado_em = NOW()
+             WHERE usuario_id = $1 AND finalizado_em IS NULL AND data::date < CURRENT_DATE`,
+            [usuarioId]
+        );
+
         // Verifica se já existe um treino em andamento
         const { rows } = await db.query(
-            `SELECT * FROM treinos_realizados 
+            `SELECT * FROM treinos_realizados
              WHERE usuario_id = $1 AND treino_id = $2 AND data = $3 AND finalizado_em IS NULL`,
             [usuarioId, treinoId, dataHoje]
         );
@@ -639,7 +647,7 @@ router.get('/usuarios/:usuarioId/treino-ativo', async (req, res) => {
                     t.nome_treino, t.imagem, t.grupo_muscular, t.dia_semana
              FROM treinos_realizados tr
              JOIN treinos t ON t.id = tr.treino_id
-             WHERE tr.usuario_id = $1 AND tr.finalizado_em IS NULL
+             WHERE tr.usuario_id = $1 AND tr.finalizado_em IS NULL AND tr.data::date = CURRENT_DATE
              ORDER BY tr.data DESC
              LIMIT 1`,
             [usuarioId]

@@ -79,11 +79,12 @@ function Usuarios_new() {
             const text = await res.text();
 
             if (res.ok) {
+                const data = JSON.parse(text);
                 setShowModal(true);
                 setTimeout(() => {
                     setShowModal(false);
-                    navigate('/');
-                }, 1500);
+                    navigate(`/onboarding/${data.id}`);
+                }, 1200);
             } else {
                 try {
                     const err = JSON.parse(text);

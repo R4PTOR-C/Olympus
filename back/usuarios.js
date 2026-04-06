@@ -135,7 +135,7 @@ router.put('/:id', upload.single('avatar'), async (req, res) => {
     let paramIndex = 1;
 
     // Lista de campos que podem ser atualizados
-    const permitidos = ['nome', 'email', 'genero', 'idade', 'data_nascimento', 'telefone', 'altura', 'peso', 'objetivo'];
+    const permitidos = ['nome', 'email', 'genero', 'idade', 'data_nascimento', 'telefone', 'altura', 'peso', 'objetivo', 'nivel_experiencia', 'dias_disponiveis', 'tempo_sessao', 'local_treino', 'onboarding_concluido'];
 
     try {
         // Monta a query apenas com os campos enviados no body
