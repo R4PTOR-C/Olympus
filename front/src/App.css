@@ -104,7 +104,7 @@ h1, h2, h3, small {
 /* LAYOUT — NAVBARS          */
 /* ========================= */
 body.with-chrome {
-    padding-top: var(--topbar-h);
+    padding-top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px));
     padding-bottom: calc(var(--bottombar-h) + env(safe-area-inset-bottom));
 }
 
