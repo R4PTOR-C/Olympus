@@ -591,12 +591,54 @@ router.post('/treinos_realizados/:id/finalizar', async (req, res) => {
     const { id } = req.params;
 
     try {
-        await db.query(
-            `UPDATE treinos_realizados
-             SET finalizado_em = NOW()
-             WHERE id = $1`,
+        const { rows: tr } = await db.query(
+            `UPDATE treinos_realizados SET finalizado_em = NOW() WHERE id = $1 RETURNING usuario_id`,
             [id]
         );
+
+        if (tr.length > 0) {
+            const { usuario_id } = tr[0];
+
+            // Upsert streak
+            const { rows: streakRows } = await db.query(
+                `INSERT INTO gamificacao_usuario (usuario_id, streak_atual, maior_streak, ultimo_treino_data)
+                 VALUES ($1, 1, 1, CURRENT_DATE)
+                 ON CONFLICT (usuario_id) DO UPDATE SET
+                     streak_atual = CASE
+                         WHEN gamificacao_usuario.ultimo_treino_data = CURRENT_DATE
+                             THEN gamificacao_usuario.streak_atual
+                         WHEN gamificacao_usuario.ultimo_treino_data = CURRENT_DATE - INTERVAL '1 day'
+                             THEN gamificacao_usuario.streak_atual + 1
+                         ELSE 1
+                     END,
+                     maior_streak = GREATEST(
+                         gamificacao_usuario.maior_streak,
+                         CASE
+                             WHEN gamificacao_usuario.ultimo_treino_data = CURRENT_DATE
+                                 THEN gamificacao_usuario.streak_atual
+                             WHEN gamificacao_usuario.ultimo_treino_data = CURRENT_DATE - INTERVAL '1 day'
+                                 THEN gamificacao_usuario.streak_atual + 1
+                             ELSE 1
+                         END
+                     ),
+                     ultimo_treino_data = CURRENT_DATE
+                 RETURNING streak_atual, maior_streak`,
+                [usuario_id]
+            );
+
+            // Engine de gamificação — credita XP dos objetivos
+            const { processarEvento } = require('./gamificacao_engine');
+            const gamResult = await processarEvento('treino_finalizado', usuario_id);
+
+            const streak = streakRows[0] || {};
+            return res.status(200).json({
+                message:      'Treino finalizado com sucesso.',
+                streak_atual: streak.streak_atual,
+                maior_streak: streak.maior_streak,
+                xp_ganho:     gamResult.xp_ganho,
+                completados:  gamResult.completados,
+            });
+        }
 
         res.status(200).json({ message: 'Treino finalizado com sucesso.' });
     } catch (error) {

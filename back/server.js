@@ -22,7 +22,8 @@ const chatsRouter   = require("./chats");
 const vinculosRouter = require("./vinculos");
 const pushRouter    = require("./push");
 const cardioRouter  = require("./cardio");
-const aguaRouter    = require("./agua");
+const aguaRouter         = require("./agua");
+const gamificacaoRouter  = require("./gamificacao");
 
 // 🔹 Módulo separado para eventos de chat em tempo real
 const chatSocket = require("./socket/chatSocket");
@@ -92,7 +93,8 @@ app.use("/chat",    chatsRouter);
 app.use("/vinculos", vinculosRouter);
 app.use("/push",    pushRouter);
 app.use("/cardio",  cardioRouter);
-app.use("/agua",    aguaRouter);
+app.use("/agua",         aguaRouter);
+app.use("/gamificacao",  gamificacaoRouter);
 
 // ------------------- ROTAS PROTEGIDAS -------------------
 

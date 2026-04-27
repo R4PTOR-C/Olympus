@@ -25,7 +25,7 @@ const MONTHS = [
 
 function Home() {
     const { darkMode } = useContext(AuthContext);
-    const [user, setUser] = useState({ loggedIn: false, userName: '', userId: null });
+    const [user, setUser] = useState({ loggedIn: false, userName: '', userId: null, streakAtual: 0, maiorStreak: 0 });
     const [treinos, setTreinos] = useState([]);
     const [treinoAtivo, setTreinoAtivo] = useState(null);
     const [exerciciosTreinoDoDia, setExerciciosTreinoDoDia] = useState([]);
@@ -50,7 +50,7 @@ function Home() {
             .then(r => r.json())
             .then(data => {
                 if (data.loggedIn) {
-                    setUser({ loggedIn: true, userName: data.userName, userId: data.userId });
+                    setUser({ loggedIn: true, userName: data.userName, userId: data.userId, streakAtual: data.streakAtual || 0, maiorStreak: data.maiorStreak || 0 });
                     fetchTreinos(data.userId, token);
                 } else {
                     setLoading(false);
@@ -228,16 +228,32 @@ function Home() {
                                 <div className="h-desktop-hero-greeting">{getGreeting()}</div>
                                 <h1 className="h-desktop-hero-name">{user.userName.split(' ')[0]}</h1>
                             </div>
-                            <div className="h-desktop-hero-right">
+                            <div className="h-desktop-hero-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                                 <div className="h-desktop-hero-day">{today}</div>
                                 <div className="h-desktop-hero-date">{dateRange}</div>
+                                {user.streakAtual > 0 && (
+                                    <div className="h-streak-badge" title={`Maior sequência: ${user.maiorStreak} dias`} onClick={() => navigate('/progresso')} style={{ cursor: 'pointer' }}>
+                                        <span className="h-streak-icon">🔥</span>
+                                        <span className="h-streak-count">{user.streakAtual}</span>
+                                        <span className="h-streak-label">dias</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* ── WEEK STRIP ── */}
                         <div className="h-week-header">
                             <span className="h-week-header-title">Semana</span>
-                            <span className="h-week-header-date">{today.split('-')[0].trim()} · {dateRange}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                {user.streakAtual > 0 && (
+                                    <div className="h-streak-badge h-streak-mobile" title={`Maior sequência: ${user.maiorStreak} dias`} onClick={() => navigate('/progresso')} style={{ cursor: 'pointer' }}>
+                                        <span className="h-streak-icon">🔥</span>
+                                        <span className="h-streak-count">{user.streakAtual}</span>
+                                        <span className="h-streak-label">dias</span>
+                                    </div>
+                                )}
+                                <span className="h-week-header-date">{today.split('-')[0].trim()} · {dateRange}</span>
+                            </div>
                         </div>
                         <div className="h-week-strip">
                             {WEEK.map(day => {

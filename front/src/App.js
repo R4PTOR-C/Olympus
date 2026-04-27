@@ -43,6 +43,7 @@ import ChatsList from "./views/chat/ChatsList";
 import CardioForm from "./views/cardio/CardioForm";
 import TestBodyMap from "./views/test/TestBodyMap";
 import Agua from "./views/agua/Agua";
+import Progresso from "./views/gamificacao/Progresso";
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }) {
@@ -135,6 +136,7 @@ function AppContent() {
                 <Route path="/cardio/:id/new" element={<ProtectedRoute><CardioForm /></ProtectedRoute>} />
                 <Route path="/test-body" element={<TestBodyMap />} />
                 <Route path="/agua" element={<Agua />} />
+                <Route path="/progresso" element={<ProtectedRoute><Progresso /></ProtectedRoute>} />
 
             </Routes>
 

@@ -6,6 +6,7 @@ import PullToRefresh from '../components/PullToRefresh';
 import useSocketRefresh from '../../hooks/useSocketRefresh';
 import '../../styles/UsuariosView.css';
 import '../../styles/Cardio.css';
+import ConquistasCard from '../components/ConquistasCard';
 
 const diasSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
@@ -282,6 +283,11 @@ const UsuariosView = () => {
                     </button>
                 </div>
             </div>
+
+            {/* ── CONQUISTAS ── */}
+            {funcaoAtiva !== 'Professor' && parseInt(id) === parseInt(userId) && (
+                <ConquistasCard userId={userId} />
+            )}
 
             {/* ── BOARD ── */}
             <DragDropContext onDragEnd={handleDragEnd}>

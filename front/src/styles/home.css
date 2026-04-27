@@ -879,6 +879,7 @@ body.dark-mode .h-muscle-wrap img {
     }
 
     /* Week header + strip */
+    /* (streak badge styles are outside media query — see below) */
     .h-week-header {
         padding: 0 0 10px;
     }
@@ -985,3 +986,41 @@ body.dark-mode .h-muscle-wrap img {
     }
 }
 
+
+/* ── STREAK BADGE ── */
+.h-streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 107, 0, 0.1);
+    border: 1px solid rgba(255, 107, 0, 0.25);
+    border-radius: 99px;
+    padding: 4px 10px 4px 7px;
+    cursor: default;
+    user-select: none;
+}
+
+.h-streak-icon {
+    font-size: 0.9rem;
+    line-height: 1;
+}
+
+.h-streak-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    color: #FF6B00;
+    line-height: 1;
+    letter-spacing: 0.03em;
+}
+
+.h-streak-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: rgba(255, 107, 0, 0.65);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+@media (min-width: 768px) {
+    .h-streak-mobile { display: none; }
+}

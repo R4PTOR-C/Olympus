@@ -42,7 +42,7 @@
 /* ── HEADER (cinza claro) ── */
 .auth-header {
     background: white;
-    padding: 28px 24px 22px;
+    padding: 16px 24px 0;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -66,18 +66,17 @@
     object-fit: contain;
     position: relative;
     z-index: 1;
-    margin-bottom: -75px;
+    margin-bottom: -110px;
 }
 
 .auth-logo-texto {
     display: block;
-    width: 160px;
+    width: 250px;
     object-fit: contain;
     margin: 0 auto;
     position: relative;
     z-index: 1;
-    margin-bottom: -50px;
-
+    margin-bottom: -90px;
 }
 
 .auth-header-icon {
@@ -116,7 +115,7 @@
 
 /* ── BODY ── */
 .auth-body {
-    padding: 24px 24px 8px;
+    padding: 12px 24px 8px;
 }
 
 /* ── FIELDS ── */

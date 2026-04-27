@@ -36,6 +36,10 @@ router.post('/', async (req, res) => {
              VALUES ($1, $2, $3, $4, $5) RETURNING *`,
             [usuario_id, exercicio_id, duracao_min, distancia_km || null, data || new Date().toISOString().split('T')[0]]
         );
+
+        const { processarEvento } = require('./gamificacao_engine');
+        await processarEvento('cardio_registrado', usuario_id);
+
         res.status(201).json(rows[0]);
     } catch (err) {
         console.error(err);

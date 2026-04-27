@@ -46,7 +46,11 @@ router.post('/usuarios/:userId', async (req, res) => {
             `INSERT INTO agua_registros (usuario_id, ml) VALUES ($1, $2) RETURNING *`,
             [userId, ml]
         );
-        res.status(201).json(rows[0]);
+
+        const { processarEvento } = require('./gamificacao_engine');
+        const gamResult = await processarEvento('agua_adicionada', userId);
+
+        res.status(201).json({ ...rows[0], xp_ganho: gamResult.xp_ganho, completados: gamResult.completados });
     } catch (err) {
         console.error('Erro ao registrar água:', err);
         res.status(500).json({ error: 'Erro ao registrar água.' });

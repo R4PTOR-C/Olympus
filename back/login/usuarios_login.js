@@ -66,7 +66,13 @@ function authenticateJWT(req, res, next) {
 // Rota para verificar a sessão do usuário (substituída para JWT)
 router.get('/session', authenticateJWT, async (req, res) => {
     try {
-        const { rows } = await db.query('SELECT funcao_extra, avatar FROM usuarios WHERE id = $1', [req.user.userId]);
+        const { rows } = await db.query(
+            `SELECT u.funcao_extra, u.avatar, g.streak_atual, g.maior_streak
+             FROM usuarios u
+             LEFT JOIN gamificacao_usuario g ON g.usuario_id = u.id
+             WHERE u.id = $1`,
+            [req.user.userId]
+        );
         const fresh = rows[0] || {};
         res.json({
             loggedIn: true,
@@ -74,7 +80,9 @@ router.get('/session', authenticateJWT, async (req, res) => {
             userId: req.user.userId,
             userFuncao: req.user.userFuncao,
             userFuncaoExtra: fresh.funcao_extra || null,
-            userAvatar: fresh.avatar || req.user.userAvatar
+            userAvatar: fresh.avatar || req.user.userAvatar,
+            streakAtual: fresh.streak_atual || 0,
+            maiorStreak: fresh.maior_streak || 0,
         });
     } catch {
         res.json({

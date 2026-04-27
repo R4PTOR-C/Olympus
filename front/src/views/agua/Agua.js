@@ -262,7 +262,7 @@ export default function Agua() {
                         </div>
                         <div style={S.statDivider} />
                         <div style={S.statBlock}>
-                            <span style={{ ...S.statVal, color: metaAtingida ? '#48BB78' : '#E8EDF5' }}>{restante}</span>
+                            <span style={{ ...S.statVal, color: metaAtingida ? '#48BB78' : 'var(--color-text)' }}>{restante}</span>
                             <span style={S.statLbl}>ml restantes</span>
                         </div>
                         <div style={S.statDivider} />
@@ -382,7 +382,7 @@ export default function Agua() {
 const S = {
     page: {
         minHeight: '100dvh',
-        background: '#0E1117',
+        background: 'var(--color-bg)',
         display: 'flex',
         justifyContent: 'center',
         padding: '24px 16px 80px',
@@ -401,19 +401,19 @@ const S = {
     titulo: {
         fontFamily: "'Bebas Neue', sans-serif",
         fontSize: '1.8rem',
-        color: '#E8EDF5',
+        color: 'var(--color-text)',
         letterSpacing: '0.05em',
     },
     subtitulo: {
         fontFamily: "'Barlow', sans-serif",
         fontSize: '0.78rem',
-        color: 'rgba(232,237,245,0.35)',
+        color: 'var(--color-text-dim)',
         margin: '2px 0 0',
         lineHeight: 1.4,
     },
     data: {
         fontSize: '0.8rem',
-        color: 'rgba(232,237,245,0.35)',
+        color: 'var(--color-text-dim)',
         textTransform: 'capitalize',
     },
     hero: {
@@ -422,9 +422,10 @@ const S = {
         gap: 24,
         marginBottom: 28,
         padding: '20px',
-        background: '#151B26',
+        background: 'var(--color-surface)',
         borderRadius: 20,
-        border: '1px solid rgba(74,144,217,0.12)',
+        border: '1px solid var(--color-border)',
+        boxShadow: 'var(--color-shadow)',
     },
     bottleWrap: {
         position: 'relative',
@@ -458,23 +459,23 @@ const S = {
     statVal: {
         fontFamily: "'Bebas Neue', sans-serif",
         fontSize: '1.6rem',
-        color: '#4A90D9',
+        color: 'var(--color-accent)',
         lineHeight: 1,
         letterSpacing: '0.03em',
     },
     statLbl: {
         fontSize: '0.7rem',
-        color: 'rgba(232,237,245,0.35)',
+        color: 'var(--color-text-dim)',
         letterSpacing: '0.04em',
     },
     statDivider: {
         height: 1,
-        background: 'rgba(255,255,255,0.06)',
+        background: 'var(--color-border)',
     },
     sectionLabel: {
         fontSize: '0.72rem',
         fontWeight: 700,
-        color: 'rgba(232,237,245,0.35)',
+        color: 'var(--color-text-dim)',
         letterSpacing: '0.1em',
         textTransform: 'uppercase',
         marginBottom: 10,
@@ -486,8 +487,8 @@ const S = {
         marginBottom: 10,
     },
     btnOpcao: {
-        background: '#151B26',
-        border: '1.5px solid rgba(74,144,217,0.2)',
+        background: 'var(--color-surface)',
+        border: '1.5px solid var(--color-border)',
         borderRadius: 14,
         padding: '14px 8px',
         cursor: 'pointer',
@@ -501,12 +502,12 @@ const S = {
     btnMl: {
         fontFamily: "'Bebas Neue', sans-serif",
         fontSize: '1.4rem',
-        color: '#E8EDF5',
+        color: 'var(--color-text)',
         lineHeight: 1,
     },
     btnUnit: {
         fontSize: '0.65rem',
-        color: 'rgba(232,237,245,0.35)',
+        color: 'var(--color-text-dim)',
         letterSpacing: '0.05em',
     },
     customRow: {
@@ -516,17 +517,17 @@ const S = {
     },
     customInput: {
         flex: 1,
-        background: '#151B26',
-        border: '1.5px solid rgba(255,255,255,0.08)',
+        background: 'var(--color-surface)',
+        border: '1.5px solid var(--color-border)',
         borderRadius: 14,
         padding: '13px 16px',
         fontFamily: "'Barlow', sans-serif",
         fontSize: '0.95rem',
-        color: '#E8EDF5',
+        color: 'var(--color-text)',
         outline: 'none',
     },
     btnAdd: {
-        background: '#4A90D9',
+        background: 'var(--color-accent)',
         border: 'none',
         borderRadius: 14,
         width: 50,
@@ -539,12 +540,13 @@ const S = {
         boxShadow: '0 4px 16px rgba(74,144,217,0.3)',
     },
     metaHint: {
-        color: 'rgba(74,144,217,0.5)',
+        color: 'var(--color-accent)',
         fontSize: '0.65rem',
+        opacity: 0.5,
     },
     metaPanel: {
-        background: '#151B26',
-        border: '1.5px solid rgba(74,144,217,0.25)',
+        background: 'var(--color-surface)',
+        border: '1.5px solid var(--color-border)',
         borderRadius: 16,
         padding: '14px 16px',
         marginBottom: 16,
@@ -561,13 +563,13 @@ const S = {
         fontFamily: "'Barlow Condensed', sans-serif",
         fontWeight: 700,
         fontSize: '0.78rem',
-        color: 'rgba(232,237,245,0.5)',
+        color: 'var(--color-text-muted)',
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
     },
     metaPanelHint: {
         fontSize: '0.7rem',
-        color: 'rgba(232,237,245,0.2)',
+        color: 'var(--color-text-dim)',
     },
     metaPanelRow: {
         display: 'flex',
@@ -578,8 +580,8 @@ const S = {
         flex: 1,
         display: 'flex',
         alignItems: 'center',
-        background: '#0E1117',
-        border: '1.5px solid rgba(74,144,217,0.4)',
+        background: 'var(--color-surface-2)',
+        border: '1.5px solid var(--color-accent)',
         borderRadius: 12,
         padding: '10px 14px',
         gap: 6,
@@ -591,19 +593,19 @@ const S = {
         outline: 'none',
         fontFamily: "'Bebas Neue', sans-serif",
         fontSize: '1.5rem',
-        color: '#E8EDF5',
+        color: 'var(--color-text)',
         lineHeight: 1,
         minWidth: 0,
     },
     metaPanelUnit: {
         fontFamily: "'Barlow', sans-serif",
         fontSize: '0.75rem',
-        color: 'rgba(232,237,245,0.3)',
+        color: 'var(--color-text-dim)',
         alignSelf: 'flex-end',
         paddingBottom: 2,
     },
     metaPanelConfirm: {
-        background: '#4A90D9',
+        background: 'var(--color-accent)',
         border: 'none',
         borderRadius: 12,
         width: 44,
@@ -617,13 +619,13 @@ const S = {
         boxShadow: '0 4px 14px rgba(74,144,217,0.3)',
     },
     metaPanelCancel: {
-        background: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: 'var(--color-surface-3)',
+        border: '1px solid var(--color-border)',
         borderRadius: 12,
         width: 44,
         height: 44,
         cursor: 'pointer',
-        color: 'rgba(232,237,245,0.4)',
+        color: 'var(--color-text-muted)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -631,12 +633,13 @@ const S = {
     },
     metaPanelSugestao: {
         fontSize: '0.72rem',
-        color: 'rgba(74,144,217,0.5)',
+        color: 'var(--color-accent)',
+        opacity: 0.5,
     },
     btnDesfazer: {
         background: 'none',
         border: 'none',
-        color: 'rgba(232,237,245,0.25)',
+        color: 'var(--color-text-dim)',
         fontSize: '0.75rem',
         cursor: 'pointer',
         padding: 0,
@@ -652,23 +655,23 @@ const S = {
         alignItems: 'center',
         gap: 10,
         padding: '10px 0',
-        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        borderBottom: '1px solid var(--color-border)',
     },
     timelineDot: {
         width: 6,
         height: 6,
         borderRadius: '50%',
-        background: '#4A90D9',
+        background: 'var(--color-accent)',
         flexShrink: 0,
     },
     timelineHora: {
         fontSize: '0.8rem',
-        color: 'rgba(232,237,245,0.35)',
+        color: 'var(--color-text-dim)',
         minWidth: 36,
     },
     timelineMl: {
         fontSize: '0.9rem',
-        color: '#E8EDF5',
+        color: 'var(--color-text)',
         fontWeight: 600,
     },
 };
