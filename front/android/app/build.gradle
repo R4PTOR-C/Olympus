@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.seu.dominio.olympus"
+    namespace "com.raptorc.olympus"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.seu.dominio.olympus"
+        applicationId "com.raptorc.olympus"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

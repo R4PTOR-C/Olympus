@@ -4,6 +4,9 @@
   "private": true,
   "proxy": "https://olympus-hbyu.onrender.com",
   "dependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/cli": "^8.3.1",
+    "@capacitor/core": "^8.3.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@hello-pangea/dnd": "^18.0.1",

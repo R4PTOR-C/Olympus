@@ -38,7 +38,8 @@ const io = new Server(server, {
     cors: {
         origin: [
             process.env.FRONTEND_URL || "http://localhost:3000",
-            "https://olympus-33lb.onrender.com"
+            "https://olympus-33lb.onrender.com",
+            "https://localhost"
         ],
         methods: ["GET", "POST"]
     }
@@ -57,7 +58,8 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"],
     origin: [
         process.env.FRONTEND_URL || "http://localhost:3000",
-        "https://olympus-33lb.onrender.com"
+        "https://olympus-33lb.onrender.com",
+        "https://localhost"
     ]
 }));
 
