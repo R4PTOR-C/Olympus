@@ -21,7 +21,7 @@ function NavbarInferior() {
 
     const herculesActive = isActive('/hercules');
 
-    if (keyboardOpen && herculesActive) return null;
+    if (keyboardOpen) return null;
     const isProfessor = funcaoAtiva === 'Professor';
 
     // ── Navbar do Professor ──
