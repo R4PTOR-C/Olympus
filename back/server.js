@@ -31,7 +31,7 @@ const chatSocket = require("./socket/chatSocket");
 const app = express();
 const server = http.createServer(app); // Cria o servidor HTTP
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || "seu_jwt_secret";
+const { JWT_SECRET } = require("./config/jwt");
 
 // 🔹 Configuração do Socket.IO
 const io = new Server(server, {

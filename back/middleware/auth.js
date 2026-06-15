@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const db  = require('../db');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+const { JWT_SECRET } = require('../config/jwt');
 
 // Verifica JWT e popula req.user
 function authenticate(req, res, next) {

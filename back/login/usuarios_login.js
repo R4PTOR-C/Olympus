@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken'); // Importa o pacote jsonwebtoken
 const db = require('../db');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key'; // Chave secreta para o JWT
+const { JWT_SECRET } = require('../config/jwt'); // Chave secreta para o JWT
 
 // Rota de login
 router.post('/login', async (req, res) => {
