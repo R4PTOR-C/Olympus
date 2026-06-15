@@ -76,7 +76,7 @@ const ProfessoresEdit = () => {
 
     useEffect(() => {
         Promise.all([
-            fetch(`${API}/usuarios/${id}`).then(r => { if (!r.ok) throw new Error(`Erro ${r.status}`); return r.json(); }),
+            fetch(`${API}/usuarios/${id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then(r => { if (!r.ok) throw new Error(`Erro ${r.status}`); return r.json(); }),
             fetch(`${API}/professores/${id}`).then(r => r.json()).catch(() => ({})),
         ])
             .then(([u, p]) => {
@@ -103,7 +103,7 @@ const ProfessoresEdit = () => {
         const formData = new FormData();
         formData.append('avatar', file);
         try {
-            const res  = await fetch(`${API}/usuarios/${id}`, { method: 'PUT', body: formData });
+            const res  = await fetch(`${API}/usuarios/${id}`, { method: 'PUT', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }, body: formData });
             if (!res.ok) throw new Error('Erro ao atualizar avatar');
             const data = await res.json();
             setUsuario(prev => ({ ...prev, avatar: data.usuario.avatar }));
@@ -118,7 +118,7 @@ const ProfessoresEdit = () => {
                 setProfessor(prev => ({ ...prev, [campo]: valor }));
                 const res = await fetch(`${API}/professores/${id}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
                     body: JSON.stringify({ [campo]: valor }),
                 });
                 if (!res.ok) throw new Error('Erro ao atualizar perfil');
@@ -127,7 +127,7 @@ const ProfessoresEdit = () => {
                 setUsuario(prev => ({ ...prev, [campo]: valor }));
                 const formData = new FormData();
                 formData.append(campo, valor);
-                const res = await fetch(`${API}/usuarios/${id}`, { method: 'PUT', body: formData });
+                const res = await fetch(`${API}/usuarios/${id}`, { method: 'PUT', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }, body: formData });
                 if (!res.ok) throw new Error('Erro ao atualizar usuário');
                 const data = await res.json();
                 updateUser?.({ userName: data.usuario.nome, avatar: data.usuario.avatar });
@@ -193,7 +193,7 @@ const ProfessoresEdit = () => {
         try {
             await fetch(`${API}/usuarios/${id}/funcao-extra`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
                 body: JSON.stringify({ funcao_extra: null }),
             });
             setUsuario(prev => ({ ...prev, funcao_extra: null }));
@@ -216,7 +216,7 @@ const ProfessoresEdit = () => {
         try {
             await fetch(`${API}/usuarios/${id}/funcao-extra`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
                 body: JSON.stringify({ funcao_extra: 'Aluno' }),
             });
             setUsuario(prev => ({ ...prev, funcao_extra: 'Aluno' }));

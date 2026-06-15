@@ -23,7 +23,7 @@ function Exercicios_edit() {
     const [snack, setSnack]              = useState({ open: false, msg: '', severity: 'success' });
 
     useEffect(() => {
-        fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios/exercicios/${id}`)
+        fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios/exercicios/${id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
             .then(r => r.json())
             .then(data => {
                 setNome(data.nome_exercicio);
@@ -59,6 +59,7 @@ function Exercicios_edit() {
         try {
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/exercicios/${id}`, {
                 method: 'PUT',
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 body: formData,
             });
             if (res.ok) {

@@ -26,9 +26,9 @@ const CardioForm = () => {
     const [sucesso, setSucesso] = useState(false);
 
     useEffect(() => {
-        fetch(`${API}/exercicios`)
+        fetch(`${API}/exercicios`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
             .then(r => r.json())
-            .then(data => setExercicios(data.filter(e => e.grupo_muscular === 'Cardio')))
+            .then(data => setExercicios(Array.isArray(data) ? data.filter(e => e.grupo_muscular === 'Cardio') : []))
             .catch(console.error);
     }, []);
 
@@ -45,9 +45,10 @@ const CardioForm = () => {
         if (!exercicioSel) return;
         setSubmitting(true);
         try {
+            const token = localStorage.getItem('token');
             const res = await fetch(`${API}/cardio`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
                     usuario_id: id,
                     exercicio_id: exercicioSel.id,

@@ -126,15 +126,17 @@ const TreinosEdit = () => {
                 const [treinoRes, savedRes, exRes, treinosRes] = await Promise.all([
                     fetch(`${API}/treinos/treinos/${treinoId}`),
                     fetch(`${API}/treinos/treinos/${treinoId}/exercicios`),
-                    fetch(`${API}/exercicios`),
+                    fetch(`${API}/exercicios`, { headers: authH }),
                     fetch(`${API}/treinos/usuarios/${id}/treinos`, { headers: authH }),
                 ]);
                 if (!treinoRes.ok) throw new Error(`Erro ao buscar treino (${treinoRes.status})`);
                 const treinoData = await treinoRes.json();
                 const treinosList = await treinosRes.json();
                 setTreino(treinoData);
-                setExerciciosSalvos(await savedRes.json());
-                setExercicios(await exRes.json());
+                const savedData = await savedRes.json();
+                const exData = await exRes.json();
+                setExerciciosSalvos(Array.isArray(savedData) ? savedData : []);
+                setExercicios(Array.isArray(exData) ? exData : []);
                 setDiasOcupados(
                     Array.isArray(treinosList)
                         ? treinosList.filter(t => t.id !== parseInt(treinoId)).map(t => t.dia_semana)

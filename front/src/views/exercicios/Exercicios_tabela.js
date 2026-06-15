@@ -67,9 +67,9 @@ const Exercicios_tabela = () => {
     const [gifModal, setGifModal]       = useState(null);
 
     useEffect(() => {
-        fetch(`${apiUrl}/exercicios`)
+        fetch(`${apiUrl}/exercicios`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
             .then(r => r.json())
-            .then(data => setExercicios(data))
+            .then(data => setExercicios(Array.isArray(data) ? data : []))
             .finally(() => setLoading(false));
     }, [apiUrl]);
 
@@ -92,7 +92,7 @@ const Exercicios_tabela = () => {
 
     const handleDelete = (id) => {
         if (!window.confirm('Deletar este exercício?')) return;
-        fetch(`${apiUrl}/exercicios/${id}`, { method: 'DELETE' })
+        fetch(`${apiUrl}/exercicios/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
             .then(r => { if (r.ok) setExercicios(prev => prev.filter(e => e.id !== id)); });
     };
 

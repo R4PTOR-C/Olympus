@@ -41,9 +41,11 @@ function ChatView() {
     useEffect(() => {
         const carregar = async () => {
             try {
+                const token = localStorage.getItem('token');
+                const headers = { Authorization: `Bearer ${token}` };
                 const [resChat, resMsgs] = await Promise.all([
-                    fetch(`${API_URL}/chat/${chatId}`),
-                    fetch(`${API_URL}/chat/mensagens/${chatId}`),
+                    fetch(`${API_URL}/chat/${chatId}`, { headers }),
+                    fetch(`${API_URL}/chat/mensagens/${chatId}`, { headers }),
                 ]);
                 const chat = await resChat.json();
                 const msgs = await resMsgs.json();

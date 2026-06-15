@@ -1,9 +1,10 @@
 const express = require('express');
 const db = require('./db');
+const { authenticate, requireVinculo, verificarVinculo } = require('./middleware/auth');
 const router = express.Router();
 
 // Lista sessões de um usuário (com join no nome do exercício)
-router.get('/usuarios/:usuarioId', async (req, res) => {
+router.get('/usuarios/:usuarioId', authenticate, requireVinculo('usuarioId'), async (req, res) => {
     const { usuarioId } = req.params;
     const { inicio, fim } = req.query;
     try {
@@ -28,9 +29,12 @@ router.get('/usuarios/:usuarioId', async (req, res) => {
 });
 
 // Cria uma sessão de cardio
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     const { usuario_id, exercicio_id, duracao_min, distancia_km, data } = req.body;
     try {
+        if (!(await verificarVinculo(req, usuario_id))) {
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
         const { rows } = await db.query(
             `INSERT INTO cardio_sessoes (usuario_id, exercicio_id, duracao_min, distancia_km, data)
              VALUES ($1, $2, $3, $4, $5) RETURNING *`,
@@ -48,11 +52,15 @@ router.post('/', async (req, res) => {
 });
 
 // Deleta uma sessão
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
     const { id } = req.params;
     try {
-        const { rowCount } = await db.query('DELETE FROM cardio_sessoes WHERE id = $1', [id]);
-        if (rowCount === 0) return res.status(404).json({ error: 'Sessão não encontrada' });
+        const { rows } = await db.query('SELECT usuario_id FROM cardio_sessoes WHERE id = $1', [id]);
+        if (rows.length === 0) return res.status(404).json({ error: 'Sessão não encontrada' });
+        if (!(await verificarVinculo(req, rows[0].usuario_id))) {
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
+        await db.query('DELETE FROM cardio_sessoes WHERE id = $1', [id]);
         res.json({ message: 'Sessão deletada' });
     } catch (err) {
         console.error(err);

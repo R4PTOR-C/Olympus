@@ -1,6 +1,10 @@
 const express = require('express');
 const db = require('./db'); // ajuste o caminho conforme sua estrutura
+const { authenticate } = require('./middleware/auth');
 const router = express.Router();
+
+// Autorização: o usuário só pode mexer no próprio perfil de professor
+const ehProprioUsuario = (req, id) => parseInt(req.user.userId) === parseInt(id);
 
 // GET - lista todos os professores
 router.get('/', async (req, res) => {
@@ -56,8 +60,9 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST - cria perfil de professor (upsert: recria se já existia)
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     const { usuario_id, cref, especialidade, experiencia, descricao, preco_hora, cidade, estado, contato } = req.body;
+    if (!ehProprioUsuario(req, usuario_id)) return res.status(403).json({ error: 'Acesso não autorizado.' });
 
     try {
         const result = await db.query(`
@@ -84,8 +89,9 @@ router.post('/', async (req, res) => {
 });
 
 // PUT - atualiza perfil de professor (upsert)
-router.put('/:usuario_id', async (req, res) => {
+router.put('/:usuario_id', authenticate, async (req, res) => {
     const { usuario_id } = req.params;
+    if (!ehProprioUsuario(req, usuario_id)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     const permitidos = ['cref', 'especialidade', 'experiencia', 'descricao', 'preco_hora', 'cidade', 'estado', 'contato'];
 
     const campos = [];
@@ -133,8 +139,9 @@ router.put('/:usuario_id', async (req, res) => {
 });
 
 // DELETE - exclui perfil de professor
-router.delete('/:usuario_id', async (req, res) => {
+router.delete('/:usuario_id', authenticate, async (req, res) => {
     const { usuario_id } = req.params;
+    if (!ehProprioUsuario(req, usuario_id)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     try {
         const result = await db.query('DELETE FROM professores WHERE usuario_id = $1 RETURNING *', [usuario_id]);
         if (result.rowCount === 0) {

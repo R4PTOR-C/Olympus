@@ -104,10 +104,18 @@ function Professor_new() {
 
             const usuario = JSON.parse(userText);
 
+            // Login para obter token (POST /professores é protegido)
+            const loginRes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, senha }),
+            });
+            const loginData = await loginRes.json();
+
             // 2️⃣ Cria o perfil de professor
             const profRes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/professores`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${loginData.token}` },
                 body: JSON.stringify({
                     usuario_id:  usuario.id,
                     cref,

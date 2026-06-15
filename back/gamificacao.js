@@ -1,9 +1,10 @@
 const express = require('express');
 const router  = express.Router();
 const db      = require('./db');
+const { authenticate, requireVinculo } = require('./middleware/auth');
 const { calcNivel, getObjetivosComProgresso } = require('./gamificacao_engine');
 
-router.get('/usuarios/:userId/progresso', async (req, res) => {
+router.get('/usuarios/:userId/progresso', authenticate, requireVinculo('userId'), async (req, res) => {
     const { userId } = req.params;
     try {
         const { rows: gRows } = await db.query(

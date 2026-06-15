@@ -65,7 +65,7 @@ const UsuariosEdit = () => {
     const [showConfirmarRemover, setShowConfirmarRemover] = useState(false);
 
     useEffect(() => {
-        fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`)
+        fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
             .then(r => { if (!r.ok) throw new Error(`Erro ${r.status}`); return r.json(); })
             .then(data => { setUsuario({ ...data, funcao_extra: data.funcao_extra || null }); setLoading(false); })
             .catch(err => { setError(err.toString()); setLoading(false); });
@@ -81,7 +81,7 @@ const UsuariosEdit = () => {
 
     const handleRemoverAvatar = async () => {
         try {
-            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}/avatar`, { method: 'DELETE' });
+            const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}/avatar`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
             if (!res.ok) throw new Error('Erro ao remover avatar');
             const data = await res.json();
             setAvatar(null);
@@ -97,7 +97,7 @@ const UsuariosEdit = () => {
         const formData = new FormData();
         formData.append('avatar', file);
         try {
-            const res  = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`, { method: 'PUT', body: formData });
+            const res  = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`, { method: 'PUT', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }, body: formData });
             if (!res.ok) throw new Error('Erro ao atualizar avatar');
             const data = await res.json();
             setUsuario(prev => ({ ...prev, avatar: data.usuario.avatar }));
@@ -110,7 +110,7 @@ const UsuariosEdit = () => {
             setUsuario(prev => ({ ...prev, [campo]: valor }));
             const formData = new FormData();
             formData.append(campo, valor);
-            const res  = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`, { method: 'PUT', body: formData });
+            const res  = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}`, { method: 'PUT', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }, body: formData });
             if (!res.ok) throw new Error('Erro ao atualizar usuário');
             const data = await res.json();
             updateUser?.({ userName: data.usuario.nome, avatar: data.usuario.avatar });
@@ -126,10 +126,10 @@ const UsuariosEdit = () => {
             await Promise.all([
                 fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}/funcao-extra`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
                     body: JSON.stringify({ funcao_extra: null }),
                 }),
-                fetch(`${process.env.REACT_APP_API_BASE_URL}/professores/${id}`, { method: 'DELETE' }),
+                fetch(`${process.env.REACT_APP_API_BASE_URL}/professores/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }),
             ]);
             setUsuario(prev => ({ ...prev, funcao_extra: null }));
             updateUser?.({ funcao_extra: null });

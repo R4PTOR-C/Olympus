@@ -8,7 +8,10 @@ const Avaliacoes_view = ({ usuarioId }) => {
     useEffect(() => {
         const fetchAvaliacoes = async () => {
             try {
-                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/avaliacoes/usuarios/${usuarioId}`);
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/avaliacoes/usuarios/${usuarioId}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
                 if (!response.ok) throw new Error('Erro ao carregar avaliações.');
 
                 const data = await response.json();

@@ -2,16 +2,31 @@
 const express = require('express');
 const db      = require('./db');
 const { enviarPush } = require('./push');
+const { authenticate } = require('./middleware/auth');
 const router  = express.Router();
 
 const LIMITES_PLANO = { gratuito: 10, pro: 50, elite: null };
+
+// Helpers de autorização
+const ehProprioUsuario = (req, id) => parseInt(req.user.userId) === parseInt(id);
+
+async function carregarVinculo(id) {
+    const { rows } = await db.query('SELECT * FROM vinculos WHERE id = $1', [id]);
+    return rows[0] || null;
+}
+
+function ehParticipanteVinculo(req, vinculo) {
+    const uid = parseInt(req.user.userId);
+    return uid === parseInt(vinculo.professor_id) || uid === parseInt(vinculo.aluno_id);
+}
 
 // ─────────────────────────────────────────
 // STATUS DO PLANO DO PROFESSOR
 // GET /vinculos/professor/:professorId/status-plano
 // ─────────────────────────────────────────
-router.get('/professor/:professorId/status-plano', async (req, res) => {
+router.get('/professor/:professorId/status-plano', authenticate, async (req, res) => {
     const { professorId } = req.params;
+    if (!ehProprioUsuario(req, professorId)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     try {
         const [planRes, countRes] = await Promise.all([
             db.query(`SELECT plano FROM professores WHERE usuario_id = $1`, [professorId]),
@@ -31,8 +46,9 @@ router.get('/professor/:professorId/status-plano', async (req, res) => {
 // TOGGLE PROCURANDO
 // PATCH /vinculos/procurando/:userId
 // ─────────────────────────────────────────
-router.patch('/procurando/:userId', async (req, res) => {
+router.patch('/procurando/:userId', authenticate, async (req, res) => {
     const { userId } = req.params;
+    if (!ehProprioUsuario(req, userId)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     try {
         const { rows } = await db.query(
             `UPDATE usuarios
@@ -53,7 +69,7 @@ router.patch('/procurando/:userId', async (req, res) => {
 // PROFESSORES DISPONÍVEIS (para alunos)
 // GET /vinculos/professores-disponiveis
 // ─────────────────────────────────────────
-router.get('/professores-disponiveis', async (req, res) => {
+router.get('/professores-disponiveis', authenticate, async (req, res) => {
     try {
         const { rows } = await db.query(`
             SELECT
@@ -77,7 +93,7 @@ router.get('/professores-disponiveis', async (req, res) => {
 // ALUNOS DISPONÍVEIS (para professores)
 // GET /vinculos/alunos-disponiveis
 // ─────────────────────────────────────────
-router.get('/alunos-disponiveis', async (req, res) => {
+router.get('/alunos-disponiveis', authenticate, async (req, res) => {
     try {
         const { rows } = await db.query(`
             SELECT
@@ -101,8 +117,13 @@ router.get('/alunos-disponiveis', async (req, res) => {
 // POST /vinculos
 // body: { professor_id, aluno_id, iniciado_por }
 // ─────────────────────────────────────────
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     const { professor_id, aluno_id, iniciado_por } = req.body;
+    // O pedido precisa ser iniciado pelo próprio usuário, e ele deve ser um dos envolvidos
+    if (!ehProprioUsuario(req, iniciado_por) ||
+        (parseInt(iniciado_por) !== parseInt(professor_id) && parseInt(iniciado_por) !== parseInt(aluno_id))) {
+        return res.status(403).json({ error: 'Acesso não autorizado.' });
+    }
     try {
         // Verifica limite do plano do professor
         const [planRes, countRes] = await Promise.all([
@@ -192,8 +213,9 @@ router.post('/', async (req, res) => {
 // PEDIDOS PENDENTES RECEBIDOS
 // GET /vinculos/pendentes/:userId
 // ─────────────────────────────────────────
-router.get('/pendentes/:userId', async (req, res) => {
+router.get('/pendentes/:userId', authenticate, async (req, res) => {
     const { userId } = req.params;
+    if (!ehProprioUsuario(req, userId)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     try {
         // Pedidos onde o usuário é o destinatário (não foi ele quem iniciou)
         const { rows } = await db.query(`
@@ -222,9 +244,16 @@ router.get('/pendentes/:userId', async (req, res) => {
 // ACEITAR PEDIDO
 // PATCH /vinculos/:id/aceitar
 // ─────────────────────────────────────────
-router.patch('/:id/aceitar', async (req, res) => {
+router.patch('/:id/aceitar', authenticate, async (req, res) => {
     const { id } = req.params;
     try {
+        // Só o destinatário (participante que NÃO iniciou) pode aceitar
+        const alvo = await carregarVinculo(id);
+        if (!alvo) return res.status(404).json({ error: 'Pedido não encontrado ou já processado.' });
+        if (!ehParticipanteVinculo(req, alvo) || ehProprioUsuario(req, alvo.iniciado_por)) {
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
+
         await db.query('BEGIN');
 
         const { rows } = await db.query(
@@ -286,9 +315,16 @@ router.patch('/:id/aceitar', async (req, res) => {
 // RECUSAR PEDIDO
 // PATCH /vinculos/:id/recusar
 // ─────────────────────────────────────────
-router.patch('/:id/recusar', async (req, res) => {
+router.patch('/:id/recusar', authenticate, async (req, res) => {
     const { id } = req.params;
     try {
+        // Qualquer participante do vínculo pode recusar/cancelar o pedido pendente
+        const alvo = await carregarVinculo(id);
+        if (!alvo) return res.status(404).json({ error: 'Pedido não encontrado ou já processado.' });
+        if (!ehParticipanteVinculo(req, alvo)) {
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
+
         const { rows } = await db.query(
             `UPDATE vinculos SET status = 'encerrado'
              WHERE id = $1 AND status = 'pendente'
@@ -320,9 +356,16 @@ router.patch('/:id/recusar', async (req, res) => {
 // ENCERRAR VÍNCULO ATIVO
 // DELETE /vinculos/:id
 // ─────────────────────────────────────────
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
     const { id } = req.params;
     try {
+        // Só participantes do vínculo podem encerrá-lo
+        const alvo = await carregarVinculo(id);
+        if (!alvo) return res.status(404).json({ error: 'Vínculo não encontrado.' });
+        if (!ehParticipanteVinculo(req, alvo)) {
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
+
         await db.query('BEGIN');
 
         const { rows } = await db.query(
@@ -359,8 +402,9 @@ router.delete('/:id', async (req, res) => {
 // MEU PROFESSOR (aluno)
 // GET /vinculos/meu-professor/:alunoId
 // ─────────────────────────────────────────
-router.get('/meu-professor/:alunoId', async (req, res) => {
+router.get('/meu-professor/:alunoId', authenticate, async (req, res) => {
     const { alunoId } = req.params;
+    if (!ehProprioUsuario(req, alunoId)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     try {
         const { rows } = await db.query(`
             SELECT
@@ -390,8 +434,9 @@ router.get('/meu-professor/:alunoId', async (req, res) => {
 // MEUS ALUNOS (professor)
 // GET /vinculos/meus-alunos/:professorId
 // ─────────────────────────────────────────
-router.get('/meus-alunos/:professorId', async (req, res) => {
+router.get('/meus-alunos/:professorId', authenticate, async (req, res) => {
     const { professorId } = req.params;
+    if (!ehProprioUsuario(req, professorId)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     try {
         const { rows } = await db.query(`
             SELECT
@@ -420,8 +465,9 @@ router.get('/meus-alunos/:professorId', async (req, res) => {
 // HISTÓRICO DE PROFESSORES (aluno)
 // GET /vinculos/historico-professor/:alunoId
 // ─────────────────────────────────────────
-router.get('/historico-professor/:alunoId', async (req, res) => {
+router.get('/historico-professor/:alunoId', authenticate, async (req, res) => {
     const { alunoId } = req.params;
+    if (!ehProprioUsuario(req, alunoId)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     try {
         const { rows } = await db.query(`
             SELECT

@@ -44,7 +44,7 @@ function CompletarPerfilProfessor() {
             // 1. Cria o perfil de professor
             const profRes = await fetch(`${API}/professores`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
                 body: JSON.stringify({
                     usuario_id:  userId,
                     cref,
@@ -67,7 +67,7 @@ function CompletarPerfilProfessor() {
             // 2. Ativa funcao_extra = 'Professor'
             await fetch(`${API}/usuarios/${userId}/funcao-extra`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
                 body: JSON.stringify({ funcao_extra: 'Professor' }),
             });
 

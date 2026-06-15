@@ -1,12 +1,13 @@
 const express = require('express');
 const db      = require('./db');
+const { authenticate, requireVinculo, verificarVinculo } = require('./middleware/auth');
 const router  = express.Router();
 
 const calcularMeta = (peso) => Math.round((peso * 35) / 50) * 50;
 
 // GET /agua/usuarios/:userId/hoje
 // Retorna total consumido hoje, meta e lista de registros
-router.get('/usuarios/:userId/hoje', async (req, res) => {
+router.get('/usuarios/:userId/hoje', authenticate, requireVinculo('userId'), async (req, res) => {
     const { userId } = req.params;
     const hoje = new Date().toISOString().split('T')[0];
     try {
@@ -37,7 +38,7 @@ router.get('/usuarios/:userId/hoje', async (req, res) => {
 
 // POST /agua/usuarios/:userId
 // Adiciona um registro de consumo
-router.post('/usuarios/:userId', async (req, res) => {
+router.post('/usuarios/:userId', authenticate, requireVinculo('userId'), async (req, res) => {
     const { userId } = req.params;
     const { ml } = req.body;
     if (!ml || ml <= 0) return res.status(400).json({ error: 'ml inválido.' });
@@ -59,9 +60,14 @@ router.post('/usuarios/:userId', async (req, res) => {
 
 // DELETE /agua/registros/:id
 // Remove um registro (desfazer)
-router.delete('/registros/:id', async (req, res) => {
+router.delete('/registros/:id', authenticate, async (req, res) => {
     const { id } = req.params;
     try {
+        const { rows } = await db.query(`SELECT usuario_id FROM agua_registros WHERE id = $1`, [id]);
+        if (rows.length === 0) return res.status(404).json({ error: 'Registro não encontrado.' });
+        if (!(await verificarVinculo(req, rows[0].usuario_id))) {
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
         await db.query(`DELETE FROM agua_registros WHERE id = $1`, [id]);
         res.json({ ok: true });
     } catch (err) {
@@ -72,7 +78,7 @@ router.delete('/registros/:id', async (req, res) => {
 
 // PUT /agua/usuarios/:userId/meta
 // Atualiza a meta diária do usuário
-router.put('/usuarios/:userId/meta', async (req, res) => {
+router.put('/usuarios/:userId/meta', authenticate, requireVinculo('userId'), async (req, res) => {
     const { userId } = req.params;
     const { meta_agua_ml } = req.body;
     if (!meta_agua_ml || meta_agua_ml < 500 || meta_agua_ml > 6000)

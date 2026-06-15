@@ -42,12 +42,13 @@ export default function ProcurarProfessor() {
     const carregar = useCallback(async () => {
         setLoading(true);
         try {
+            const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` };
             const [userRes, profRes, pendRes, vinculoRes, histRes] = await Promise.all([
-                fetch(`${API}/usuarios/${userId}`),
-                fetch(`${API}/vinculos/professores-disponiveis`),
-                fetch(`${API}/vinculos/pendentes/${userId}`),
-                fetch(`${API}/vinculos/meu-professor/${userId}`),
-                fetch(`${API}/vinculos/historico-professor/${userId}`),
+                fetch(`${API}/usuarios/${userId}`,                        { headers }),
+                fetch(`${API}/vinculos/professores-disponiveis`,          { headers }),
+                fetch(`${API}/vinculos/pendentes/${userId}`,              { headers }),
+                fetch(`${API}/vinculos/meu-professor/${userId}`,          { headers }),
+                fetch(`${API}/vinculos/historico-professor/${userId}`,    { headers }),
             ]);
 
             const [userData, profsData, pendData, vinculoData, histData] = await Promise.all([
@@ -77,7 +78,7 @@ export default function ProcurarProfessor() {
         const novoValor = !procurando;
         setProcurando(novoValor);
         try {
-            const res = await fetch(`${API}/vinculos/procurando/${userId}`, { method: 'PATCH' });
+            const res = await fetch(`${API}/vinculos/procurando/${userId}`, { method: 'PATCH', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
             const data = await res.json();
             setProcurando(data.procurando);
         } catch (err) {
@@ -90,7 +91,7 @@ export default function ProcurarProfessor() {
         try {
             const res = await fetch(`${API}/vinculos`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
                 body: JSON.stringify({ professor_id: professorId, aluno_id: userId, iniciado_por: userId }),
             });
             if (res.ok) {
@@ -103,7 +104,7 @@ export default function ProcurarProfessor() {
 
     const aceitarPedido = async (vinculoId) => {
         try {
-            const res = await fetch(`${API}/vinculos/${vinculoId}/aceitar`, { method: 'PATCH' });
+            const res = await fetch(`${API}/vinculos/${vinculoId}/aceitar`, { method: 'PATCH', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
             if (res.ok) carregar();
         } catch (err) {
             console.error('Erro ao aceitar pedido:', err);
@@ -112,7 +113,7 @@ export default function ProcurarProfessor() {
 
     const recusarPedido = async (vinculoId) => {
         try {
-            const res = await fetch(`${API}/vinculos/${vinculoId}/recusar`, { method: 'PATCH' });
+            const res = await fetch(`${API}/vinculos/${vinculoId}/recusar`, { method: 'PATCH', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
             if (res.ok) setPendentes(prev => prev.filter(p => p.id !== vinculoId));
         } catch (err) {
             console.error('Erro ao recusar pedido:', err);
@@ -121,7 +122,7 @@ export default function ProcurarProfessor() {
 
     const encerrarVinculo = async (vinculoId) => {
         try {
-            const res = await fetch(`${API}/vinculos/${vinculoId}`, { method: 'DELETE' });
+            const res = await fetch(`${API}/vinculos/${vinculoId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
             if (res.ok) { setMeuProfessor(null); setProcurando(false); }
         } catch (err) {
             console.error('Erro ao encerrar vínculo:', err);

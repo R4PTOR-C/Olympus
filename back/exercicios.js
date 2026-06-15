@@ -6,6 +6,7 @@ const router = express.Router();
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('./config/cloudinary');
+const { authenticate } = require('./middleware/auth');
 
 // Configura o storage para Cloudinary
 const storage = new CloudinaryStorage({
@@ -29,7 +30,7 @@ function toTitleCase(str) {
 
 
 // Listar exercícios
-router.get('/', async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
     try {
         const { rows } = await db.query('SELECT * FROM exercicios');
         res.json(rows);
@@ -40,7 +41,7 @@ router.get('/', async (req, res) => {
 });
 
 // Criar exercício (com upload opcional de gif ou vídeo)
-router.post('/', upload.single('media'), async (req, res) => {
+router.post('/', authenticate, upload.single('media'), async (req, res) => {
     let { nome_exercicio, grupo_muscular, nivel } = req.body;
     nome_exercicio = toTitleCase(nome_exercicio);
     const gifUrl = req.file?.path || null; // URL pública do Cloudinary
@@ -60,7 +61,7 @@ router.post('/', upload.single('media'), async (req, res) => {
 });
 
 // Buscar por ID
-router.get('/exercicios/:id', async (req, res) => {
+router.get('/exercicios/:id', authenticate, async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -78,7 +79,7 @@ router.get('/exercicios/:id', async (req, res) => {
 });
 
 // Atualizar exercício (com gif ou vídeo opcional)
-router.put('/:id', upload.single('media'), async (req, res) => {
+router.put('/:id', authenticate, upload.single('media'), async (req, res) => {
     const { id } = req.params;
     let { nome_exercicio, grupo_muscular, nivel } = req.body;
     nome_exercicio = toTitleCase(nome_exercicio);
@@ -109,7 +110,7 @@ router.put('/:id', upload.single('media'), async (req, res) => {
 });
 
 // Deletar exercício por ID
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
     const { id } = req.params;
 
     try {

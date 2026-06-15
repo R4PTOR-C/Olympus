@@ -123,10 +123,10 @@ const TreinosForm = () => {
         const token = localStorage.getItem('token');
         const authH = token ? { Authorization: `Bearer ${token}` } : {};
         Promise.all([
-            fetch(`${API}/exercicios`).then(r => r.json()),
+            fetch(`${API}/exercicios`, { headers: authH }).then(r => r.json()),
             fetch(`${API}/treinos/usuarios/${id}/treinos`, { headers: authH }).then(r => r.json()),
         ]).then(([exData, treinosData]) => {
-            setExercicios(exData);
+            setExercicios(Array.isArray(exData) ? exData : []);
             setDiasOcupados(treinosData.map(t => t.dia_semana));
         });
     }, [id]);

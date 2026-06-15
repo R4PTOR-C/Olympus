@@ -128,7 +128,8 @@ function ChatsList() {
     const [arquivadosAbertos, setArquivadosAbertos] = useState(false);
 
     useEffect(() => {
-        fetch(`${API_URL}/chat/usuario/${userId}`)
+        const token = localStorage.getItem('token');
+        fetch(`${API_URL}/chat/usuario/${userId}`, { headers: { Authorization: `Bearer ${token}` } })
             .then(r => r.json())
             .then(data => { setChats(data); setLoading(false); })
             .catch(() => setLoading(false));

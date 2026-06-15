@@ -6,7 +6,18 @@ const nodemailer = require('nodemailer');
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('./config/cloudinary');
+const { authenticate, verificarVinculo } = require('./middleware/auth');
 const router = express.Router();
+
+// Remove campos sensíveis antes de devolver um usuário ao cliente
+const limparUsuario = (u) => {
+    if (!u) return u;
+    const { senha, reset_password_token, reset_password_expires, ...resto } = u;
+    return resto;
+};
+
+// Autorização: o id do path precisa ser o próprio usuário autenticado
+const ehProprioUsuario = (req, id) => parseInt(req.user.userId) === parseInt(id);
 
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
@@ -21,10 +32,10 @@ const upload = multer({ storage });
 // =================== ROTAS =================== //
 
 // GET - lista todos os usuários
-router.get('/', async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
     try {
         const { rows } = await db.query('SELECT * FROM usuarios');
-        res.json(rows);
+        res.json(rows.map(limparUsuario));
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erro interno do servidor' });
@@ -32,16 +43,19 @@ router.get('/', async (req, res) => {
 });
 
 // GET - pega usuário por ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
     const { id } = req.params;
     try {
+        // Próprio usuário ou professor com vínculo ativo
+        if (!(await verificarVinculo(req, id))) {
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
         const { rows } = await db.query('SELECT * FROM usuarios WHERE id = $1', [id]);
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Usuário não encontrado' });
         }
-        const usuario = rows[0];
 
-        res.json(usuario);
+        res.json(limparUsuario(rows[0]));
     } catch (err) {
         console.error("Erro ao buscar usuário:", err);
         res.status(500).json({ error: 'Erro interno do servidor' });
@@ -79,8 +93,9 @@ router.post('/', upload.single('avatar'), async (req, res) => {
 });
 
 // DELETE - remove usuário e todos os dados relacionados
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
     const { id } = req.params;
+    if (!ehProprioUsuario(req, id)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     try {
         await db.query('BEGIN');
 
@@ -128,8 +143,9 @@ router.delete('/:id', async (req, res) => {
 });
 
 // PUT - atualiza usuário
-router.put('/:id', upload.single('avatar'), async (req, res) => {
+router.put('/:id', authenticate, upload.single('avatar'), async (req, res) => {
     const { id } = req.params;
+    if (!ehProprioUsuario(req, id)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     const campos = [];
     const values = [];
     let paramIndex = 1;
@@ -251,8 +267,9 @@ router.post('/reset-password/:token', async (req, res) => {
 });
 
 // DELETE - remove avatar do usuário
-router.delete('/:id/avatar', async (req, res) => {
+router.delete('/:id/avatar', authenticate, async (req, res) => {
     const { id } = req.params;
+    if (!ehProprioUsuario(req, id)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     try {
         const resultado = await db.query(
             'UPDATE usuarios SET avatar = NULL WHERE id = $1 RETURNING *',
@@ -269,8 +286,9 @@ router.delete('/:id/avatar', async (req, res) => {
 });
 
 // PUT - define ou remove funcao_extra do usuário
-router.put('/:id/funcao-extra', async (req, res) => {
+router.put('/:id/funcao-extra', authenticate, async (req, res) => {
     const { id } = req.params;
+    if (!ehProprioUsuario(req, id)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     const { funcao_extra } = req.body; // null para remover
     try {
         await db.query(

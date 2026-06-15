@@ -625,10 +625,18 @@ function Onboarding() {
             const data = await res.json();
             const userId = data.id;
 
-            // Save fitness preferences
+            // Login automático primeiro — precisamos do token para salvar as preferências (rota protegida)
+            const loginRes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: accountData.email.trim(), senha: accountData.senha }),
+            });
+            const loginData = await loginRes.json();
+
+            // Save fitness preferences (autenticado)
             await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${userId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${loginData.token}` },
                 body: JSON.stringify({
                     nivel_experiencia:    selections.experiencia,
                     dias_disponiveis:     selections.dias,
@@ -637,14 +645,6 @@ function Onboarding() {
                     onboarding_concluido: true,
                 }),
             });
-
-            // Login automático
-            const loginRes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: accountData.email.trim(), senha: accountData.senha }),
-            });
-            const loginData = await loginRes.json();
             login(
                 { userName: loginData.userName, userId: loginData.userId, funcao: loginData.funcao, funcao_extra: loginData.funcao_extra, avatar: loginData.avatar },
                 loginData.token

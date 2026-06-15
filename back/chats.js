@@ -1,13 +1,30 @@
 const express = require('express');
 const router = express.Router();
 const db = require('./db'); // ajuste o caminho conforme sua estrutura
+const { authenticate } = require('./middleware/auth');
+
+// Helper: o usuário autenticado é participante do chat?
+async function ehParticipante(req, chatId) {
+    const uid = parseInt(req.user.userId);
+    const { rows } = await db.query(
+        `SELECT 1 FROM chats WHERE id = $1 AND (usuario1_id = $2 OR usuario2_id = $2)`,
+        [chatId, uid]
+    );
+    return rows.length > 0;
+}
 
 // 🟢 1. Criar ou retornar um chat entre dois usuários
-router.post('/iniciar', async (req, res) => {
+router.post('/iniciar', authenticate, async (req, res) => {
     const { usuario1_id, usuario2_id } = req.body;
 
     if (!usuario1_id || !usuario2_id) {
         return res.status(400).json({ error: 'IDs dos usuários são obrigatórios.' });
+    }
+
+    // O requisitante precisa ser um dos participantes do chat
+    const uid = parseInt(req.user.userId);
+    if (uid !== parseInt(usuario1_id) && uid !== parseInt(usuario2_id)) {
+        return res.status(403).json({ error: 'Acesso não autorizado.' });
     }
 
     try {
@@ -39,8 +56,13 @@ router.post('/iniciar', async (req, res) => {
 });
 
 // 🟠 2. Listar todos os chats de um usuário (para exibir conversas recentes)
-router.get('/usuario/:id', async (req, res) => {
+router.get('/usuario/:id', authenticate, async (req, res) => {
     const { id } = req.params;
+
+    // Só é possível listar os próprios chats
+    if (parseInt(req.user.userId) !== parseInt(id)) {
+        return res.status(403).json({ error: 'Acesso não autorizado.' });
+    }
 
     try {
         const { rows } = await db.query(
@@ -81,10 +103,13 @@ router.get('/usuario/:id', async (req, res) => {
 });
 
 // 🔵 3. Listar mensagens de um chat
-router.get('/mensagens/:chatId', async (req, res) => {
+router.get('/mensagens/:chatId', authenticate, async (req, res) => {
     const { chatId } = req.params;
 
     try {
+        if (!(await ehParticipante(req, chatId))) {
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
         const { rows } = await db.query(
             `SELECT
                  m.id,
@@ -110,14 +135,22 @@ router.get('/mensagens/:chatId', async (req, res) => {
 });
 
 // 🟣 4. Enviar nova mensagem
-router.post('/mensagens', async (req, res) => {
+router.post('/mensagens', authenticate, async (req, res) => {
     const { chat_id, remetente_id, conteudo } = req.body;
 
     if (!chat_id || !remetente_id || !conteudo) {
         return res.status(400).json({ error: 'chat_id, remetente_id e conteudo são obrigatórios.' });
     }
 
+    // O remetente precisa ser o próprio usuário e participante do chat
+    if (parseInt(remetente_id) !== parseInt(req.user.userId)) {
+        return res.status(403).json({ error: 'Acesso não autorizado.' });
+    }
+
     try {
+        if (!(await ehParticipante(req, chat_id))) {
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
         const { rows } = await db.query(
             `INSERT INTO mensagens (chat_id, remetente_id, conteudo)
              VALUES ($1, $2, $3)
@@ -133,12 +166,15 @@ router.post('/mensagens', async (req, res) => {
 });
 
 // 🟤 5. Buscar dados de um chat específico (para exibir avatar e nome do parceiro)
-router.get('/:chatId', async (req, res) => {
+router.get('/:chatId', authenticate, async (req, res) => {
     const { chatId } = req.params;
 
     try {
+        if (!(await ehParticipante(req, chatId))) {
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
         const { rows } = await db.query(`
-            SELECT 
+            SELECT
                 c.id,
                 c.usuario1_id,
                 c.usuario2_id,

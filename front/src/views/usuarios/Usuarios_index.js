@@ -127,7 +127,7 @@ const Usuarios_index = () => {
         const novoValor = !procurando;
         setProcurando(novoValor);
         try {
-            const res = await fetch(`${API}/vinculos/procurando/${userId}`, { method: 'PATCH' });
+            const res = await fetch(`${API}/vinculos/procurando/${userId}`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } });
             const data = await res.json();
             setProcurando(data.procurando);
         } catch (err) {
@@ -156,7 +156,7 @@ const Usuarios_index = () => {
 
     const aceitarPedido = async (vinculoId) => {
         try {
-            const res = await fetch(`${API}/vinculos/${vinculoId}/aceitar`, { method: 'PATCH' });
+            const res = await fetch(`${API}/vinculos/${vinculoId}/aceitar`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } });
             if (res.ok) carregar();
         } catch (err) {
             console.error('Erro ao aceitar pedido:', err);
@@ -165,7 +165,7 @@ const Usuarios_index = () => {
 
     const recusarPedido = async (vinculoId) => {
         try {
-            const res = await fetch(`${API}/vinculos/${vinculoId}/recusar`, { method: 'PATCH' });
+            const res = await fetch(`${API}/vinculos/${vinculoId}/recusar`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}` } });
             if (res.ok) setPendentes(prev => prev.filter(p => p.id !== vinculoId));
         } catch (err) {
             console.error('Erro ao recusar pedido:', err);
@@ -174,7 +174,7 @@ const Usuarios_index = () => {
 
     const encerrarVinculo = async (vinculoId) => {
         try {
-            const res = await fetch(`${API}/vinculos/${vinculoId}`, { method: 'DELETE' });
+            const res = await fetch(`${API}/vinculos/${vinculoId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
             if (res.ok) carregar();
         } catch (err) {
             console.error('Erro ao encerrar vínculo:', err);

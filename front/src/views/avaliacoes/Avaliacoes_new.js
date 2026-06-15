@@ -91,9 +91,10 @@ const Avaliacoes_new = () => {
             const medicoes = { cintura: parseFloat(cintura), pescoco: parseFloat(pescoco) };
             if (sexo === 'F') medicoes.quadril = parseFloat(quadril);
 
+            const token = localStorage.getItem('token');
             const res = await fetch(`${API}/avaliacoes`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({
                     usuario_id: id,
                     altura: alturaM,

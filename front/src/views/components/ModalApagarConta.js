@@ -35,7 +35,7 @@ const ModalApagarConta = ({ emailCorreto, usuarioId, onClose }) => {
         setLoading(true);
         setErro(null);
         try {
-            const res = await fetch(`${API}/usuarios/${usuarioId}`, { method: 'DELETE' });
+            const res = await fetch(`${API}/usuarios/${usuarioId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
             if (!res.ok) throw new Error();
             logout();
             navigate('/');
