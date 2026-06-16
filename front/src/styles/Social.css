@@ -1,0 +1,86 @@
+/* ============================================= */
+/* Modo Social — dropdown de exercícios do treino */
+/* Reaproveita os cards .tf-ex-* de TreinosForm    */
+/* ============================================= */
+
+/* Grade de exercícios que abre abaixo do treino.
+   auto-fill adapta-se à largura (coluna estreita do kanban no desktop
+   ou largura cheia no mobile). */
+.at-ex-dropdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+    padding: 2px 2px 10px;
+    animation: at-dropdown-in 0.18s ease;
+}
+
+@keyframes at-dropdown-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.at-ex-msg { color: var(--h-text-muted); font-size: 12px; padding: 4px 4px 10px; }
+
+/* Linha de séries × reps dentro do card (mesmo estilo do tf-ex-name) */
+.at-ex-sets {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--tf-accent);
+    text-align: center;
+}
+
+/* ── Modal de escolher dia ── */
+.at-modal-overlay {
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 1100;
+}
+
+.at-sheet {
+    background: var(--h-bg);
+    border-radius: 18px 18px 0 0;
+    padding: 20px;
+    width: 100%;
+    max-width: 480px;
+    box-sizing: border-box;
+}
+
+.at-sheet-title { margin: 0 0 4px; color: var(--h-text); font-size: 16px; }
+.at-sheet-sub   { margin: 0 0 16px; color: var(--h-text-muted); font-size: 13px; }
+
+.at-day-btn {
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%;
+    padding: 12px 14px; margin-bottom: 8px;
+    border-radius: 10px; cursor: pointer;
+    background: var(--h-surface); border: 1px solid var(--h-border);
+    color: var(--h-text); font-size: 14px; font-family: inherit;
+}
+.at-day-btn-tag { font-size: 11px; color: var(--h-text-dim); }
+
+.at-cancel-btn {
+    margin-top: 6px; width: 100%; padding: 12px; border-radius: 10px;
+    background: none; border: 1px solid var(--h-border);
+    color: var(--h-text-muted); font-size: 14px; cursor: pointer;
+}
+
+.at-toast {
+    position: fixed;
+    bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: var(--h-accent); color: #fff;
+    padding: 10px 18px; border-radius: 20px;
+    font-size: 13px; font-weight: 600;
+    z-index: 1200; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* ── DESKTOP ── */
+@media (min-width: 768px) {
+    .at-modal-overlay { align-items: center; }
+    .at-sheet { border-radius: 18px; max-width: 420px; }
+}

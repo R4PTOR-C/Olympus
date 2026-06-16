@@ -114,6 +114,7 @@ router.delete('/:id', authenticate, async (req, res) => {
         await db.query('DELETE FROM avaliacoes_fisicas WHERE usuario_id = $1', [id]);
         await db.query('DELETE FROM cardio_sessoes WHERE usuario_id = $1', [id]);
         await db.query('DELETE FROM vinculos WHERE professor_id = $1 OR aluno_id = $1', [id]);
+        await db.query('DELETE FROM amizades WHERE solicitante_id = $1 OR destinatario_id = $1', [id]);
         await db.query('DELETE FROM professores WHERE usuario_id = $1', [id]);
 
         // Mensagens e chats

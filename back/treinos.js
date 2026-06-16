@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('./db');
 const { enviarPush } = require('./push');
-const { authenticate, requireVinculo, verificarVinculo } = require('./middleware/auth');
+const { authenticate, requireVinculo, verificarVinculo, saoAmigos } = require('./middleware/auth');
 
 const router = express.Router();
 
@@ -109,6 +109,53 @@ router.put('/treinos/:treinoId', authenticate, async (req, res) => {
     } catch (error) {
         console.error('Erro ao atualizar treino:', error);
         res.status(500).json({ error: 'Erro ao atualizar treino' });
+    }
+});
+
+// Copiar um treino (próprio ou de um amigo) para a conta do usuário logado
+// POST /treinos/treinos/:treinoId/copiar   body: { dia_semana }
+router.post('/treinos/:treinoId/copiar', authenticate, async (req, res) => {
+    const { treinoId } = req.params;
+    const { dia_semana } = req.body;
+    const destinoId = parseInt(req.user.userId);
+
+    try {
+        const origemRes = await db.query('SELECT * FROM treinos WHERE id = $1', [treinoId]);
+        if (!origemRes.rows.length) return res.status(404).json({ error: 'Treino não encontrado.' });
+        const origem = origemRes.rows[0];
+
+        // Autorização: dono do treino ou amigo aceito
+        if (destinoId !== parseInt(origem.usuario_id) && !(await saoAmigos(destinoId, origem.usuario_id))) {
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
+
+        await db.query('BEGIN');
+
+        const novoRes = await db.query(
+            `INSERT INTO treinos (usuario_id, nome_treino, descricao, dia_semana, grupo_muscular, imagem, grupos_auxiliares)
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+            [destinoId, origem.nome_treino, origem.descricao, dia_semana || null,
+             origem.grupo_muscular, origem.imagem, origem.grupos_auxiliares || []]
+        );
+        const novoTreino = novoRes.rows[0];
+
+        // Clona os exercícios (mantém series_alvo, reps_alvo e ordem)
+        await db.query(
+            `INSERT INTO treinos_exercicios (treino_id, exercicio_id, series_alvo, reps_alvo, ordem)
+             SELECT $1, exercicio_id, series_alvo, reps_alvo, ordem
+             FROM treinos_exercicios
+             WHERE treino_id = $2`,
+            [novoTreino.id, treinoId]
+        );
+
+        await db.query('COMMIT');
+
+        req.io?.to(`user_${destinoId}`).emit('atualizar_tela', { tipo: 'treinos' });
+        res.status(201).json(novoTreino);
+    } catch (error) {
+        await db.query('ROLLBACK').catch(() => {});
+        console.error('Erro ao copiar treino:', error);
+        res.status(500).json({ error: 'Erro ao copiar treino.' });
     }
 });
 

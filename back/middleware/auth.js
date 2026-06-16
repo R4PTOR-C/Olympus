@@ -58,4 +58,16 @@ async function verificarVinculo(req, alunoId) {
     return false;
 }
 
-module.exports = { authenticate, requireVinculo, verificarVinculo };
+// Helper: existe amizade aceita entre dois usuários?
+async function saoAmigos(userIdA, userIdB) {
+    const { rows } = await db.query(
+        `SELECT 1 FROM amizades
+         WHERE status = 'aceito'
+           AND ((solicitante_id = $1 AND destinatario_id = $2)
+             OR (solicitante_id = $2 AND destinatario_id = $1))`,
+        [userIdA, userIdB]
+    );
+    return rows.length > 0;
+}
+
+module.exports = { authenticate, requireVinculo, verificarVinculo, saoAmigos };
