@@ -18,6 +18,7 @@ const mapDiasBack = {
 };
 const mapDias = Object.fromEntries(Object.entries(mapDiasBack).map(([curto, longo]) => [longo, curto]));
 const DIAS_FULL = diasSemana.map(d => mapDiasBack[d]);
+const diaDeHojeFull = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'][new Date().getDay()];
 
 export default function AmigoTreinos() {
     const { amigoId } = useParams();
@@ -157,7 +158,7 @@ export default function AmigoTreinos() {
                         const treinosDoDia = treinos.filter(t => mapDias[t.dia_semana] === dia);
                         const diaCompleto  = mapDiasBack[dia];
                         return (
-                            <div className="uv-day-block" key={dia}>
+                            <div className={`uv-day-block${diaCompleto === diaDeHojeFull ? ' uv-today' : ''}`} key={dia}>
                                 <div className="uv-day-header">
                                     <span className="uv-day-name">{diaCompleto}</span>
                                     {treinosDoDia.length > 0 && (

@@ -24,6 +24,8 @@ const mapDias = Object.fromEntries(
     Object.entries(mapDiasBack).map(([curto, longo]) => [longo, curto])
 );
 
+const diaDeHojeFull = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'][new Date().getDay()];
+
 const treinoImagemUrl = (imagem) =>
     `${process.env.REACT_APP_API_BASE_URL}/uploads/${imagem}`;
 
@@ -307,7 +309,7 @@ const UsuariosView = () => {
                         });
 
                         return (
-                            <div className="uv-day-block" key={dia}>
+                            <div className={`uv-day-block${diaCompleto === diaDeHojeFull ? ' uv-today' : ''}`} key={dia}>
 
                                 {/* Header do dia */}
                                 <div className="uv-day-header">
