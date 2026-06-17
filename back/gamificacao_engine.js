@@ -2,13 +2,13 @@ const db = require('./db');
 
 // ── Níveis ────────────────────────────────────────────────────────────────────
 const NIVEIS = [
-    { nivel: 1, nome: 'Iniciante',  xpMin: 0    },
-    { nivel: 2, nome: 'Aprendiz',   xpMin: 200  },
-    { nivel: 3, nome: 'Dedicado',   xpMin: 500  },
-    { nivel: 4, nome: 'Atleta',     xpMin: 1000 },
-    { nivel: 5, nome: 'Avançado',   xpMin: 1800 },
-    { nivel: 6, nome: 'Elite',      xpMin: 3000 },
-    { nivel: 7, nome: 'Lendário',   xpMin: 5000 },
+    { nivel: 1, nome: 'Mortal',     xpMin: 0    },
+    { nivel: 2, nome: 'Guerreiro',  xpMin: 200  },
+    { nivel: 3, nome: 'Herói',      xpMin: 500  },
+    { nivel: 4, nome: 'Campeão',    xpMin: 1000 },
+    { nivel: 5, nome: 'Semideus',   xpMin: 1800 },
+    { nivel: 6, nome: 'Titã',       xpMin: 3000 },
+    { nivel: 7, nome: 'Olimpiano',  xpMin: 5000 },
 ];
 
 function calcNivel(xp) {

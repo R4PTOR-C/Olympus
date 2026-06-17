@@ -5,6 +5,7 @@ import '../../styles/UsuariosView.css';
 import '../../styles/TreinosForm.css';
 import '../../styles/Social.css';
 import PullToRefresh from '../components/PullToRefresh';
+import BadgeNivel from '../components/BadgeNivel';
 
 const API = process.env.REACT_APP_API_BASE_URL;
 const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
@@ -27,6 +28,7 @@ export default function AmigoTreinos() {
 
     const nomeAmigo   = state?.nome || 'Amigo';
     const avatarAmigo = state?.avatar || null;
+    const nivelAmigo  = state?.nivel || 1;
 
     const [treinos,      setTreinos]      = useState([]);
     const [loading,      setLoading]      = useState(true);
@@ -141,6 +143,7 @@ export default function AmigoTreinos() {
                     </div>
                 )}
                 <h1 className="uv-user-name">{nomeAmigo}</h1>
+                <div style={{ marginTop: 12 }}><BadgeNivel nivel={nivelAmigo} variant="full" expansivel /></div>
             </div>
 
             {/* ── BOARD (somente leitura, exercícios em dropdown) ── */}

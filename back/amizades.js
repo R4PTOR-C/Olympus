@@ -27,16 +27,17 @@ router.get('/buscar', authenticate, async (req, res) => {
     if (q.length < 2) return res.json([]);
     try {
         const { rows } = await db.query(
-            `SELECT id, nome, avatar
-             FROM usuarios
-             WHERE nome ILIKE $1
-               AND id <> $2
-               AND id NOT IN (
+            `SELECT u.id, u.nome, u.avatar, COALESCE(g.nivel, 1) AS nivel
+             FROM usuarios u
+             LEFT JOIN gamificacao_usuario g ON g.usuario_id = u.id
+             WHERE u.nome ILIKE $1
+               AND u.id <> $2
+               AND u.id NOT IN (
                    SELECT CASE WHEN solicitante_id = $2 THEN destinatario_id ELSE solicitante_id END
                    FROM amizades
                    WHERE solicitante_id = $2 OR destinatario_id = $2
                )
-             ORDER BY nome
+             ORDER BY u.nome
              LIMIT 20`,
             [`%${q}%`, req.user.userId]
         );
@@ -54,10 +55,11 @@ router.get('/buscar', authenticate, async (req, res) => {
 router.get('/sugestoes', authenticate, async (req, res) => {
     try {
         const { rows } = await db.query(
-            `SELECT id, nome, avatar
-             FROM usuarios
-             WHERE id <> $1
-               AND id NOT IN (
+            `SELECT u.id, u.nome, u.avatar, COALESCE(g.nivel, 1) AS nivel
+             FROM usuarios u
+             LEFT JOIN gamificacao_usuario g ON g.usuario_id = u.id
+             WHERE u.id <> $1
+               AND u.id NOT IN (
                    SELECT CASE WHEN solicitante_id = $1 THEN destinatario_id ELSE solicitante_id END
                    FROM amizades
                    WHERE solicitante_id = $1 OR destinatario_id = $1
@@ -83,9 +85,11 @@ router.get('/pendentes/:userId', authenticate, async (req, res) => {
     try {
         const { rows } = await db.query(
             `SELECT a.id, a.solicitante_id, a.created_at,
-                    u.nome AS solicitante_nome, u.avatar AS solicitante_avatar
+                    u.nome AS solicitante_nome, u.avatar AS solicitante_avatar,
+                    COALESCE(g.nivel, 1) AS nivel
              FROM amizades a
              JOIN usuarios u ON u.id = a.solicitante_id
+             LEFT JOIN gamificacao_usuario g ON g.usuario_id = a.solicitante_id
              WHERE a.status = 'pendente' AND a.destinatario_id = $1
              ORDER BY a.created_at DESC`,
             [userId]
@@ -127,9 +131,10 @@ router.get('/:userId', authenticate, async (req, res) => {
     if (!ehProprioUsuario(req, userId)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     try {
         const { rows } = await db.query(
-            `SELECT a.id AS amizade_id, u.id, u.nome, u.avatar
+            `SELECT a.id AS amizade_id, u.id, u.nome, u.avatar, COALESCE(g.nivel, 1) AS nivel
              FROM amizades a
              JOIN usuarios u ON u.id = CASE WHEN a.solicitante_id = $1 THEN a.destinatario_id ELSE a.solicitante_id END
+             LEFT JOIN gamificacao_usuario g ON g.usuario_id = u.id
              WHERE a.status = 'aceito' AND ($1 = a.solicitante_id OR $1 = a.destinatario_id)
              ORDER BY u.nome`,
             [userId]

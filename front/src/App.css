@@ -18,6 +18,13 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: 'Greek Freak';
+    src: url('fonts/Greek-Freak.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 /* ========================= */
 /* VARIÁVEIS GLOBAIS         */
 /* ========================= */

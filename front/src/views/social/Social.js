@@ -6,6 +6,10 @@ import '../../styles/AlunosIndex.css';
 import '../../styles/Vinculos.css';
 import PullToRefresh from '../components/PullToRefresh';
 import useSocketRefresh from '../../hooks/useSocketRefresh';
+import BadgeNivel from '../components/BadgeNivel';
+import '../../styles/Social.css';
+
+const medalha = (pos) => (pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : `#${pos}`);
 
 const API = process.env.REACT_APP_API_BASE_URL;
 const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
@@ -91,23 +95,31 @@ export default function Social() {
     const [buscando,       setBuscando]       = useState(false);
     const [sugestoes,      setSugestoes]      = useState([]);
     const [pedidosEnviados,setPedidosEnviados] = useState(new Set());
+    const [ranking,        setRanking]        = useState([]);
+    const [minhaPosicao,   setMinhaPosicao]   = useState(null);
+    const [meuXp,          setMeuXp]          = useState(0);
     const [loading,        setLoading]        = useState(true);
 
     const carregar = useCallback(async () => {
         setLoading(true);
         try {
             const headers = authHeader();
-            const [amigosRes, pendRes, sugRes] = await Promise.all([
+            const [amigosRes, pendRes, sugRes, rankRes] = await Promise.all([
                 fetch(`${API}/amizades/${userId}`,            { headers }),
                 fetch(`${API}/amizades/pendentes/${userId}`,  { headers }),
                 fetch(`${API}/amizades/sugestoes`,            { headers }),
+                fetch(`${API}/gamificacao/ranking`,           { headers }),
             ]);
             const amigosData = await amigosRes.json();
             const pendData   = await pendRes.json();
             const sugData    = await sugRes.json();
+            const rankData   = await rankRes.json();
             setAmigos(Array.isArray(amigosData) ? amigosData : []);
             setPendentes(Array.isArray(pendData) ? pendData : []);
             setSugestoes(Array.isArray(sugData) ? sugData : []);
+            setRanking(Array.isArray(rankData?.ranking) ? rankData.ranking : []);
+            setMinhaPosicao(rankData?.minhaPosicao || null);
+            setMeuXp(rankData?.meuXp || 0);
         } catch (err) {
             console.error('Erro ao carregar social:', err);
         } finally {
@@ -183,6 +195,7 @@ export default function Social() {
                 {u.avatar ? <img src={u.avatar} alt={u.nome} style={ig.avatarImg} /> : <AvatarPlaceholder size={64} />}
             </div>
             <div style={ig.nome} title={u.nome}>{u.nome}</div>
+            <BadgeNivel nivel={u.nivel} variant="compact" />
             {pedidosEnviados.has(u.id) ? (
                 <button style={{ ...ig.btn, ...ig.btnSent }} disabled>Enviado</button>
             ) : (
@@ -238,6 +251,9 @@ export default function Social() {
                     Pedidos
                     {pendentes.length > 0 && <span className="vk-tab-badge">{pendentes.length}</span>}
                 </button>
+                <button className={`vk-tab${aba === 'ranking' ? ' active' : ''}`} onClick={() => setAba('ranking')}>
+                    Ranking
+                </button>
             </div>
 
             {/* ── LOADING ── */}
@@ -270,14 +286,14 @@ export default function Social() {
                             <div
                                 className="vk-request-body"
                                 style={{ cursor: 'pointer', flex: 1 }}
-                                onClick={() => navigate(`/social/amigo/${amigo.id}`, { state: { nome: amigo.nome, avatar: amigo.avatar } })}
+                                onClick={() => navigate(`/social/amigo/${amigo.id}`, { state: { nome: amigo.nome, avatar: amigo.avatar, nivel: amigo.nivel } })}
                             >
                                 <div className="vk-prof-avatar">
                                     {amigo.avatar ? <img src={amigo.avatar} alt={amigo.nome} /> : <AvatarPlaceholder size={52} />}
                                 </div>
                                 <div className="al-info">
                                     <p className="al-name">{amigo.nome}</p>
-                                    <p className="al-meta"><span>Ver treinos</span></p>
+                                    <BadgeNivel nivel={amigo.nivel} variant="compact" tamanho={48} />
                                 </div>
                             </div>
                             <div className="vk-request-actions">
@@ -318,6 +334,7 @@ export default function Social() {
                                 </div>
                                 <div className="al-info">
                                     <p className="al-name">{u.nome}</p>
+                                    <BadgeNivel nivel={u.nivel} variant="compact" />
                                 </div>
                             </div>
                             <div className="vk-request-actions">
@@ -350,7 +367,7 @@ export default function Social() {
                                 </div>
                                 <div className="al-info">
                                     <p className="al-name">{p.solicitante_nome}</p>
-                                    <p className="al-meta"><span>Quer ser seu amigo</span></p>
+                                    <BadgeNivel nivel={p.nivel} variant="compact" />
                                 </div>
                             </div>
                             <div className="vk-request-actions">
@@ -359,6 +376,39 @@ export default function Social() {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* ── ABA: RANKING ── */}
+            {!loading && aba === 'ranking' && (
+                <div className="vk-list">
+                    {ranking.length === 0 ? (
+                        <div className="vk-empty">Ninguém no ranking ainda. Treine para ganhar XP!</div>
+                    ) : (
+                        <>
+                            {ranking.map(r => (
+                                <div key={r.id} className={`at-rank-row${String(r.id) === String(userId) ? ' at-rank-me' : ''}`}>
+                                    <div className="at-rank-pos">{medalha(r.posicao)}</div>
+                                    <div className="vk-prof-avatar">
+                                        {r.avatar ? <img src={r.avatar} alt={r.nome} /> : <AvatarPlaceholder size={52} />}
+                                    </div>
+                                    <div className="al-info">
+                                        <p className="al-name">{r.nome}</p>
+                                        <BadgeNivel nivel={r.nivel} variant="compact" />
+                                    </div>
+                                    <div className="at-rank-xp">{r.xp_total} XP</div>
+                                </div>
+                            ))}
+                            {minhaPosicao && !ranking.some(r => String(r.id) === String(userId)) && (
+                                <div className="at-rank-row at-rank-me">
+                                    <div className="at-rank-pos">#{minhaPosicao}</div>
+                                    <div className="vk-prof-avatar"><AvatarPlaceholder size={52} /></div>
+                                    <div className="al-info"><p className="al-name">Você</p></div>
+                                    <div className="at-rank-xp">{meuXp} XP</div>
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
         </div>

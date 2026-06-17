@@ -79,6 +79,118 @@
     z-index: 1200; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
 
+/* ── Badge de nível (medalhão + estrelas + título) ── */
+.bn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.bn-full {
+    padding: 22px 18px 18px;
+    border-radius: 18px;
+    box-sizing: border-box;
+    gap: 10px;
+}
+.bn-compact {
+    flex-direction: row;
+    gap: 6px;
+}
+.bn-medal {
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--h-surface);
+    border: 1px solid var(--h-border);
+}
+.bn-medal img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.bn-medal-fallback {
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 700;
+    color: var(--h-accent);
+    line-height: 1;
+}
+.bn-title {
+    font-family: 'Cinzel Decorative', 'Bebas Neue', serif;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    font-size: 1.25rem;
+    color: var(--h-text);
+    line-height: 1.05;
+    text-transform: uppercase;
+    text-align: center;
+}
+.bn-nivel-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+/* Modal: badge ampliado no centro da tela */
+.bn-modal-overlay {
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1300;
+    padding: 20px;
+    animation: bn-fade 0.18s ease;
+}
+.bn-modal-content {
+    animation: bn-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes bn-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes bn-pop {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Ranking ── */
+.at-rank-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: var(--h-bg);
+    border: 1px solid var(--h-border);
+    border-radius: 12px;
+}
+.at-rank-row.at-rank-me {
+    border-color: var(--h-accent);
+    box-shadow: 0 0 0 1px var(--h-accent);
+}
+.at-rank-pos {
+    width: 34px;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--h-text-muted);
+}
+.at-rank-xp {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--h-accent);
+}
+
 /* ── DESKTOP ── */
 @media (min-width: 768px) {
     .at-modal-overlay { align-items: center; }

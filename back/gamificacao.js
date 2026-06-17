@@ -34,5 +34,41 @@ router.get('/usuarios/:userId/progresso', authenticate, requireVinculo('userId')
     }
 });
 
+// Ranking global por XP total
+router.get('/ranking', authenticate, async (req, res) => {
+    const userId = req.user.userId;
+    try {
+        const { rows } = await db.query(
+            `SELECT u.id, u.nome, u.avatar, g.xp_total, g.nivel,
+                    RANK() OVER (ORDER BY g.xp_total DESC)::int AS posicao
+             FROM gamificacao_usuario g
+             JOIN usuarios u ON u.id = g.usuario_id
+             WHERE g.xp_total > 0
+             ORDER BY g.xp_total DESC
+             LIMIT 100`
+        );
+
+        // Posição do próprio usuário, mesmo fora do top 100
+        const { rows: minha } = await db.query(
+            `SELECT posicao, xp_total FROM (
+                 SELECT usuario_id, xp_total,
+                        RANK() OVER (ORDER BY xp_total DESC)::int AS posicao
+                 FROM gamificacao_usuario
+                 WHERE xp_total > 0
+             ) r WHERE r.usuario_id = $1`,
+            [userId]
+        );
+
+        res.json({
+            ranking:      rows,
+            minhaPosicao: minha[0]?.posicao || null,
+            meuXp:        minha[0]?.xp_total || 0,
+        });
+    } catch (err) {
+        console.error('Erro ao buscar ranking:', err);
+        res.status(500).json({ error: 'Erro ao buscar ranking.' });
+    }
+});
+
 module.exports = router;
 module.exports.calcNivel = calcNivel;

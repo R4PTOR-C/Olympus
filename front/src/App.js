@@ -46,6 +46,7 @@ import Agua from "./views/agua/Agua";
 import Progresso from "./views/gamificacao/Progresso";
 import Social from "./views/social/Social";
 import AmigoTreinos from "./views/social/AmigoTreinos";
+import BadgePreview from "./views/test/BadgePreview";
 
 // Componente para rotas protegidas
 function ProtectedRoute({ children }) {
@@ -137,6 +138,7 @@ function AppContent() {
                 <Route path="/meus-chats" element={<ChatsList />} />
                 <Route path="/cardio/:id/new" element={<ProtectedRoute><CardioForm /></ProtectedRoute>} />
                 <Route path="/test-body" element={<TestBodyMap />} />
+                <Route path="/badge-preview" element={<BadgePreview />} />
                 <Route path="/agua" element={<Agua />} />
                 <Route path="/progresso" element={<ProtectedRoute><Progresso /></ProtectedRoute>} />
                 <Route path="/social" element={<ProtectedRoute><Social /></ProtectedRoute>} />
