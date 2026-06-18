@@ -2,6 +2,8 @@ import React from 'react';
 
 // Nomes dos níveis — devem espelhar NIVEIS em back/gamificacao_engine.js
 export const NOMES_NIVEL = ['Mortal', 'Guerreiro', 'Herói', 'Campeão', 'Semideus', 'Titã', 'Olimpiano'];
+// XP mínimo de cada nível (índice = nivel - 1) — espelha NIVEIS no backend
+export const XP_NIVEL = [0, 200, 500, 1000, 1800, 3000, 5000];
 const NOMES = NOMES_NIVEL;
 
 // Badge de nível: 7 estrelas, as primeiras `nivel` preenchidas.

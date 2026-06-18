@@ -1,0 +1,277 @@
+/* =============================== */
+/* PROGRESSO — gamificação         */
+/* =============================== */
+
+.pg-page {
+    min-height: 100dvh;
+    background: var(--color-bg);
+    padding: 16px 16px 90px;
+    font-family: 'Barlow', sans-serif;
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+/* ── Header ── */
+.pg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.pg-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--color-text);
+    letter-spacing: 0.05em;
+}
+.pg-streak {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 107, 0, 0.12);
+    border: 1px solid rgba(255, 107, 0, 0.28);
+    border-radius: 99px;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #FF6B00;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.04em;
+}
+
+/* ── HERO ── */
+.pg-hero {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px 22px;
+    margin-bottom: 28px;
+    background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: 22px;
+    box-shadow: var(--color-shadow);
+}
+.pg-hero-glow {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+.pg-hero > *:not(.pg-hero-glow) { position: relative; z-index: 1; }
+
+/* Barra de XP */
+.pg-xp-area {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.pg-xp-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-dim);
+}
+.pg-xp-track {
+    height: 9px;
+    background: var(--color-surface-3);
+    border-radius: 99px;
+    overflow: hidden;
+}
+.pg-xp-fill {
+    height: 100%;
+    border-radius: 99px;
+    min-width: 6px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.pg-xp-sub {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    margin-top: 2px;
+}
+
+/* Stats */
+.pg-stats {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+}
+.pg-stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 6px;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+}
+.pg-stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--color-text);
+}
+.pg-stat-lbl {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-dim);
+    font-weight: 700;
+}
+
+/* ── Seções ── */
+.pg-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 26px;
+}
+.pg-section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--color-text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+/* ── Jornada dos ranks (trilha) ── */
+.pg-trilha {
+    position: relative;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 8px 2px 4px;
+    scrollbar-width: none;
+}
+.pg-trilha::-webkit-scrollbar { display: none; }
+.pg-trilha-line {
+    position: absolute;
+    top: 40px;
+    left: 38px;
+    right: 38px;
+    height: 2px;
+    background: var(--color-surface-3);
+    z-index: 0;
+}
+.pg-rank {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    width: 76px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding-top: 8px;
+}
+.pg-rank-medal {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    position: relative;
+    transition: transform 0.18s;
+}
+.pg-rank-lock {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 50%;
+}
+.pg-rank-nome {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1;
+}
+.pg-rank-xp {
+    font-size: 0.62rem;
+    color: var(--color-text-dim);
+    letter-spacing: 0.02em;
+}
+.pg-rank-voce {
+    margin-top: 2px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #fff;
+    padding: 1px 7px;
+    border-radius: 99px;
+}
+
+/* ── Objetivos ── */
+.pg-obj-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.pg-obj {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: var(--color-shadow);
+}
+.pg-obj-done { border-color: rgba(46, 204, 113, 0.25); }
+.pg-obj-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.pg-obj-info { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.pg-obj-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.pg-obj-nome { font-size: 0.9rem; font-weight: 700; color: var(--color-text); line-height: 1; }
+.pg-obj-xp {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 99px;
+    letter-spacing: 0.04em;
+    font-family: 'Barlow Condensed', sans-serif;
+    flex-shrink: 0;
+}
+.pg-obj-desc { font-size: 0.72rem; color: var(--color-text-dim); line-height: 1.3; }
+.pg-bar-track { height: 5px; background: var(--color-surface-3); border-radius: 99px; overflow: hidden; margin-top: 2px; }
+.pg-bar-fill { height: 100%; border-radius: 99px; min-width: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+.pg-obj-prog { font-size: 0.68rem; color: var(--color-text-dim); letter-spacing: 0.02em; }
+
+/* ── Skeletons ── */
+.pg-skel-hero { height: 300px; border-radius: 22px; background: var(--color-surface-2); margin-bottom: 28px; animation: fadeIn 1s ease infinite alternate; }
+.pg-skel-row { height: 96px; border-radius: 14px; background: var(--color-surface-2); margin-bottom: 26px; animation: fadeIn 1s ease infinite alternate; }
+.pg-skel-card { height: 72px; border-radius: 16px; background: var(--color-surface-2); margin-bottom: 10px; animation: fadeIn 1s ease infinite alternate; }
+
+/* ── DESKTOP ── */
+@media (min-width: 768px) {
+    .pg-page { max-width: 720px; }
+    .pg-title { font-size: 2.4rem; }
+}

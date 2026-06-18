@@ -3,7 +3,7 @@ import EstrelasNivel, { NOMES_NIVEL } from './EstrelasNivel';
 import '../../styles/Social.css';
 
 // Cor assinatura de cada nível (escala crescente; Olimpiano = dourado).
-const COR_NIVEL = {
+export const COR_NIVEL = {
     1: '#D08A45', // Mortal    — bronze
     2: '#C3CAD3', // Guerreiro — prata
     3: '#22C58A', // Herói     — verde
@@ -50,6 +50,10 @@ export default function BadgeNivel({ nivel = 1, variant = 'full', expansivel = f
             )}
         </div>
     );
+
+    if (variant === 'medal') {
+        return <Medalhao size={tamanho} fallbackSize={Math.round(tamanho * 0.42)} />;
+    }
 
     if (compact) {
         return (

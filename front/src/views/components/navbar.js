@@ -4,12 +4,40 @@ import { AuthContext } from '../../AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import DarkModeSwitch from './DarkModeSwitch';
 
+const API = process.env.REACT_APP_API_BASE_URL;
+
+// Medalhão do rank do usuário (imagem por nível, com fallback no número)
+function RankMedalhao({ nivel, onClick }) {
+    const [erro, setErro] = useState(false);
+    if (!nivel) return null;
+    return (
+        <button className="nb-rank" onClick={onClick} title={`Nível ${nivel}`} aria-label={`Nível ${nivel}`}>
+            {erro
+                ? <span className="nb-rank-num">{nivel}</span>
+                : <img src={`/badge-nivel-${nivel}.png`} alt={`Nível ${nivel}`} onError={() => setErro(true)} />}
+        </button>
+    );
+}
+
 function Navbar() {
     const { userId, avatar, funcao, funcao_extra, funcaoAtiva, trocarFuncao, loggedIn, darkMode, mensagensNaoLidas, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [nivel, setNivel] = useState(null);
     const dropdownRef = useRef(null);
+
+    // Busca o nível do usuário para o medalhão de rank
+    useEffect(() => {
+        if (!loggedIn || !userId) return;
+        const token = localStorage.getItem('token');
+        fetch(`${API}/gamificacao/usuarios/${userId}/progresso`, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then(r => (r.ok ? r.json() : null))
+            .then(d => { if (d) setNivel(d.nivel || 1); })
+            .catch(() => {});
+    }, [loggedIn, userId]);
 
     const isActive = (path) => location.pathname.startsWith(path);
 
@@ -148,8 +176,10 @@ function Navbar() {
                 </div>
             )}
 
-            {/* Avatar + dropdown */}
+            {/* Rank + Avatar + dropdown */}
             {loggedIn && (
+                <div className="nb-right">
+                <RankMedalhao nivel={nivel} onClick={() => navigate('/progresso')} />
                 <div className="nb-avatar-wrap" ref={dropdownRef}>
                     <button
                         className="nb-avatar-btn"
@@ -214,6 +244,7 @@ function Navbar() {
                             </li>
                         </ul>
                     )}
+                </div>
                 </div>
             )}
         </nav>
