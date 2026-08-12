@@ -149,21 +149,47 @@
     text-transform: uppercase;
 }
 
-/* ── Jornada dos ranks (trilha) ── */
+/* ── Jornada dos ranks (7 tiers × 3 sub-ranks) ── */
 .pg-trilha {
     position: relative;
     display: flex;
-    gap: 6px;
+    gap: 10px;
     overflow-x: auto;
-    padding: 8px 2px 4px;
+    padding: 4px 2px;
     scrollbar-width: none;
+    scroll-behavior: smooth;
 }
 .pg-trilha::-webkit-scrollbar { display: none; }
+.pg-tier {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 6px 6px;
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    background: var(--color-surface);
+}
+.pg-tier-atual { background: var(--color-surface-2); }
+.pg-tier-nome {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1;
+}
+.pg-tier-ranks {
+    position: relative;
+    display: flex;
+    gap: 2px;
+}
 .pg-trilha-line {
     position: absolute;
-    top: 40px;
-    left: 38px;
-    right: 38px;
+    top: 37px;
+    left: 30px;
+    right: 30px;
     height: 2px;
     background: var(--color-surface-3);
     z-index: 0;
@@ -172,15 +198,15 @@
     position: relative;
     z-index: 1;
     flex-shrink: 0;
-    width: 76px;
+    width: 62px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     padding-top: 8px;
 }
 .pg-rank-medal {
-    height: 64px;
+    height: 58px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -198,10 +224,10 @@
     border-radius: 50%;
 }
 .pg-rank-nome {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.74rem;
+    font-family: 'Cinzel Decorative', 'Barlow Condensed', serif;
+    font-size: 0.78rem;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     text-align: center;
     line-height: 1;
@@ -220,6 +246,194 @@
     color: #fff;
     padding: 1px 7px;
     border-radius: 99px;
+}
+
+/* Cards clicáveis (hero + ranks da trilha) */
+.pg-hero-badge {
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    transition: transform 0.18s;
+}
+.pg-hero-badge:active { transform: scale(0.97); }
+.pg-rank-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    padding: 8px 0 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+.pg-rank-btn:active .pg-rank-medal { transform: scale(0.92); }
+
+/* ── Modal de rank ── */
+.rk-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: rk-fade 0.18s ease;
+}
+.rk-card {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+    max-height: 92dvh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 20px 22px;
+    border-radius: 24px;
+    border: 1px solid transparent;
+    background: linear-gradient(170deg, #17171C 0%, #08080A 100%);
+    animation: rk-pop 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+    scrollbar-width: none;
+}
+.rk-card::-webkit-scrollbar { display: none; }
+.rk-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.45);
+    color: rgba(255, 255, 255, 0.75);
+    cursor: pointer;
+}
+.rk-arte {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.rk-arte img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+.rk-arte-fallback {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 5rem;
+    line-height: 1;
+}
+.rk-arte-lock {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+}
+.rk-nome {
+    font-family: 'Cinzel Decorative', 'Bebas Neue', serif;
+    font-weight: 700;
+    font-size: 1.9rem;
+    line-height: 1.05;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-align: center;
+}
+.rk-romano {
+    font-family: 'Cinzel Decorative', 'Bebas Neue', serif;
+    opacity: 0.85;
+}
+.rk-tier-lbl {
+    margin-top: 2px;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.32);
+}
+.rk-status {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 99px;
+}
+.rk-lore {
+    margin: 4px 0 2px;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.62);
+}
+.rk-prog { width: 100%; display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.rk-prog-track {
+    width: 100%;
+    height: 8px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+.rk-prog-fill {
+    height: 100%;
+    border-radius: 99px;
+    min-width: 4px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.rk-prog-lbl {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.55);
+    text-align: center;
+}
+.rk-infos { display: flex; width: 100%; gap: 8px; margin-top: 4px; }
+.rk-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 9px 4px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.rk-info-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    line-height: 1;
+    color: #fff;
+    white-space: nowrap;
+}
+.rk-info-lbl {
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: rgba(255, 255, 255, 0.45);
+    text-align: center;
+}
+@keyframes rk-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rk-pop {
+    from { opacity: 0; transform: scale(0.9) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 /* ── Objetivos ── */

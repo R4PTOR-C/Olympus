@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
-import EstrelasNivel, { NOMES_NIVEL } from './EstrelasNivel';
+import EstrelasNivel from './EstrelasNivel';
+import { infoNivel, arteFallback, COR_TIER } from './rankInfo';
 import '../../styles/Social.css';
 
-// Cor assinatura de cada nível (escala crescente; Olimpiano = dourado).
-export const COR_NIVEL = {
-    1: '#D08A45', // Mortal    — bronze
-    2: '#C3CAD3', // Guerreiro — prata
-    3: '#22C58A', // Herói     — verde
-    4: '#4A90D9', // Campeão   — azul
-    5: '#A77DF7', // Semideus  — roxo
-    6: '#F1564B', // Titã      — vermelho
-    7: '#FFD24D', // Olimpiano — dourado
-};
+// Cor assinatura por tier (1..8) — mantida como export para compatibilidade.
+export const COR_NIVEL = COR_TIER;
 
 const FUNDO = 'linear-gradient(160deg, #1B1B20 0%, #050506 100%)';
 
@@ -23,15 +16,26 @@ const hexToRgba = (hex, a) => {
     return `rgba(${r}, ${g}, ${b}, ${a})`;
 };
 
-// Badge de nível: medalhão (imagem por nível) + estrelas + título.
-// variant: 'full' | 'compact' | expansivel: clicar abre versão ampliada no centro
+// Badge de rank: medalhão (arte do rank) + estrelas do sub-rank + título.
+// `nivel` é o nível plano 1..24. variant: 'full' | 'compact' | 'medal'
+// expansivel: clicar abre versão ampliada no centro
 export default function BadgeNivel({ nivel = 1, variant = 'full', expansivel = false, tamanho = 30 }) {
-    const n = Math.max(1, Math.min(7, parseInt(nivel) || 1));
-    const nome = NOMES_NIVEL[n - 1];
-    const cor = COR_NIVEL[n];
+    const info = infoNivel(nivel);
+    const { nivel: n, nome, cor, corAcento, arte, tier, sub } = info;
     const [erroImg, setErroImg] = useState(false);
+    const [usouFallback, setUsouFallback] = useState(false);
     const [aberto, setAberto] = useState(false);
     const compact = variant === 'compact';
+
+    // Arte do sub-rank ausente → cai na arte do sub-rank 1 do mesmo tier → número
+    const onErroImg = (e) => {
+        if (!usouFallback && sub !== 1) {
+            setUsouFallback(true);
+            e.target.src = arteFallback(tier);
+        } else {
+            setErroImg(true);
+        }
+    };
 
     const Medalhao = ({ size, fallbackSize }) => (
         <div
@@ -46,7 +50,7 @@ export default function BadgeNivel({ nivel = 1, variant = 'full', expansivel = f
             {erroImg ? (
                 <span className="bn-medal-fallback" style={{ fontSize: fallbackSize, color: cor }}>{n}</span>
             ) : (
-                <img src={`/badge-nivel-${n}.png`} alt={nome} onError={() => setErroImg(true)} />
+                <img src={arte} alt={nome} onError={onErroImg} />
             )}
         </div>
     );
@@ -59,7 +63,7 @@ export default function BadgeNivel({ nivel = 1, variant = 'full', expansivel = f
         return (
             <div className="bn bn-compact">
                 <Medalhao size={tamanho} fallbackSize={Math.round(tamanho * 0.45)} />
-                <EstrelasNivel nivel={n} size={Math.round(tamanho * 0.3)} gap={tamanho > 36 ? 2 : 1.5} cor={cor} corVazia={hexToRgba(cor, 0.3)} />
+                <EstrelasNivel nivel={n} size={Math.round(tamanho * 0.32)} gap={tamanho > 36 ? 2 : 1.5} cor={corAcento} corVazia={hexToRgba(corAcento, 0.3)} />
             </div>
         );
     }
@@ -82,8 +86,8 @@ export default function BadgeNivel({ nivel = 1, variant = 'full', expansivel = f
                 }}
             >
                 <Medalhao size={medal} fallbackSize={big ? 60 : 42} />
-                <EstrelasNivel nivel={n} size={star} gap={big ? 6 : 4} cor={cor} corVazia={hexToRgba(cor, 0.32)} />
-                <span className="bn-title" style={{ color: cor, textShadow: `0 0 10px ${hexToRgba(cor, 0.5)}`, fontSize: big ? '2.4rem' : undefined }}>{nome}</span>
+                <EstrelasNivel nivel={n} size={star} gap={big ? 6 : 4} cor={corAcento} corVazia={hexToRgba(corAcento, 0.32)} />
+                <span className="bn-title" style={{ color: cor, textShadow: `0 0 10px ${hexToRgba(corAcento, 0.55)}`, fontSize: big ? '2.2rem' : undefined }}>{nome}</span>
                 {big && <span className="bn-nivel-num" style={{ color: hexToRgba(cor, 0.7) }}>Nível {n}</span>}
             </div>
         );

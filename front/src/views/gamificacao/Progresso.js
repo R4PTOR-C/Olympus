@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../../AuthContext';
 import PageStateHandler from '../components/PageStateHandler';
-import BadgeNivel, { COR_NIVEL } from '../components/BadgeNivel';
-import { NOMES_NIVEL, XP_NIVEL } from '../components/EstrelasNivel';
+import BadgeNivel from '../components/BadgeNivel';
+import RankModal from '../components/RankModal';
+import { infoNivel, NIVEIS, TIERS } from '../components/rankInfo';
 import '../../styles/Progresso.css';
 
 const API = process.env.REACT_APP_API_BASE_URL;
@@ -74,6 +75,8 @@ export default function Progresso() {
     const { userId } = useContext(AuthContext);
     const token = localStorage.getItem('token');
     const [dados, setDados] = useState(null);
+    const [rankAberto, setRankAberto] = useState(null); // nível exibido no modal
+    const trilhaRef = useRef(null);
 
     useEffect(() => {
         if (!userId) return;
@@ -84,6 +87,17 @@ export default function Progresso() {
             .then(setDados)
             .catch(() => {});
     }, [userId, token]);
+
+    // Centraliza o tier atual na trilha assim que os dados chegam
+    useEffect(() => {
+        if (!dados || !trilhaRef.current) return;
+        const alvo = trilhaRef.current.querySelector('[data-tier-atual="sim"]');
+        if (!alvo) return;
+        trilhaRef.current.scrollTo({
+            left: alvo.offsetLeft - (trilhaRef.current.clientWidth - alvo.offsetWidth) / 2,
+            behavior: 'smooth',
+        });
+    }, [dados]);
 
     if (!dados) return (
         <PageStateHandler>
@@ -96,9 +110,11 @@ export default function Progresso() {
     );
 
     const nivel = dados.nivel;
-    const cor = COR_NIVEL[nivel] || '#4A90D9';
-    const isMax = nivel >= 7;
-    const proximoNome = isMax ? null : NOMES_NIVEL[nivel]; // próximo = índice nivel
+    const info = infoNivel(nivel);
+    const cor = info.cor;
+    const corAcento = info.corAcento;
+    const isMax = info.isMax;
+    const proximoNome = info.proximo ? info.proximo.nome : null;
     const faltam = isMax ? 0 : Math.max(dados.xp_para_proximo - dados.xp_no_nivel, 0);
     const pct = isMax ? 1 : dados.pct_nivel;
 
@@ -121,16 +137,23 @@ export default function Progresso() {
                 <div className="pg-hero" style={{ '--rank-cor': cor }}>
                     <div className="pg-hero-glow" style={{ background: `radial-gradient(circle, ${cor}33 0%, transparent 70%)` }} />
 
-                    <BadgeNivel nivel={nivel} variant="full" expansivel />
+                    <button
+                        type="button"
+                        className="pg-hero-badge"
+                        onClick={() => setRankAberto(nivel)}
+                        aria-label={`Ver detalhes do rank ${info.nome}`}
+                    >
+                        <BadgeNivel nivel={nivel} variant="full" />
+                    </button>
 
                     {/* Barra de XP até o próximo rank */}
                     <div className="pg-xp-area">
                         <div className="pg-xp-labels">
-                            <span style={{ color: cor }}>Nível {nivel}</span>
+                            <span style={{ color: cor }}>Nível {nivel} · {info.nome}</span>
                             <span>{isMax ? 'RANK MÁXIMO' : `Próximo: ${proximoNome}`}</span>
                         </div>
                         <div className="pg-xp-track">
-                            <div className="pg-xp-fill" style={{ width: `${pct * 100}%`, background: `linear-gradient(90deg, ${cor}, ${cor}cc)`, boxShadow: `0 0 10px ${cor}88` }} />
+                            <div className="pg-xp-fill" style={{ width: `${pct * 100}%`, background: `linear-gradient(90deg, ${cor}, ${corAcento})`, boxShadow: `0 0 10px ${cor}88` }} />
                         </div>
                         <div className="pg-xp-sub">
                             {isMax
@@ -150,36 +173,58 @@ export default function Progresso() {
                 {/* ── JORNADA DOS RANKS ── */}
                 <div className="pg-section">
                     <span className="pg-section-label">Jornada dos Ranks</span>
-                    <div className="pg-trilha">
-                        <div className="pg-trilha-line" />
-                        {NOMES_NIVEL.map((nome, i) => {
-                            const lvl = i + 1;
-                            const xpMin = XP_NIVEL[i];
-                            const conquistado = dados.xp_total >= xpMin;
-                            const atual = lvl === nivel;
-                            const corLvl = COR_NIVEL[lvl];
+                    <div className="pg-trilha" ref={trilhaRef}>
+                        {TIERS.map(t => {
+                            const ranks = NIVEIS.filter(r => r.tier === t.tier);
+                            const tierAtual = t.tier === info.tier;
+                            const tierAberto = dados.xp_total >= t.xpMin;
                             return (
-                                <div key={lvl} className={`pg-rank${atual ? ' pg-rank-atual' : ''}`}>
-                                    <div
-                                        className="pg-rank-medal"
-                                        style={{
-                                            filter: conquistado ? 'none' : 'grayscale(1)',
-                                            opacity: conquistado ? 1 : 0.4,
-                                            boxShadow: atual ? `0 0 0 2px ${corLvl}, 0 0 16px ${corLvl}88` : 'none',
-                                        }}
-                                    >
-                                        <BadgeNivel nivel={lvl} variant="medal" tamanho={atual ? 64 : 50} />
-                                        {!conquistado && (
-                                            <span className="pg-rank-lock">
-                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                    <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                                </svg>
-                                            </span>
-                                        )}
+                                <div
+                                    key={t.tier}
+                                    className={`pg-tier${tierAtual ? ' pg-tier-atual' : ''}`}
+                                    data-tier-atual={tierAtual ? 'sim' : undefined}
+                                    style={{ borderColor: tierAtual ? `${t.cor}66` : undefined }}
+                                >
+                                    <span className="pg-tier-nome" style={{ color: tierAberto ? t.cor : 'var(--color-text-dim)' }}>
+                                        {t.nome}
+                                    </span>
+                                    <div className="pg-tier-ranks">
+                                        <div className="pg-trilha-line" />
+                                        {ranks.map(r => {
+                                            const conquistado = dados.xp_total >= r.xpMin;
+                                            const atual = r.nivel === nivel;
+                                            return (
+                                                <button
+                                                    key={r.nivel}
+                                                    type="button"
+                                                    className={`pg-rank pg-rank-btn${atual ? ' pg-rank-atual' : ''}`}
+                                                    onClick={() => setRankAberto(r.nivel)}
+                                                    aria-label={`Ver detalhes do rank ${r.nome}`}
+                                                >
+                                                    <div
+                                                        className="pg-rank-medal"
+                                                        style={{
+                                                            filter: conquistado ? 'none' : 'grayscale(1)',
+                                                            opacity: conquistado ? 1 : 0.4,
+                                                            boxShadow: atual ? `0 0 0 2px ${r.cor}, 0 0 16px ${r.cor}88` : 'none',
+                                                        }}
+                                                    >
+                                                        <BadgeNivel nivel={r.nivel} variant="medal" tamanho={atual ? 58 : 46} />
+                                                        {!conquistado && (
+                                                            <span className="pg-rank-lock">
+                                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                    <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                                                </svg>
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <span className="pg-rank-nome" style={{ color: atual ? r.cor : 'var(--color-text-dim)' }}>{r.romano}</span>
+                                                    <span className="pg-rank-xp">{r.xpMin === 0 ? 'Início' : r.xpMin}</span>
+                                                    {atual && <span className="pg-rank-voce" style={{ background: r.cor }}>VOCÊ</span>}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
-                                    <span className="pg-rank-nome" style={{ color: atual ? corLvl : 'var(--color-text-dim)' }}>{nome}</span>
-                                    <span className="pg-rank-xp">{xpMin === 0 ? 'Início' : `${xpMin}`}</span>
-                                    {atual && <span className="pg-rank-voce" style={{ background: corLvl }}>VOCÊ</span>}
                                 </div>
                             );
                         })}
@@ -204,6 +249,15 @@ export default function Progresso() {
                             {semanais.map((obj, i) => <CardObjetivo key={obj.id} obj={obj} index={i} />)}
                         </div>
                     </div>
+                )}
+
+                {/* ── MODAL DE RANK ── */}
+                {rankAberto && (
+                    <RankModal
+                        nivel={rankAberto}
+                        xpTotal={dados.xp_total}
+                        onClose={() => setRankAberto(null)}
+                    />
                 )}
 
             </div>

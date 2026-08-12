@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import BadgeNivel from '../components/BadgeNivel';
-import { NOMES_NIVEL } from '../components/EstrelasNivel';
+import { NOMES_NIVEL, TOTAL_NIVEIS } from '../components/rankInfo';
 
 // Tela temporária só para visualizar o design do badge de nível.
 export default function BadgePreview() {
@@ -13,7 +13,7 @@ export default function BadgePreview() {
         document.body.classList.toggle('light-mode', !novo);
     };
 
-    const niveis = [1, 2, 3, 4, 5, 6, 7];
+    const niveis = Array.from({ length: TOTAL_NIVEIS }, (_, i) => i + 1); // 21 ranks
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--h-bg, #0B0F14)', padding: '24px 16px 80px' }}>
@@ -56,7 +56,7 @@ export default function BadgePreview() {
                 </div>
 
                 <p style={{ color: 'var(--h-text-muted)', fontSize: 12, marginTop: 24 }}>
-                    Obs: só o nível 7 (Olimpiano) tem imagem; os demais mostram o fallback (número) até as imagens serem criadas.
+                    Obs: sub-ranks sem arte própria caem na arte do sub-rank I do mesmo tier.
                 </p>
             </div>
         </div>

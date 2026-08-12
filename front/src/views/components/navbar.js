@@ -3,18 +3,31 @@ import React, { useContext, useState, useRef, useEffect } from 'react';
 import { AuthContext } from '../../AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import DarkModeSwitch from './DarkModeSwitch';
+import { infoNivel, arteFallback } from './rankInfo';
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
-// Medalhão do rank do usuário (imagem por nível, com fallback no número)
+// Medalhão do rank do usuário (arte do rank, com fallback no tier e no número)
 function RankMedalhao({ nivel, onClick }) {
     const [erro, setErro] = useState(false);
+    const [usouFallback, setUsouFallback] = useState(false);
+    const info = infoNivel(nivel);
     if (!nivel) return null;
+
+    const onErroImg = (e) => {
+        if (!usouFallback && info.sub !== 1) {
+            setUsouFallback(true);
+            e.target.src = arteFallback(info.tier);
+        } else {
+            setErro(true);
+        }
+    };
+
     return (
-        <button className="nb-rank" onClick={onClick} title={`Nível ${nivel}`} aria-label={`Nível ${nivel}`}>
+        <button className="nb-rank" onClick={onClick} title={`${info.nome} · nível ${info.nivel}`} aria-label={`${info.nome}, nível ${info.nivel}`}>
             {erro
-                ? <span className="nb-rank-num">{nivel}</span>
-                : <img src={`/badge-nivel-${nivel}.png`} alt={`Nível ${nivel}`} onError={() => setErro(true)} />}
+                ? <span className="nb-rank-num">{info.nivel}</span>
+                : <img src={info.arte} alt={info.nome} onError={onErroImg} />}
         </button>
     );
 }

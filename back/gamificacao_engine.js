@@ -1,15 +1,37 @@
 const db = require('./db');
 
 // ── Níveis ────────────────────────────────────────────────────────────────────
-const NIVEIS = [
-    { nivel: 1, nome: 'Mortal',     xpMin: 0    },
-    { nivel: 2, nome: 'Guerreiro',  xpMin: 200  },
-    { nivel: 3, nome: 'Herói',      xpMin: 500  },
-    { nivel: 4, nome: 'Campeão',    xpMin: 1000 },
-    { nivel: 5, nome: 'Semideus',   xpMin: 1800 },
-    { nivel: 6, nome: 'Titã',       xpMin: 3000 },
-    { nivel: 7, nome: 'Olimpiano',  xpMin: 5000 },
+// 8 tiers × 3 sub-ranks = 24 níveis. O nível é um inteiro plano (1..24):
+//   tier = ceil(nivel / 3)   sub = ((nivel - 1) % 3) + 1
+// Espelhado em front/src/views/components/rankInfo.js — alterar os dois juntos.
+const TIERS = [
+    { tier: 1, nome: 'Mortal',     xpMin: 0    },
+    { tier: 2, nome: 'Atleta',     xpMin: 200  },
+    { tier: 3, nome: 'Espartano',  xpMin: 500  },
+    { tier: 4, nome: 'Herói',      xpMin: 1000 },
+    { tier: 5, nome: 'Semideus',   xpMin: 1800 },
+    { tier: 6, nome: 'Atlas',      xpMin: 3000 },
+    { tier: 7, nome: 'Titã',       xpMin: 5000 },
+    { tier: 8, nome: 'Olimpiano',  xpMin: 8000 },
 ];
+
+const ROMANOS   = ['I', 'II', 'III'];
+const SUBS      = 3;
+// Faixa do último tier (não tem tier seguinte para delimitar): 3000 XP → 1000 por sub-rank
+const SPAN_TOPO = 3000;
+
+// Expande os tiers em 21 níveis, fatiando a faixa de XP de cada tier em 3 partes iguais.
+const NIVEIS = TIERS.flatMap((t, i) => {
+    const span = (TIERS[i + 1] ? TIERS[i + 1].xpMin - t.xpMin : SPAN_TOPO) / SUBS;
+    return ROMANOS.map((romano, s) => ({
+        nivel:    i * SUBS + s + 1,
+        tier:     t.tier,
+        sub:      s + 1,
+        nomeTier: t.nome,
+        nome:     `${t.nome} ${romano}`,
+        xpMin:    Math.round(t.xpMin + span * s),
+    }));
+});
 
 function calcNivel(xp) {
     let atual = NIVEIS[0];
@@ -17,11 +39,19 @@ function calcNivel(xp) {
         if (xp >= n.xpMin) atual = n;
         else break;
     }
-    const idx           = NIVEIS.indexOf(atual);
-    const proximo       = NIVEIS[idx + 1];
+    const proximo       = NIVEIS[atual.nivel]; // nivel é 1-based → índice do próximo
     const xpNoNivel     = xp - atual.xpMin;
-    const xpParaProximo = proximo ? proximo.xpMin - atual.xpMin : 1000;
-    return { nivel: atual.nivel, nome: atual.nome, xpNoNivel, xpParaProximo, pct: Math.min(xpNoNivel / xpParaProximo, 1) };
+    const xpParaProximo = proximo ? proximo.xpMin - atual.xpMin : SPAN_TOPO / SUBS;
+    return {
+        nivel:    atual.nivel,
+        nome:     atual.nome,
+        nomeTier: atual.nomeTier,
+        tier:     atual.tier,
+        sub:      atual.sub,
+        xpNoNivel,
+        xpParaProximo,
+        pct: Math.min(xpNoNivel / xpParaProximo, 1),
+    };
 }
 
 // ── Objetivos ─────────────────────────────────────────────────────────────────
@@ -262,4 +292,4 @@ async function getObjetivosComProgresso(userId) {
     return resultados;
 }
 
-module.exports = { calcNivel, processarEvento, getObjetivosComProgresso };
+module.exports = { calcNivel, processarEvento, getObjetivosComProgresso, NIVEIS, TIERS };

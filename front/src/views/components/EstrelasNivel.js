@@ -1,31 +1,38 @@
 import React from 'react';
+import { infoNivel, SUBS } from './rankInfo';
 
-// Nomes dos níveis — devem espelhar NIVEIS em back/gamificacao_engine.js
-export const NOMES_NIVEL = ['Mortal', 'Guerreiro', 'Herói', 'Campeão', 'Semideus', 'Titã', 'Olimpiano'];
-// XP mínimo de cada nível (índice = nivel - 1) — espelha NIVEIS no backend
-export const XP_NIVEL = [0, 200, 500, 1000, 1800, 3000, 5000];
-const NOMES = NOMES_NIVEL;
+// Re-export para compatibilidade — a fonte da verdade é rankInfo.js
+export { NOMES_NIVEL, XP_NIVEL, NOMES_TIER } from './rankInfo';
 
-// Badge de nível: 7 estrelas, as primeiras `nivel` preenchidas.
-export default function EstrelasNivel({ nivel = 1, size = 12, gap = 2, cor = '#4A90D9', corVazia = 'rgba(74,144,217,0.35)' }) {
-    const n = Math.max(1, Math.min(7, parseInt(nivel) || 1));
-    const nome = NOMES[n - 1];
+// Estrelas do sub-rank: `total` estrelas, as primeiras `preenchidas` cheias.
+// Passando `nivel` (1..21) ele deriva o sub-rank (I → 1 estrela, III → 3).
+export default function EstrelasNivel({
+    nivel,
+    preenchidas,
+    total = SUBS,
+    size = 12,
+    gap = 2,
+    cor = '#4A90D9',
+    corVazia = 'rgba(74,144,217,0.35)',
+}) {
+    const info  = infoNivel(nivel);
+    const cheia = Math.max(0, Math.min(total, preenchidas != null ? preenchidas : info.sub));
     return (
         <span
-            title={`Nível ${n} · ${nome}`}
-            aria-label={`Nível ${n}: ${nome}`}
+            title={`${info.nome} · nível ${info.nivel}`}
+            aria-label={`${info.nome}, nível ${info.nivel}`}
             style={{ display: 'inline-flex', gap, alignItems: 'center', lineHeight: 0 }}
         >
-            {Array.from({ length: 7 }).map((_, i) => {
-                const cheia = i < n;
+            {Array.from({ length: total }).map((_, i) => {
+                const preenchida = i < cheia;
                 return (
                     <svg
                         key={i}
                         width={size}
                         height={size}
                         viewBox="0 0 24 24"
-                        fill={cheia ? cor : 'none'}
-                        stroke={cheia ? cor : corVazia}
+                        fill={preenchida ? cor : 'none'}
+                        stroke={preenchida ? cor : corVazia}
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
