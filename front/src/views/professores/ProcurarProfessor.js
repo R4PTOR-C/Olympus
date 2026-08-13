@@ -137,7 +137,7 @@ export default function ProcurarProfessor() {
 
             {/* ── HEADER ── */}
             <div className="h-greeting">
-                <p className="h-greeting-date">Olympus</p>
+                <p className="h-greeting-date">Atlanteon</p>
                 <h1 className="h-greeting-title">Professores</h1>
                 <p className="h-greeting-sub">
                     {meuProfessor ? 'Você tem um professor ativo' : 'Encontre seu personal trainer'}

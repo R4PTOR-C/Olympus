@@ -1,6 +1,6 @@
-# Olympus — Funcionalidades da Plataforma
+# Atlanteon — Funcionalidades da Plataforma
 
-Olympus é uma plataforma completa de gestão de treinos para academias, personal trainers e alunos. Tudo em um só lugar: do planejamento ao acompanhamento de evolução.
+Atlanteon é uma plataforma completa de gestão de treinos para academias, personal trainers e alunos. Tudo em um só lugar: do planejamento ao acompanhamento de evolução.
 
 ---
 
@@ -90,4 +90,4 @@ Olympus é uma plataforma completa de gestão de treinos para academias, persona
 
 ---
 
-*Olympus — Sua evolução, planejada.*
+*Atlanteon — Sua evolução, planejada.*

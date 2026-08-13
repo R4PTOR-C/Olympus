@@ -214,7 +214,7 @@ export default function Social() {
 
             {/* ── HEADER ── */}
             <div className="h-greeting">
-                <p className="h-greeting-date">Olympus</p>
+                <p className="h-greeting-date">Atlanteon</p>
                 <h1 className="h-greeting-title">Social</h1>
                 <p className="h-greeting-sub">Conecte-se e compartilhe treinos com amigos</p>
             </div>

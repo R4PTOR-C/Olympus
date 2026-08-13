@@ -1,6 +1,6 @@
 // public/service-worker.js
 
-const CACHE_NAME = 'olympus-v1';
+const CACHE_NAME = 'atlanteon-v1';
 
 // ── INSTALL: cacheia o shell do app ──────────────────────────────────────────
 self.addEventListener('install', (event) => {
@@ -66,10 +66,10 @@ self.addEventListener('message', (event) => {
         const delay = event.data.delay; // ms
         timerTimeoutId = setTimeout(() => {
             timerTimeoutId = null;
-            self.registration.showNotification('Olympus — Descanso concluído', {
+            self.registration.showNotification('Atlanteon — Descanso concluído', {
                 body: 'Hora da próxima série! 💪',
-                icon: '/icons/logo-192.png',
-                badge: '/icons/logo-192.png',
+                icon: '/icons/icon-192.png',
+                badge: '/icons/icon-192.png',
                 tag: 'timer-descanso',
                 renotify: true,
                 vibrate: [200, 100, 200, 100, 200],
@@ -89,10 +89,10 @@ self.addEventListener('message', (event) => {
             clearTimeout(timerTimeoutId);
             timerTimeoutId = null;
         }
-        self.registration.showNotification('Olympus — Descanso concluído', {
+        self.registration.showNotification('Atlanteon — Descanso concluído', {
             body: 'Hora da próxima série! 💪',
-            icon: '/icons/logo-192.png',
-            badge: '/icons/logo-192.png',
+            icon: '/icons/icon-192.png',
+            badge: '/icons/icon-192.png',
             tag: 'timer-descanso',
             renotify: true,
             vibrate: [200, 100, 200, 100, 200],
@@ -101,13 +101,13 @@ self.addEventListener('message', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-    let data = { title: 'Olympus', body: 'Nova notificação', url: '/' };
+    let data = { title: 'Atlanteon', body: 'Nova notificação', url: '/' };
     try { data = event.data.json(); } catch (_) {}
     event.waitUntil(
         self.registration.showNotification(data.title, {
             body: data.body,
-            icon: '/icons/logo-192.png',
-            badge: '/icons/logo-192.png',
+            icon: '/icons/icon-192.png',
+            badge: '/icons/icon-192.png',
             data: { url: data.url || '/' }
         })
     );

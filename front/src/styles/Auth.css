@@ -1,5 +1,5 @@
 /* =============================== */
-/* AUTH PAGES — OLYMPUS            */
+/* AUTH PAGES — ATLANTEON            */
 /* Login · Cadastro · Recuperação  */
 /* =============================== */
 
@@ -42,10 +42,13 @@
 /* ── HEADER (cinza claro) ── */
 .auth-header {
     background: white;
-    padding: 16px 24px 0;
+    padding: 12px 24px 14px;
     text-align: center;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .auth-header::before {
@@ -60,23 +63,30 @@
     pointer-events: none;
 }
 
+/* As duas artes têm muito vazio interno; as margens negativas abaixo recortam
+   exatamente esse vazio, medido na própria imagem:
+   logo2.png       → tinta de 11,8% a 86,1% da altura (13,9% vazio embaixo)
+   logo_texto.png  → tinta de 34,9% a 67,6% (34,9% vazio em cima, 32,4% embaixo)
+   Ao trocar as artes, remedir e reajustar — valores muito altos fazem o header
+   (que tem overflow: hidden) cortar a imagem. */
 .auth-logo {
-    width: 175px;
-    height: 175px;
+    width: 132px;
+    height: 132px;
     object-fit: contain;
     position: relative;
     z-index: 1;
-    margin-bottom: -110px;
+    margin-bottom: -18px; /* 13,9% de 132 */
 }
 
 .auth-logo-texto {
     display: block;
-    width: 250px;
+    width: 210px;
+    height: auto;
     object-fit: contain;
-    margin: 0 auto;
     position: relative;
     z-index: 1;
-    margin-bottom: -90px;
+    margin-top: -30px;    /* ~34,9% de 105 */
+    margin-bottom: -30px; /* ~32,4% de 105 */
 }
 
 .auth-header-icon {

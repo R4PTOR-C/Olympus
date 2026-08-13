@@ -177,7 +177,7 @@ function Navbar() {
         <nav className="nb-top">
             {/* Logo */}
             <Link className="nb-logo" to={homeLink}>
-                <img src="/logo_texto_azul.png" alt="Olympus" className="nb-logo-img" />
+                <img src="/logo_texto_azul.png" alt="Atlanteon" className="nb-logo-img" />
             </Link>
 
             {/* Nav items — hidden on mobile (bottom navbar handles navigation) */}

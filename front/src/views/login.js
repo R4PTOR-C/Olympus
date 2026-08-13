@@ -74,8 +74,8 @@ function Login() {
 
                 {/* ── HEADER ── */}
                 <div className="auth-header">
-                    <img src="/logo2.png" alt="Olympus" className="auth-logo" width="175" height="175" decoding="sync" fetchpriority="high" />
-                    <img src="/logo_texto.png" alt="Olympus" className="auth-logo-texto" width="250" decoding="sync" />
+                    <img src="/logo2.png" alt="Atlanteon" className="auth-logo" width="132" height="132" decoding="sync" fetchpriority="high" />
+                    <img src="/logo_texto.png" alt="Atlanteon" className="auth-logo-texto" width="210" height="105" decoding="sync" />
                 </div>
 
                 {/* ── BODY ── */}
@@ -152,7 +152,7 @@ function Login() {
         {pendingData && (
             <div className="auth-modal-overlay">
                 <div className="auth-modal">
-                    <img src="/logo_branca.png" alt="Olympus" className="auth-modal-logo" />
+                    <img src="/logo_branca.png" alt="Atlanteon" className="auth-modal-logo" />
                     <h2 className="auth-modal-title">Bem-vindo de volta!</h2>
                     <p className="auth-modal-text">
                         Notamos que sua conta possui perfis de <strong>{pendingData.funcao}</strong> e <strong>{pendingData.funcao_extra}</strong>. Como deseja entrar?

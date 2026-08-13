@@ -192,7 +192,7 @@ const Usuarios_index = () => {
 
             {/* ── HEADER ── */}
             <div className="h-greeting">
-                <p className="h-greeting-date">Olympus</p>
+                <p className="h-greeting-date">Atlanteon</p>
                 <h1 className="h-greeting-title">Alunos</h1>
                 <p className="h-greeting-sub">
                     {loading ? 'Carregando...' : `${meusAlunos.length} aluno${meusAlunos.length !== 1 ? 's' : ''} vinculado${meusAlunos.length !== 1 ? 's' : ''}`}

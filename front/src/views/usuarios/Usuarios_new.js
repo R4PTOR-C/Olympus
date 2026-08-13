@@ -340,7 +340,7 @@ function Usuarios_new() {
 
             </div>
 
-            <ModalSucesso show={showModal} titulo="CONTA" tituloAccent="CRIADA" sub="Bem-vindo ao Olympus!" />
+            <ModalSucesso show={showModal} titulo="CONTA" tituloAccent="CRIADA" sub="Bem-vindo ao Atlanteon!" />
         </div>
     );
 }

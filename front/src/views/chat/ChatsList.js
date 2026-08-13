@@ -143,7 +143,7 @@ function ChatsList() {
 
             {/* ── HEADER ── */}
             <div className="h-greeting">
-                <p className="h-greeting-date">Olympus</p>
+                <p className="h-greeting-date">Atlanteon</p>
                 <h1 className="h-greeting-title">Mensagens</h1>
                 <p className="h-greeting-sub">
                     {loading ? 'Carregando...' : `${ativos.length} conversa${ativos.length !== 1 ? 's' : ''} ativa${ativos.length !== 1 ? 's' : ''}`}

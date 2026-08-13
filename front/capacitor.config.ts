@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.raptorc.olympus',
-  appName: 'Olympus',
+  appName: 'Atlanteon',
   webDir: 'build',
   server: {
     androidScheme: 'https',
