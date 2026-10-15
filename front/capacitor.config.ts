@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.raptorc.olympus',
+  appId: 'br.com.fenrystech.atlanteon',
   appName: 'Atlanteon',
   webDir: 'build',
   server: {

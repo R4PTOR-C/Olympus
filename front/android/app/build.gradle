@@ -10,10 +10,10 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace "com.raptorc.olympus"
+    namespace "br.com.fenrystech.atlanteon"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.raptorc.olympus"
+        applicationId "br.com.fenrystech.atlanteon"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 2

@@ -76,7 +76,7 @@ Cada uma precisa de um **plano base** mensal com renovação automática, ativad
 ### 5. Variáveis de ambiente (Render)
 
 ```
-ANDROID_PACKAGE_NAME=com.raptorc.olympus
+ANDROID_PACKAGE_NAME=br.com.fenrystech.atlanteon
 GOOGLE_PLAY_CLIENT_EMAIL=<client_email do JSON>
 GOOGLE_PLAY_PRIVATE_KEY=<private_key do JSON, com \n escapado>
 RTDN_SECRET=<string aleatória longa>
@@ -123,7 +123,5 @@ o `index.html` já tem `viewport-fit=cover`.
 - **WebView antigo:** Chromium < 140 tem um bug que zera `env(safe-area-inset-*)`.
   Se aparecer conteúdo embaixo da barra de status em aparelho velho, a correção
   é `@capacitor-community/safe-area`.
-- **Sobra do template:** `android/app/src/main/java/com/seu/dominio/olympus/MainActivity.java`
-  é código morto (o namespace real é `com.raptorc.olympus`). Dá para apagar.
 - iOS não foi implementado. A estrutura já prevê (`assinaturas.store`), mas
   falta o adapter da App Store Server API.

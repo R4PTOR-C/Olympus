@@ -6,13 +6,13 @@
 // "Gerenciar pedidos e assinaturas" no app).
 //
 // Variáveis de ambiente:
-//   ANDROID_PACKAGE_NAME      - ex: com.raptorc.olympus
+//   ANDROID_PACKAGE_NAME      - ex: br.com.fenrystech.atlanteon
 //   GOOGLE_PLAY_CLIENT_EMAIL  - client_email do JSON da service account
 //   GOOGLE_PLAY_PRIVATE_KEY   - private_key do JSON (com \n literais ou reais)
 
 const { JWT } = require('google-auth-library');
 
-const PACKAGE_NAME = process.env.ANDROID_PACKAGE_NAME || 'com.raptorc.olympus';
+const PACKAGE_NAME = process.env.ANDROID_PACKAGE_NAME || 'br.com.fenrystech.atlanteon';
 const BASE_URL = 'https://androidpublisher.googleapis.com/androidpublisher/v3';
 const SCOPES = ['https://www.googleapis.com/auth/androidpublisher'];
 

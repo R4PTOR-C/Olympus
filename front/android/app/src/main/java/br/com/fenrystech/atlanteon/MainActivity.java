@@ -1,4 +1,4 @@
-package com.raptorc.olympus;
+package br.com.fenrystech.atlanteon;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Atlanteon</string>
     <string name="title_activity_main">Atlanteon</string>
-    <string name="package_name">com.seu.dominio.olympus</string>
-    <string name="custom_url_scheme">com.seu.dominio.olympus</string>
+    <string name="package_name">br.com.fenrystech.atlanteon</string>
+    <string name="custom_url_scheme">br.com.fenrystech.atlanteon</string>
 </resources>
