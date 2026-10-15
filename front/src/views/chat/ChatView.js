@@ -21,7 +21,7 @@ function ChatView() {
 
     // ── Socket ──
     useEffect(() => {
-        socketRef.current = io(API_URL, { transports: ["websocket"] });
+        socketRef.current = io(API_URL, { transports: ["websocket"], auth: { token: localStorage.getItem('token') } });
         socketRef.current.emit("entrar_chat", chatId);
 
         socketRef.current.on("nova_mensagem", (msg) => {
@@ -56,8 +56,8 @@ function ChatView() {
                         : { nome: chat.nome1, avatar: chat.avatar1 }
                 );
                 setMensagens(msgs);
-            } catch (err) {
-                console.error("Erro ao carregar chat:", err);
+            } catch {
+                /* mantém a tela vazia; o usuário pode voltar e tentar de novo */
             }
         };
         carregar();

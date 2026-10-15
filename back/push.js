@@ -1,6 +1,7 @@
 const express = require('express');
 const webpush  = require('web-push');
 const db       = require('./db');
+const { authenticate } = require('./middleware/auth');
 const router   = express.Router();
 
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
@@ -17,34 +18,34 @@ router.get('/vapid-public-key', (req, res) => {
 });
 
 // POST /push/subscribe
-router.post('/subscribe', async (req, res) => {
-    const { usuarioId, subscription } = req.body;
-    if (!subscription?.endpoint) return res.status(400).json({ error: 'Subscription inválida.' });
-
-    const { endpoint, keys: { p256dh, auth } } = subscription;
-    try {
-        await db.query(
-            `INSERT INTO push_subscriptions (usuario_id, endpoint, p256dh, auth)
-             VALUES ($1, $2, $3, $4)
-             ON CONFLICT (endpoint) DO UPDATE SET usuario_id = $1, p256dh = $3, auth = $4`,
-            [usuarioId, endpoint, p256dh, auth]
-        );
-        res.status(201).json({ ok: true });
-    } catch (err) {
-        console.error('Erro ao salvar subscription:', err);
-        res.status(500).json({ error: 'Erro interno.' });
+// A inscrição é sempre gravada para o usuário do token (antes vinha do body,
+// e qualquer um podia sequestrar as notificações de outra pessoa).
+router.post('/subscribe', authenticate, async (req, res) => {
+    const { subscription } = req.body || {};
+    const endpoint = subscription?.endpoint;
+    const p256dh = subscription?.keys?.p256dh;
+    const auth = subscription?.keys?.auth;
+    if (typeof endpoint !== 'string' || !/^https:\/\//.test(endpoint) || !p256dh || !auth) {
+        return res.status(400).json({ error: 'Subscription inválida.' });
     }
+
+    await db.query(
+        `INSERT INTO push_subscriptions (usuario_id, endpoint, p256dh, auth)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (endpoint) DO UPDATE SET usuario_id = $1, p256dh = $3, auth = $4`,
+        [req.user.userId, endpoint, p256dh, auth]
+    );
+    res.status(201).json({ ok: true });
 });
 
-// DELETE /push/unsubscribe
-router.delete('/unsubscribe', async (req, res) => {
-    const { endpoint } = req.body;
-    try {
-        await db.query('DELETE FROM push_subscriptions WHERE endpoint = $1', [endpoint]);
-        res.json({ ok: true });
-    } catch (err) {
-        res.status(500).json({ error: 'Erro interno.' });
-    }
+// DELETE /push/unsubscribe — só remove inscrições do próprio usuário
+router.delete('/unsubscribe', authenticate, async (req, res) => {
+    const { endpoint } = req.body || {};
+    await db.query(
+        'DELETE FROM push_subscriptions WHERE endpoint = $1 AND usuario_id = $2',
+        [endpoint, req.user.userId]
+    );
+    res.json({ ok: true });
 });
 
 // Helper exportado: enviar push para um usuário

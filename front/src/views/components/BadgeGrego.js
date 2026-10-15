@@ -2,7 +2,7 @@ import React, { useId } from 'react';
 
 /*
  * Badge grego montado em SVG (aro + grega + losangos vetoriais) com a figura
- * central vinda de /badge-figura-1.png (recorte do badge original, branco + alpha,
+ * central vinda de /badge-figura-1.webp (recorte do badge original, branco + alpha,
  * usado como máscara para poder ser tingido em qualquer cor).
  *
  * Toda a geometria foi medida no badge-nivel-1-1.png original (1254px) e convertida
@@ -141,7 +141,7 @@ export default function BadgeGrego({
     gemas = 1,
     cor = '#D87838',
     tamanho = 260,
-    figura = '/badge-figura-1.png',
+    figura = '/badge-figura-1.webp',
     fundo = 'transparent',
     className,
     style,

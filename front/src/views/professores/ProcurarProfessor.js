@@ -71,7 +71,7 @@ export default function ProcurarProfessor() {
         }
     }, [userId]);
 
-    useEffect(() => { carregar(); clearMensagensNaoLidas(); }, [carregar]);
+    useEffect(() => { carregar(); clearMensagensNaoLidas(); }, [carregar, clearMensagensNaoLidas]);
     useSocketRefresh(carregar);
 
     const toggleProcurando = async () => {

@@ -33,8 +33,8 @@ export const LORE_TIER = [
 
 // Arte de cada rank. Enquanto a arte do sub-rank não existir, o componente cai
 // no fallback do sub-rank 1 do mesmo tier (ver arteFallback).
-export const artePath     = (tier, sub) => `/badge-nivel-${tier}-${sub}.png`;
-export const arteFallback = (tier)      => `/badge-nivel-${tier}-1.png`;
+export const artePath     = (tier, sub) => `/badge-nivel-${tier}-${sub}.webp`;
+export const arteFallback = (tier)      => `/badge-nivel-${tier}-1.webp`;
 
 // 24 níveis expandidos a partir dos tiers
 export const NIVEIS = TIERS.flatMap((t, i) => {

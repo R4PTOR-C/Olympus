@@ -1,99 +1,70 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken'); // Importa o pacote jsonwebtoken
+const jwt = require('jsonwebtoken');
 const db = require('../db');
+const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
-const { JWT_SECRET } = require('../config/jwt'); // Chave secreta para o JWT
+const { JWT_SECRET } = require('../config/jwt');
 
 // Rota de login
 router.post('/login', async (req, res) => {
-    const { email, senha } = req.body;
-    try {
-        const normalizedEmail = email.toLowerCase();
-
-        const { rows } = await db.query('SELECT * FROM usuarios WHERE email = $1', [normalizedEmail]);
-        if (rows.length === 0) {
-            return res.status(404).json({ error: 'Usuário não encontrado' });
-        }
-        const user = rows[0];
-        const senhaValida = await bcrypt.compare(senha, user.senha);
-        if (!senhaValida) {
-            return res.status(401).json({ error: 'Senha incorreta' });
-        }
-
-        // Gera o token JWT com informações do usuário
-        const token = jwt.sign(
-            { userId: user.id, userName: user.nome, userFuncao: user.funcao, userFuncaoExtra: user.funcao_extra || null, userAvatar: user.avatar },
-            JWT_SECRET,
-            { expiresIn: '7d' } // 7 dias
-        );
-
-        res.json({
-            message: 'Login bem-sucedido',
-            token,
-            userId: user.id,
-            userName: user.nome,
-            funcao: user.funcao,
-            funcao_extra: user.funcao_extra || null,
-            avatar: user.avatar
-        });
-    } catch (err) {
-        console.error('Erro durante o login:', err);
-        res.status(500).json({ error: 'Erro interno do servidor' });
+    const { email, senha } = req.body || {};
+    if (typeof email !== 'string' || typeof senha !== 'string' || !email.trim() || !senha) {
+        return res.status(400).json({ error: 'Informe email e senha.' });
     }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const { rows } = await db.query('SELECT * FROM usuarios WHERE email = $1', [normalizedEmail]);
+    const user = rows[0];
+
+    // Mesma resposta para email inexistente e senha errada: não revela quem tem conta
+    const senhaValida = user ? await bcrypt.compare(senha, user.senha) : false;
+    if (!senhaValida) {
+        return res.status(401).json({ error: 'Email ou senha incorretos.' });
+    }
+
+    // Gera o token JWT com informações do usuário
+    const token = jwt.sign(
+        { userId: user.id, userName: user.nome, userFuncao: user.funcao, userFuncaoExtra: user.funcao_extra || null, userAvatar: user.avatar },
+        JWT_SECRET,
+        { expiresIn: '7d' } // 7 dias
+    );
+
+    res.json({
+        message: 'Login bem-sucedido',
+        token,
+        userId: user.id,
+        userName: user.nome,
+        funcao: user.funcao,
+        funcao_extra: user.funcao_extra || null,
+        avatar: user.avatar
+    });
 });
 
-// Middleware para verificar o JWT
-function authenticateJWT(req, res, next) {
-    const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Token não fornecido' });
-    }
-
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(403).json({ error: 'Token inválido' });
-        }
-
-        // Anexa o usuário decodificado à requisição
-        req.user = decoded;
-        next();
+// Sessão atual. Lê do banco (e não só do token) para refletir mudanças de
+// nome/função/avatar feitas depois do login — e para derrubar tokens de contas
+// já excluídas.
+router.get('/session', authenticate, async (req, res) => {
+    const { rows } = await db.query(
+        `SELECT u.nome, u.funcao, u.funcao_extra, u.avatar, g.streak_atual, g.maior_streak
+         FROM usuarios u
+         LEFT JOIN gamificacao_usuario g ON g.usuario_id = u.id
+         WHERE u.id = $1`,
+        [req.user.userId]
+    );
+    if (!rows.length) return res.status(401).json({ error: 'Conta não encontrada.' });
+    const u = rows[0];
+    res.json({
+        loggedIn: true,
+        userName: u.nome,
+        userId: req.user.userId,
+        userFuncao: u.funcao,
+        userFuncaoExtra: u.funcao_extra || null,
+        userAvatar: u.avatar,
+        streakAtual: u.streak_atual || 0,
+        maiorStreak: u.maior_streak || 0,
     });
-}
-
-// Rota para verificar a sessão do usuário (substituída para JWT)
-router.get('/session', authenticateJWT, async (req, res) => {
-    try {
-        const { rows } = await db.query(
-            `SELECT u.funcao_extra, u.avatar, g.streak_atual, g.maior_streak
-             FROM usuarios u
-             LEFT JOIN gamificacao_usuario g ON g.usuario_id = u.id
-             WHERE u.id = $1`,
-            [req.user.userId]
-        );
-        const fresh = rows[0] || {};
-        res.json({
-            loggedIn: true,
-            userName: req.user.userName,
-            userId: req.user.userId,
-            userFuncao: req.user.userFuncao,
-            userFuncaoExtra: fresh.funcao_extra || null,
-            userAvatar: fresh.avatar || req.user.userAvatar,
-            streakAtual: fresh.streak_atual || 0,
-            maiorStreak: fresh.maior_streak || 0,
-        });
-    } catch {
-        res.json({
-            loggedIn: true,
-            userName: req.user.userName,
-            userId: req.user.userId,
-            userFuncao: req.user.userFuncao,
-            userFuncaoExtra: req.user.userFuncaoExtra || null,
-            userAvatar: req.user.userAvatar
-        });
-    }
 });
 
 module.exports = router;

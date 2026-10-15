@@ -1,6 +1,7 @@
 // AuthContext.js
-import React, { createContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useState, useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
+import { API, getToken, lerTokenLocal } from './services/api';
 
 export const AuthContext = createContext();
 
@@ -23,112 +24,98 @@ export const AuthProvider = ({ children }) => {
         return savedTheme ? savedTheme === "true" : false;
     });
 
-    // 🔹 Carregar tema salvo no localStorage ao iniciar
-    useEffect(() => {
-        const savedTheme = localStorage.getItem('darkMode');
-        console.log("[AuthContext] useEffect init → savedTheme:", savedTheme);
-        if (savedTheme !== null) {
-            setDarkMode(savedTheme === 'true');
-        }
-    }, []);
-
     // 🔹 Salvar tema e aplicar classe no body sempre que mudar
     useEffect(() => {
-        console.log("[AuthContext] useEffect darkMode →", darkMode);
-        localStorage.setItem('darkMode', darkMode);
-
-        if (darkMode) {
-            console.log("[AuthContext] Aplicando classe 'dark-mode' no body");
-            document.body.classList.add('dark-mode');
-        } else {
-            console.log("[AuthContext] Removendo classe 'dark-mode' do body");
-            document.body.classList.remove('dark-mode');
-        }
+        try { localStorage.setItem('darkMode', darkMode); } catch { /* storage indisponível */ }
+        document.body.classList.toggle('dark-mode', darkMode);
     }, [darkMode]);
+
+    const aplicarSessao = (dados) => {
+        setUser({
+            loggedIn: true,
+            userName: dados.userName,
+            userId: dados.userId,
+            funcao: dados.userFuncao,
+            funcao_extra: dados.userFuncaoExtra || null,
+            avatar: dados.userAvatar
+        });
+        const saved = localStorage.getItem(`funcaoAtiva_${dados.userId}`);
+        const funcaoValida = (saved === dados.userFuncao || saved === dados.userFuncaoExtra)
+            ? saved
+            : dados.userFuncao;
+        setFuncaoAtiva(funcaoValida);
+    };
 
     // 🔹 Verificar sessão
     useEffect(() => {
         const checkSession = async () => {
-            const token = localStorage.getItem('token');
-            console.log("[AuthContext] Verificando sessão... token:", token);
+            const token = getToken();
             if (token) {
                 try {
-                    const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/session`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
+                    const response = await fetch(`${API}/session`);
                     const data = await response.json();
-                    console.log("[AuthContext] Resposta da sessão:", data);
-                    if (data.loggedIn) {
-                        setUser({
-                            loggedIn: true,
-                            userName: data.userName,
-                            userId: data.userId,
-                            funcao: data.userFuncao,
-                            funcao_extra: data.userFuncaoExtra || null,
-                            avatar: data.userAvatar
-                        });
-                        const saved = localStorage.getItem(`funcaoAtiva_${data.userId}`);
-                        const funcaoValida = (saved === data.userFuncao || saved === data.userFuncaoExtra)
-                            ? saved
-                            : data.userFuncao;
-                        setFuncaoAtiva(funcaoValida);
+                    if (response.ok && data.loggedIn) {
+                        aplicarSessao(data);
                         conectarSocket(data.userId);
-                        subscribeParaPush(data.userId);
+                        subscribeParaPush();
                     } else {
+                        localStorage.removeItem('token');
                         setUser({ loggedIn: false });
                     }
-                } catch (err) {
-                    console.error('[AuthContext] Erro ao verificar sessão:', err);
-                    setUser({ loggedIn: false });
+                } catch {
+                    // Sem conexão (comum na academia): não desloga. Usa os dados
+                    // do próprio token enquanto ele não expirar.
+                    const local = lerTokenLocal();
+                    if (local?.userId) aplicarSessao(local);
+                    else setUser({ loggedIn: false });
                 }
             } else {
                 setUser({ loggedIn: false });
             }
             setLoading(false);
-            // DEV: splash fixo — descomente quando terminar os ajustes visuais
-             const splash = document.getElementById('splash');
-             if (splash) {
-                 splash.classList.add('hide');
-                 setTimeout(() => splash.remove(), 380);
-             }
+            const splash = document.getElementById('splash');
+            if (splash) {
+                splash.classList.add('hide');
+                setTimeout(() => splash.remove(), 380);
+            }
         };
         checkSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const conectarSocket = (userId) => {
         if (socketRef.current) socketRef.current.disconnect();
-        const s = io(process.env.REACT_APP_API_BASE_URL, { transports: ['websocket'] });
-        s.on('connect', () => s.emit('entrar_sala_usuario', userId));
+        // O servidor coloca o socket na sala do usuário a partir do token
+        const s = io(API, { transports: ['websocket'], auth: { token: getToken() } });
         s.on('nova_mensagem_notif', () => setMensagensNaoLidas(prev => prev + 1));
         socketRef.current = s;
         setSocket(s);
     };
 
-    const subscribeParaPush = async (userId) => {
+    const subscribeParaPush = async () => {
         try {
             if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
             const permission = await Notification.requestPermission();
             if (permission !== 'granted') return;
             const reg = await navigator.serviceWorker.ready;
-            const keyRes = await fetch(`${process.env.REACT_APP_API_BASE_URL}/push/vapid-public-key`);
+            const keyRes = await fetch(`${API}/push/vapid-public-key`);
             const { publicKey } = await keyRes.json();
             if (!publicKey) return;
             const sub = await reg.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: publicKey
             });
-            await fetch(`${process.env.REACT_APP_API_BASE_URL}/push/subscribe`, {
+            await fetch(`${API}/push/subscribe`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuarioId: userId, subscription: sub })
+                body: JSON.stringify({ subscription: sub })
             });
-        } catch (err) {
-            console.log('[Push] Não foi possível assinar:', err.message);
+        } catch {
+            /* push é opcional */
         }
     };
 
     const login = (userData, token, funcaoInicial = null) => {
-        console.log("[AuthContext] Login chamado →", userData);
         localStorage.setItem('token', token);
         setUser({
             loggedIn: true,
@@ -142,7 +129,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem(`funcaoAtiva_${userData.userId}`, fa);
         setFuncaoAtiva(fa);
         conectarSocket(userData.userId);
-        subscribeParaPush(userData.userId);
+        subscribeParaPush();
     };
 
     const trocarFuncao = () => {
@@ -163,7 +150,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
-        console.log("[AuthContext] Logout chamado");
         localStorage.removeItem('token');
         if (user.userId) localStorage.removeItem(`funcaoAtiva_${user.userId}`);
         setFuncaoAtiva(null);
@@ -172,12 +158,14 @@ export const AuthProvider = ({ children }) => {
     };
 
     const updateUser = (updates) => {
-        console.log("[AuthContext] updateUser chamado →", updates);
         setUser(prev => ({
             ...prev,
             ...updates
         }));
     };
+
+    // Estável entre renders: telas usam como dependência de useEffect
+    const clearMensagensNaoLidas = useCallback(() => setMensagensNaoLidas(0), []);
 
     if (loading) return null;
 
@@ -196,7 +184,7 @@ export const AuthProvider = ({ children }) => {
                 setDarkMode,
                 socket,
                 mensagensNaoLidas,
-                clearMensagensNaoLidas: () => setMensagensNaoLidas(0)
+                clearMensagensNaoLidas
             }}
         >
             {children}

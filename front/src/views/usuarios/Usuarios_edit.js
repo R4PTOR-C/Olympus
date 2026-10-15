@@ -5,6 +5,7 @@ import CropAvatar from '../components/CropAvatar';
 import ModalCarregando from '../components/ModalCarregando';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
 import ModalApagarConta from '../components/ModalApagarConta';
+import { URL_PRIVACIDADE } from '../../utils/links';
 import ModalConfirmar from '../components/ModalConfirmar';
 import PageStateHandler from '../components/PageStateHandler';
 import '../../styles/UsuariosEdit.css';
@@ -51,7 +52,7 @@ const formatarValor = (campo, usuario) => {
 const UsuariosEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { updateUser, trocarFuncao, resetFuncaoAtiva } = useContext(AuthContext);
+    const { updateUser, resetFuncaoAtiva } = useContext(AuthContext);
 
     const [usuario,       setUsuario]       = useState(null);
     const [avatar,        setAvatar]        = useState(null);
@@ -83,7 +84,6 @@ const UsuariosEdit = () => {
         try {
             const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/usuarios/${id}/avatar`, { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
             if (!res.ok) throw new Error('Erro ao remover avatar');
-            const data = await res.json();
             setAvatar(null);
             setUsuario(prev => ({ ...prev, avatar: null }));
             updateUser?.({ avatar: null });
@@ -331,6 +331,14 @@ const UsuariosEdit = () => {
                     >
                         Apagar conta
                     </button>
+                    <a
+                        href={URL_PRIVACIDADE}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ display: 'block', marginTop: 14, textAlign: 'center', color: 'var(--ue-text-muted)', fontSize: '0.78rem' }}
+                    >
+                        Política de Privacidade
+                    </a>
                 </div>
 
                 {/* Cropper de avatar */}

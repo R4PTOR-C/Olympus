@@ -1,4 +1,5 @@
 const db = require('./db');
+const { SQL_HOJE, SQL_INICIO_SEMANA, sqlDiaSP } = require('./config/datas');
 
 // ── Níveis ────────────────────────────────────────────────────────────────────
 // 8 tiers × 3 sub-ranks = 24 níveis. O nível é um inteiro plano (1..24):
@@ -73,7 +74,7 @@ const OBJETIVOS = [
             const { rows } = await db.query(
                 `SELECT COUNT(*) FROM treinos_realizados
                  WHERE usuario_id = $1 AND finalizado_em IS NOT NULL
-                 AND data::date = CURRENT_DATE`,
+                 AND data::date = ${SQL_HOJE}`,
                 [userId]
             );
             return { progresso: Math.min(parseInt(rows[0].count), 1), total: 1 };
@@ -90,10 +91,20 @@ const OBJETIVOS = [
         eventos:  ['agua_adicionada'],
         calcular: async (userId) => {
             const [metaRes, aguaRes] = await Promise.all([
-                db.query(`SELECT COALESCE(meta_agua_ml, 2500) AS meta FROM usuarios WHERE id = $1`, [userId]),
+                // Mesma regra de meta da tela de água (agua.js): manual > 35 ml/kg > 2500
+                db.query(
+                    `SELECT COALESCE(
+                        meta_agua_ml,
+                        CASE WHEN peso::text ~ '^[0-9]+(\\.[0-9]+)?$'
+                             THEN ROUND(peso::text::numeric * 35 / 50) * 50 END,
+                        2500
+                    ) AS meta
+                     FROM usuarios WHERE id = $1`,
+                    [userId]
+                ),
                 db.query(
                     `SELECT COALESCE(SUM(ml), 0) AS total FROM agua_registros
-                     WHERE usuario_id = $1 AND DATE(created_at AT TIME ZONE 'America/Sao_Paulo') = CURRENT_DATE`,
+                     WHERE usuario_id = $1 AND ${sqlDiaSP('created_at')} = ${SQL_HOJE}`,
                     [userId]
                 ),
             ]);
@@ -115,7 +126,7 @@ const OBJETIVOS = [
         calcular: async (userId) => {
             const { rows } = await db.query(
                 `SELECT COUNT(*) FROM cardio_sessoes
-                 WHERE usuario_id = $1 AND data = CURRENT_DATE`,
+                 WHERE usuario_id = $1 AND data = ${SQL_HOJE}`,
                 [userId]
             );
             return { progresso: Math.min(parseInt(rows[0].count), 1), total: 1 };
@@ -135,7 +146,7 @@ const OBJETIVOS = [
             const { rows } = await db.query(
                 `SELECT COUNT(DISTINCT data::date) AS dias FROM treinos_realizados
                  WHERE usuario_id = $1 AND finalizado_em IS NOT NULL
-                 AND data::date >= date_trunc('week', CURRENT_DATE)`,
+                 AND data::date >= ${SQL_INICIO_SEMANA}`,
                 [userId]
             );
             return { progresso: Math.min(parseInt(rows[0].dias), 3), total: 3 };
@@ -154,7 +165,7 @@ const OBJETIVOS = [
             const { rows } = await db.query(
                 `SELECT COUNT(DISTINCT data::date) AS dias FROM treinos_realizados
                  WHERE usuario_id = $1 AND finalizado_em IS NOT NULL
-                 AND data::date >= date_trunc('week', CURRENT_DATE)`,
+                 AND data::date >= ${SQL_INICIO_SEMANA}`,
                 [userId]
             );
             return { progresso: Math.min(parseInt(rows[0].dias), 5), total: 5 };
@@ -175,7 +186,7 @@ const OBJETIVOS = [
                  FROM treinos_realizados tr
                  JOIN treinos t ON t.id = tr.treino_id
                  WHERE tr.usuario_id = $1 AND tr.finalizado_em IS NOT NULL
-                 AND tr.data::date >= date_trunc('week', CURRENT_DATE)
+                 AND tr.data::date >= ${SQL_INICIO_SEMANA}
                  AND t.grupo_muscular IS NOT NULL`,
                 [userId]
             );
@@ -187,7 +198,7 @@ const OBJETIVOS = [
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const periodoExpr = (tipo) =>
-    tipo === 'diario' ? 'CURRENT_DATE' : "date_trunc('week', CURRENT_DATE)::date";
+    tipo === 'diario' ? SQL_HOJE : SQL_INICIO_SEMANA;
 
 async function atualizarNivel(userId) {
     const { rows } = await db.query(
@@ -223,13 +234,18 @@ async function processarEvento(evento, userId) {
                 [userId, obj.id, progresso, completo]
             );
 
-            // Credita XP uma única vez por período
+            // Credita XP uma única vez por período. A marcação é atômica
+            // (só uma requisição consegue virar xp_creditado de false para
+            // true), então eventos simultâneos não creditam em dobro.
             if (completo && !rows[0].xp_creditado) {
-                await db.query(
+                const marcado = await db.query(
                     `UPDATE objetivos_progresso SET xp_creditado = true
-                     WHERE usuario_id = $1 AND objetivo_id = $2 AND periodo = ${periodo}`,
+                     WHERE usuario_id = $1 AND objetivo_id = $2 AND periodo = ${periodo}
+                       AND xp_creditado = false
+                     RETURNING 1`,
                     [userId, obj.id]
                 );
+                if (!marcado.rowCount) continue;
 
                 await db.query(
                     `INSERT INTO gamificacao_usuario
@@ -258,7 +274,7 @@ async function getObjetivosComProgresso(userId) {
     const { rows: dbRows } = await db.query(
         `SELECT objetivo_id, xp_creditado FROM objetivos_progresso
          WHERE usuario_id = $1
-           AND (periodo = CURRENT_DATE OR periodo = date_trunc('week', CURRENT_DATE)::date)`,
+           AND (periodo = ${SQL_HOJE} OR periodo = ${SQL_INICIO_SEMANA})`,
         [userId]
     );
     const creditadoMap = Object.fromEntries(dbRows.map(r => [r.objetivo_id, r.xp_creditado]));

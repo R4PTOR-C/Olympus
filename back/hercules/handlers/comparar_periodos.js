@@ -1,42 +1,36 @@
+const { hojeSP } = require('../../config/datas');
+
 async function handleCompararPeriodos({ args, usuarioId, pool }) {
     const { periodo1, periodo2 } = args;
 
     const resolverPeriodo = (periodo) => {
-        const hoje = new Date();
+        // "Hoje" no fuso do Brasil, representado como meia-noite UTC; todas as
+        // contas usam métodos UTC para não depender do fuso do servidor.
+        const hoje = new Date(`${hojeSP()}T00:00:00Z`);
         const fmt = (d) => d.toISOString().split('T')[0];
+        const diasAtras = (d, n) => { const r = new Date(d); r.setUTCDate(r.getUTCDate() - n); return r; };
+        const segundaDaSemana = diasAtras(hoje, (hoje.getUTCDay() + 6) % 7);
 
         switch (periodo) {
-            case 'esta_semana': {
-                const seg = new Date(hoje);
-                seg.setDate(hoje.getDate() - ((hoje.getDay() + 6) % 7));
-                return { inicio: fmt(seg), fim: fmt(hoje), label: 'Esta semana' };
-            }
+            case 'esta_semana':
+                return { inicio: fmt(segundaDaSemana), fim: fmt(hoje), label: 'Esta semana' };
             case 'semana_passada': {
-                const seg = new Date(hoje);
-                seg.setDate(hoje.getDate() - ((hoje.getDay() + 6) % 7) - 7);
-                const dom = new Date(seg);
-                dom.setDate(seg.getDate() + 6);
-                return { inicio: fmt(seg), fim: fmt(dom), label: 'Semana passada' };
+                const seg = diasAtras(segundaDaSemana, 7);
+                return { inicio: fmt(seg), fim: fmt(diasAtras(seg, -6)), label: 'Semana passada' };
             }
             case 'este_mes': {
-                const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+                const ini = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), 1));
                 return { inicio: fmt(ini), fim: fmt(hoje), label: 'Este mês' };
             }
             case 'mes_passado': {
-                const ini = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
-                const fim = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
+                const ini = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth() - 1, 1));
+                const fim = new Date(Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), 0));
                 return { inicio: fmt(ini), fim: fmt(fim), label: 'Mês passado' };
             }
-            case 'ultimas_4_semanas': {
-                const ini = new Date(hoje);
-                ini.setDate(hoje.getDate() - 28);
-                return { inicio: fmt(ini), fim: fmt(hoje), label: 'Últimas 4 semanas' };
-            }
-            case 'ultimas_8_semanas': {
-                const ini = new Date(hoje);
-                ini.setDate(hoje.getDate() - 56);
-                return { inicio: fmt(ini), fim: fmt(hoje), label: 'Últimas 8 semanas' };
-            }
+            case 'ultimas_4_semanas':
+                return { inicio: fmt(diasAtras(hoje, 28)), fim: fmt(hoje), label: 'Últimas 4 semanas' };
+            case 'ultimas_8_semanas':
+                return { inicio: fmt(diasAtras(hoje, 56)), fim: fmt(hoje), label: 'Últimas 8 semanas' };
             default:
                 // Aceita objeto { inicio, fim } direto
                 if (periodo?.inicio && periodo?.fim) return { ...periodo, label: `${periodo.inicio} a ${periodo.fim}` };

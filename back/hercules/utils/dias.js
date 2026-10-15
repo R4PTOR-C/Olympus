@@ -1,3 +1,5 @@
+const { diaSemanaSP } = require('../../config/datas');
+
 const diasSemana = [
     "domingo", "segunda-feira", "terça-feira", "quarta-feira",
     "quinta-feira", "sexta-feira", "sábado",
@@ -29,8 +31,8 @@ function normalizarDia(dia) {
         sab: "sábado", sabado: "sábado", "sabado": "sábado",
     };
 
-    if (s === "hoje")  return diasSemana[new Date().getDay()];
-    if (s === "amanha") return diasSemana[(new Date().getDay() + 1) % 7];
+    if (s === "hoje")  return diasSemana[diaSemanaSP()];
+    if (s === "amanha") return diasSemana[(diaSemanaSP() + 1) % 7];
 
     return mapa[s] || dia;
 }

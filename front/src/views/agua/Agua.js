@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { AuthContext } from '../../AuthContext';
 
-const calcularMeta = (peso) => Math.round((peso * 35) / 50) * 50;
 const OPCOES = [150, 200, 300, 500];
 
 // ── Garrafa SVG ───────────────────────────────────────────────────────────────

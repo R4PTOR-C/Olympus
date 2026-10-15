@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('./db'); // ajuste o caminho conforme sua estrutura
+const db = require('./db');
 const { authenticate } = require('./middleware/auth');
 
 // Helper: o usuário autenticado é participante do chat?
@@ -138,8 +138,11 @@ router.get('/mensagens/:chatId', authenticate, async (req, res) => {
 router.post('/mensagens', authenticate, async (req, res) => {
     const { chat_id, remetente_id, conteudo } = req.body;
 
-    if (!chat_id || !remetente_id || !conteudo) {
+    if (!chat_id || !remetente_id || typeof conteudo !== 'string' || !conteudo.trim()) {
         return res.status(400).json({ error: 'chat_id, remetente_id e conteudo são obrigatórios.' });
+    }
+    if (conteudo.length > 2000) {
+        return res.status(400).json({ error: 'Mensagem muito longa.' });
     }
 
     // O remetente precisa ser o próprio usuário e participante do chat

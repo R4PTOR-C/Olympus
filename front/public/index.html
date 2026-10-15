@@ -69,6 +69,29 @@
     #splash {
       color: #19222B !important;
     }
+    /* Assinatura da Fenrys no rodapé da splash */
+    #splash .splash-credito {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: calc(28px + env(safe-area-inset-bottom));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: 'Barlow', Arial, sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: rgba(25, 34, 43, 0.55);
+    }
+    #splash .splash-credito img {
+      width: 30px;
+      height: 30px;
+      margin: 0;
+      /* As partes prateadas da raposa somem no fundo branco sem um contorno */
+      filter: drop-shadow(0 0 0.6px rgba(25, 34, 43, 0.55)) drop-shadow(0 1px 1px rgba(25, 34, 43, 0.18));
+    }
   </style>
 </head>
 <body>
@@ -76,6 +99,10 @@
 <div id="splash">
   <img src="/logo2.png" alt="Atlanteon" />
     <img src="/logo_texto.png" alt="Atlanteon" />
+  <div class="splash-credito">
+    <img src="/fenrys-logo.png" alt="" />
+    <span>by Fenrys Technologies</span>
+  </div>
 </div>
 <div id="root"></div>
 </body>

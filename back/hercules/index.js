@@ -1,6 +1,9 @@
 const express = require("express");
 const OpenAI  = require("openai");
 const pool    = require("../db");
+const { authenticate, requireSelf } = require("../middleware/auth");
+const { SQL_HOJE } = require("../config/datas");
+const pendingWorkouts = require("./utils/pendingWorkouts");
 
 const { TOOLS }                  = require("./tools");
 const { handleCriarTreino }      = require("./handlers/criar_treino");
@@ -120,11 +123,69 @@ const HANDLERS = {
     responder:          handleResponder,
 };
 
+const MAX_MENSAGEM = 2000;
+
+// Todas as rotas do Hércules exigem login; o usuário vem SEMPRE do token
+router.use(authenticate);
+
+// Conversa existe e é do usuário? Devolve a conversa ou null.
+async function conversaDoUsuario(conversaId, usuarioId) {
+    if (!conversaId) return null;
+    const { rows } = await pool.query(
+        "SELECT id FROM hercules_conversas WHERE id = $1 AND usuario_id = $2",
+        [conversaId, usuarioId]
+    );
+    return rows[0] || null;
+}
+
+// O treino gerado e ainda não salvo (pool de exercícios) fica no meta da
+// última resposta do Hércules. Assim sobrevive a restart/deploy do servidor,
+// em vez de existir só na memória do processo.
+async function carregarPendente(conversaId, usuarioId) {
+    if (!conversaId) return;
+    const { rows } = await pool.query(
+        `SELECT meta FROM hercules_mensagens
+         WHERE conversa_id = $1 AND autor = 'hercules'
+         ORDER BY criado_em DESC LIMIT 1`,
+        [conversaId]
+    );
+    const pendente = rows[0]?.meta?.pendente;
+    if (pendente) pendingWorkouts.set(String(usuarioId), pendente);
+    else pendingWorkouts.delete(String(usuarioId));
+}
+
+async function salvarMensagem(usuarioId, conversaId, autor, texto, meta = null) {
+    if (!conversaId) return;
+    await pool.query(
+        "INSERT INTO hercules_mensagens (usuario_id, autor, texto, meta, conversa_id) VALUES ($1, $2, $3, $4, $5)",
+        [usuarioId, autor, texto, meta, conversaId]
+    );
+}
+
 // ── POST /hercules/chat ──────────────────────────────────────────────────────
 router.post("/chat", async (req, res) => {
-    try {
-        const { mensagem, usuarioId, conversaId } = req.body;
+    const usuarioId = parseInt(req.user.userId);
+    const mensagem  = typeof req.body.mensagem === "string" ? req.body.mensagem.trim() : "";
+    const conversa  = await conversaDoUsuario(req.body.conversaId, usuarioId);
+    const conversaId = conversa?.id || null;
 
+    if (!mensagem) return res.status(400).json({ erro: "Mensagem vazia." });
+    if (mensagem.length > MAX_MENSAGEM) return res.status(400).json({ erro: "Mensagem muito longa." });
+
+    // Responde e grava a resposta do Hércules (com o treino pendente, se houver)
+    const responder = async (corpo) => {
+        const pendente = pendingWorkouts.get(String(usuarioId)) || null;
+        await salvarMensagem(usuarioId, conversaId, "hercules", corpo.texto, {
+            acao: corpo.acao, treino_id: corpo.treino_id ?? null, pendente,
+        }).catch(err => console.error("Erro ao salvar resposta do Hércules:", err.message));
+        return res.json(corpo);
+    };
+
+    try {
+        await carregarPendente(conversaId, usuarioId);
+
+        // Histórico é lido ANTES de gravar a mensagem nova, para ela não
+        // entrar duplicada no prompt
         const [userRes, historicoRows, musculosSemanaRes] = await Promise.all([
             pool.query("SELECT nome, objetivo, genero FROM usuarios WHERE id = $1", [usuarioId]),
             conversaId
@@ -139,12 +200,14 @@ router.post("/chat", async (req, res) => {
                 FROM series_usuario su
                 JOIN exercicios e ON e.id = su.exercicio_id
                 WHERE su.usuario_id = $1
-                  AND su.data_treino >= DATE_TRUNC('week', CURRENT_DATE)
-                  AND su.data_treino < DATE_TRUNC('week', CURRENT_DATE) + INTERVAL '1 week'
+                  AND su.data_treino >= DATE_TRUNC('week', ${SQL_HOJE})
+                  AND su.data_treino < DATE_TRUNC('week', ${SQL_HOJE}) + INTERVAL '1 week'
                 GROUP BY e.grupo_muscular
                 ORDER BY total_series DESC
             `, [usuarioId]),
         ]);
+
+        await salvarMensagem(usuarioId, conversaId, "user", mensagem);
 
         const usuario     = userRes.rows[0] || {};
         const nomeUsuario = usuario.nome || "usuário";
@@ -178,7 +241,7 @@ router.post("/chat", async (req, res) => {
             { role: "user", content: mensagem },
         ];
 
-        let ultimaAcao   = "outro";
+        let ultimaAcao     = "outro";
         let ultimaTreinoId = null;
 
         for (let i = 0; i < MAX_ITER; i++) {
@@ -194,7 +257,7 @@ router.post("/chat", async (req, res) => {
 
             // GPT terminou — retorna resposta final ao usuário
             if (!message.tool_calls?.length) {
-                return res.json({
+                return responder({
                     acao:      ultimaAcao,
                     treino_id: ultimaTreinoId,
                     texto:     message.content || `👍 Pode me dizer mais detalhes, ${nomeUsuario}?`,
@@ -203,45 +266,49 @@ router.post("/chat", async (req, res) => {
 
             // GPT enviou texto + tool_call juntos: executa a tool e retorna o texto como resposta final
             const textoJunto = message.content || null;
+            let salvouComTexto = false;
 
-            // Executa a tool call
-            const toolCall     = message.tool_calls[0];
-            const functionName = toolCall.function.name;
-            const args         = JSON.parse(toolCall.function.arguments);
-            const handler      = HANDLERS[functionName];
+            // A API exige uma resposta "tool" para CADA tool_call da mensagem
+            for (const toolCall of message.tool_calls) {
+                const functionName = toolCall.function.name;
+                const handler      = HANDLERS[functionName];
 
-            let toolResult;
-            if (handler) {
-                toolResult = await handler({ args, usuarioId, nomeUsuario, pool, openai, model: MODEL });
-            } else {
-                toolResult = { erro: `Ferramenta '${functionName}' não encontrada` };
-            }
-
-            if (functionName === 'criar_treino') ultimaAcao = 'criar_treino';
-            if (functionName === 'salvar_treino' && toolResult.sucesso) {
-                ultimaAcao     = 'treino_salvo';
-                ultimaTreinoId = toolResult.treino_id;
-
-                // Se GPT enviou o treino em texto junto com a chamada de salvar, retorna já
-                if (textoJunto) {
-                    return res.json({
-                        acao:      'treino_salvo',
-                        treino_id: ultimaTreinoId,
-                        texto:     textoJunto,
-                    });
+                let toolResult;
+                let args = null;
+                try {
+                    args = JSON.parse(toolCall.function.arguments || "{}");
+                } catch {
+                    toolResult = { erro: "Argumentos inválidos para a ferramenta." };
                 }
+
+                if (!toolResult) {
+                    toolResult = handler
+                        ? await handler({ args, usuarioId, nomeUsuario, pool, openai, model: MODEL })
+                        : { erro: `Ferramenta '${functionName}' não encontrada` };
+                }
+
+                if (functionName === 'criar_treino') ultimaAcao = 'criar_treino';
+                if (functionName === 'salvar_treino' && toolResult?.sucesso) {
+                    ultimaAcao     = 'treino_salvo';
+                    ultimaTreinoId = toolResult.treino_id;
+                    if (textoJunto) salvouComTexto = true;
+                }
+
+                messages.push({
+                    role:         "tool",
+                    tool_call_id: toolCall.id,
+                    content:      JSON.stringify(toolResult),
+                });
             }
 
-            // Adiciona resultado ao contexto para próxima iteração
-            messages.push({
-                role:         "tool",
-                tool_call_id: toolCall.id,
-                content:      JSON.stringify(toolResult),
-            });
+            // Se GPT enviou o treino em texto junto com a chamada de salvar, retorna já
+            if (salvouComTexto) {
+                return responder({ acao: 'treino_salvo', treino_id: ultimaTreinoId, texto: textoJunto });
+            }
         }
 
         // Limite de iterações atingido
-        return res.json({ acao: "outro", texto: `⚠️ ${nomeUsuario}, não consegui completar a solicitação. Tente novamente.` });
+        return responder({ acao: "outro", texto: `⚠️ ${nomeUsuario}, não consegui completar a solicitação. Tente novamente.` });
 
     } catch (err) {
         console.error("Erro Hércules:", err);
@@ -250,64 +317,46 @@ router.post("/chat", async (req, res) => {
 });
 
 // ── Histórico / Conversas ────────────────────────────────────────────────────
-router.post("/historico", async (req, res) => {
-    try {
-        const { usuarioId, autor, texto, meta, conversaId } = req.body;
-        await pool.query(
-            "INSERT INTO hercules_mensagens (usuario_id, autor, texto, meta, conversa_id) VALUES ($1, $2, $3, $4, $5)",
-            [usuarioId, autor, texto, meta || null, conversaId || null]
-        );
-        res.json({ ok: true });
-    } catch (err) {
-        console.error("Erro ao salvar histórico:", err);
-        res.status(500).json({ erro: "Falha ao salvar mensagem" });
-    }
-});
 
 router.get("/historico/:conversaId", async (req, res) => {
-    try {
-        const { rows } = await pool.query(
-            "SELECT autor, texto, meta FROM hercules_mensagens WHERE conversa_id = $1 ORDER BY criado_em ASC",
-            [req.params.conversaId]
-        );
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ erro: "Falha ao buscar histórico" });
+    if (!(await conversaDoUsuario(req.params.conversaId, req.user.userId))) {
+        return res.status(404).json({ erro: "Conversa não encontrada." });
     }
+    const { rows } = await pool.query(
+        "SELECT autor, texto, meta FROM hercules_mensagens WHERE conversa_id = $1 ORDER BY criado_em ASC",
+        [req.params.conversaId]
+    );
+    // O pool de exercícios pendente é interno do servidor
+    res.json(rows.map(r => {
+        if (!r.meta?.pendente) return r;
+        const { pendente, ...meta } = r.meta;
+        return { ...r, meta };
+    }));
 });
 
-router.get("/conversas/:usuarioId", async (req, res) => {
-    try {
-        const { rows } = await pool.query(
-            "SELECT id, titulo, criado_em FROM hercules_conversas WHERE usuario_id = $1 ORDER BY criado_em DESC",
-            [req.params.usuarioId]
-        );
-        res.json(rows);
-    } catch (err) {
-        res.status(500).json({ erro: "Falha ao listar conversas" });
-    }
+router.get("/conversas/:usuarioId", requireSelf("usuarioId"), async (req, res) => {
+    const { rows } = await pool.query(
+        "SELECT id, titulo, criado_em FROM hercules_conversas WHERE usuario_id = $1 ORDER BY criado_em DESC",
+        [req.params.usuarioId]
+    );
+    res.json(rows);
 });
 
 router.post("/conversas", async (req, res) => {
-    try {
-        const { usuarioId, titulo } = req.body;
-        const { rows } = await pool.query(
-            "INSERT INTO hercules_conversas (usuario_id, titulo) VALUES ($1, $2) RETURNING *",
-            [usuarioId, (titulo || "Nova conversa").substring(0, 80)]
-        );
-        res.json(rows[0]);
-    } catch (err) {
-        res.status(500).json({ erro: "Falha ao criar conversa" });
-    }
+    const { titulo } = req.body;
+    const { rows } = await pool.query(
+        "INSERT INTO hercules_conversas (usuario_id, titulo) VALUES ($1, $2) RETURNING *",
+        [req.user.userId, (typeof titulo === "string" && titulo.trim() ? titulo.trim() : "Nova conversa").substring(0, 80)]
+    );
+    res.json(rows[0]);
 });
 
 router.delete("/conversas/:id", async (req, res) => {
-    try {
-        await pool.query("DELETE FROM hercules_conversas WHERE id = $1", [req.params.id]);
-        res.json({ ok: true });
-    } catch (err) {
-        res.status(500).json({ erro: "Falha ao deletar conversa" });
-    }
+    await pool.query(
+        "DELETE FROM hercules_conversas WHERE id = $1 AND usuario_id = $2",
+        [req.params.id, req.user.userId]
+    );
+    res.json({ ok: true });
 });
 
 module.exports = router;

@@ -5,6 +5,7 @@ import CropAvatar from '../components/CropAvatar';
 import LocationPicker from '../components/LocationPicker';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
 import ModalApagarConta from '../components/ModalApagarConta';
+import { URL_PRIVACIDADE } from '../../utils/links';
 import ModalConfirmar from '../components/ModalConfirmar';
 import PageStateHandler from '../components/PageStateHandler';
 import '../../styles/UsuariosEdit.css';
@@ -416,6 +417,14 @@ const ProfessoresEdit = () => {
                     >
                         Apagar conta
                     </button>
+                    <a
+                        href={URL_PRIVACIDADE}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ display: 'block', marginTop: 14, textAlign: 'center', color: 'var(--ue-text-muted)', fontSize: '0.78rem' }}
+                    >
+                        Política de Privacidade
+                    </a>
                 </div>
 
             </div>

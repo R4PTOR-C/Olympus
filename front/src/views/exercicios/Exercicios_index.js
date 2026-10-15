@@ -26,6 +26,8 @@ function Exercicios_index() {
     const [mostrarModalHistorico, setMostrarModalHistorico] = useState(false);
     const [modalFinalizado, setModalFinalizado] = useState(false);
     const [avisoTreinoAtivo, setAvisoTreinoAtivo] = useState(false);
+    // Séries que não chegaram ao servidor (sem conexão): { exercicioId: series }
+    const [naoSalvos, setNaoSalvos] = useState({});
 
     const [obsData, setObsData] = useState({});
     const [obsModal, setObsModal] = useState({ open: false, exercicioId: null, text: '' });
@@ -96,6 +98,8 @@ function Exercicios_index() {
         };
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    // handleBlur é recriado a cada render; o listener só precisa refletir o campo em edição
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editingField, formData]);
 
     useEffect(() => {
@@ -137,6 +141,8 @@ function Exercicios_index() {
             fetchExercicios(sessionId);
             if (sessionId) fetchObs(sessionId);
         })();
+    // fetchExercicios/fetchObs só fazem fetch + setState
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [treinoId, userId]);
 
     // ── HANDLERS ──────────────────────────────────────────────────────────
@@ -164,19 +170,7 @@ function Exercicios_index() {
             setEditingField(null);
         }
 
-        try {
-            await fetch(
-                `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicioId}/series`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ series: reorganizado, treino_realizado_id: treinoRealizadoId }),
-                }
-            );
-        } catch {
-            console.error('Erro ao salvar exclusão de série');
-        }
+        await salvarSerie(exercicioId, reorganizado);
     };
 
     const handleNovoTreino = async () => {
@@ -224,6 +218,7 @@ function Exercicios_index() {
         if (!treinoRealizadoId) return;
         if (editingField) await handleBlur(editingField.exercicioId); // fix 4: fecha campo aberto
         if (pendingSaveRef.current) await pendingSaveRef.current;     // fix 4: aguarda save em flight
+        if (Object.keys(naoSalvos).length && !(await reenviarNaoSalvos())) return; // não finaliza com séries perdidas
         try {
             const res = await fetch(
                 `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos_realizados/${treinoRealizadoId}/finalizar`,
@@ -241,9 +236,9 @@ function Exercicios_index() {
         }
     };
 
-    const salvarSerie = async (exercicioId, series) => {
-        if (!treinoRealizadoId) return; // fix 1: nunca salva sem sessão vinculada
-        const promise = fetch(
+    // Uma tentativa de gravar as séries. Lança erro se o servidor não confirmou.
+    const enviarSeries = async (exercicioId, series) => {
+        const res = await fetch(
             `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos/${treinoId}/exercicios/${exercicioId}/series`,
             {
                 method: 'POST',
@@ -259,15 +254,58 @@ function Exercicios_index() {
                 }),
             }
         );
+        if (!res.ok) {
+            const err = new Error(`HTTP ${res.status}`);
+            // 4xx (exceto timeout/limite) não adianta repetir
+            err.definitivo = res.status >= 400 && res.status < 500 && ![408, 429].includes(res.status);
+            throw err;
+        }
+    };
+
+    // Grava com até 3 tentativas. Se não der, guarda em `naoSalvos` e avisa na
+    // tela — antes a falha era silenciosa e a série se perdia.
+    const salvarSerie = async (exercicioId, series) => {
+        if (!treinoRealizadoId) return; // fix 1: nunca salva sem sessão vinculada
+        const promise = (async () => {
+            for (let tentativa = 0; tentativa < 3; tentativa++) {
+                try {
+                    await enviarSeries(exercicioId, series);
+                    setNaoSalvos(prev => {
+                        if (!(exercicioId in prev)) return prev;
+                        const { [exercicioId]: _, ...resto } = prev;
+                        return resto;
+                    });
+                    return true;
+                } catch (err) {
+                    if (err.definitivo) break;
+                    await new Promise(r => setTimeout(r, 1000 * (tentativa + 1)));
+                }
+            }
+            setNaoSalvos(prev => ({ ...prev, [exercicioId]: series }));
+            return false;
+        })();
         pendingSaveRef.current = promise; // fix 4: rastreia save em flight
         try {
-            await promise;
-        } catch {
-            console.error('Erro ao salvar série');
+            return await promise;
         } finally {
             if (pendingSaveRef.current === promise) pendingSaveRef.current = null;
         }
     };
+
+    const reenviarNaoSalvos = async () => {
+        const pendentes = Object.entries(naoSalvos);
+        const resultados = await Promise.all(pendentes.map(([id, series]) => salvarSerie(Number(id), series)));
+        return resultados.every(Boolean);
+    };
+
+    // Voltou a conexão: reenvia o que ficou pendente
+    useEffect(() => {
+        if (!Object.keys(naoSalvos).length) return;
+        const aoReconectar = () => { reenviarNaoSalvos(); };
+        window.addEventListener('online', aoReconectar);
+        return () => window.removeEventListener('online', aoReconectar);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [naoSalvos]);
 
     const buscarUltimoTreinoFinalizado = async (userId, treinoId) => {
         try {
@@ -512,6 +550,21 @@ function Exercicios_index() {
                             <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                         </svg>
                         Você já tem um treino em andamento. Finalize-o antes de iniciar outro.
+                    </div>
+                )}
+
+                {/* ── AVISO: SÉRIES NÃO SALVAS ── */}
+                {Object.keys(naoSalvos).length > 0 && (
+                    <div className="ex-aviso-ativo" role="alert">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        {Object.keys(naoSalvos).length === 1
+                            ? '1 exercício não foi salvo (sem conexão).'
+                            : `${Object.keys(naoSalvos).length} exercícios não foram salvos (sem conexão).`}
+                        <button type="button" className="ex-aviso-retry" onClick={reenviarNaoSalvos}>
+                            Tentar de novo
+                        </button>
                     </div>
                 )}
 

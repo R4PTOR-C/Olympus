@@ -124,7 +124,7 @@ function ChatsList() {
     const [chats,       setChats]       = useState([]);
     const [loading,     setLoading]     = useState(true);
 
-    useEffect(() => { clearMensagensNaoLidas(); }, []);
+    useEffect(() => { clearMensagensNaoLidas(); }, [clearMensagensNaoLidas]);
     const [arquivadosAbertos, setArquivadosAbertos] = useState(false);
 
     useEffect(() => {

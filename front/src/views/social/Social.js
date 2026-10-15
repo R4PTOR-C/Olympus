@@ -127,7 +127,7 @@ export default function Social() {
         }
     }, [userId]);
 
-    useEffect(() => { carregar(); clearMensagensNaoLidas(); }, [carregar]);
+    useEffect(() => { carregar(); clearMensagensNaoLidas(); }, [carregar, clearMensagensNaoLidas]);
     useSocketRefresh(carregar);
 
     // Busca de usuários (debounce)

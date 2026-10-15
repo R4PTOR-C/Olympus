@@ -1,10 +1,13 @@
 require("dotenv").config(); // Carrega variáveis do .env
-console.log("API KEY carregada?", process.env.OPENAI_API_KEY ? "✅ sim" : "❌ não");
+// Faz o Express 4 encaminhar erros de handlers async para o error handler,
+// em vez de virarem unhandled rejection (que derruba o processo no Node ≥ 15).
+require("express-async-errors");
 
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const path = require("path");
-const jwt = require("jsonwebtoken");
 const http = require("http"); // 🔹 Necessário pro Socket.IO
 const { Server } = require("socket.io"); // 🔹 Importa o socket.io
 const db = require("./db"); // Banco de dados para salvar mensagens
@@ -12,7 +15,6 @@ const db = require("./db"); // Banco de dados para salvar mensagens
 // 🔹 Rotas HTTP (REST)
 const usuariosRouter = require("./usuarios");
 const loginRouter = require("./login/usuarios_login");
-const academiaRouter = require("./academias/academias");
 const exerciciosRouter = require("./exercicios");
 const treinosRouter = require("./treinos");
 const avaliacoesRouter = require("./avaliacoes");
@@ -25,6 +27,7 @@ const pushRouter    = require("./push");
 const cardioRouter  = require("./cardio");
 const aguaRouter         = require("./agua");
 const gamificacaoRouter  = require("./gamificacao");
+const assinaturasRouter  = require("./assinaturas");
 
 // 🔹 Módulo separado para eventos de chat em tempo real
 const chatSocket = require("./socket/chatSocket");
@@ -32,18 +35,17 @@ const chatSocket = require("./socket/chatSocket");
 const app = express();
 const server = http.createServer(app); // Cria o servidor HTTP
 const PORT = process.env.PORT || 5000;
-const { JWT_SECRET } = require("./config/jwt");
+
+// Origens permitidas (web + app Capacitor, que roda em https://localhost)
+const ORIGENS = [
+    process.env.FRONTEND_URL || "http://localhost:3000",
+    "https://olympus-33lb.onrender.com",
+    "https://localhost"
+];
 
 // 🔹 Configuração do Socket.IO
 const io = new Server(server, {
-    cors: {
-        origin: [
-            process.env.FRONTEND_URL || "http://localhost:3000",
-            "https://olympus-33lb.onrender.com",
-            "https://localhost"
-        ],
-        methods: ["GET", "POST"]
-    }
+    cors: { origin: ORIGENS, methods: ["GET", "POST"] }
 });
 
 // Passa a instância do io e db pro módulo de chat
@@ -51,42 +53,54 @@ chatSocket(io, db);
 
 // ------------------- MIDDLEWARES -------------------
 
+// O Render fica atrás de um proxy: necessário para o rate limit ver o IP real
+app.set("trust proxy", 1);
+
+app.use(helmet({
+    // O build do React usa imagens/vídeos do Cloudinary e scripts inline no
+    // index.html; uma CSP precisaria ser montada à mão para não quebrar a tela.
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
+
 // Disponibiliza io em todas as rotas via req.io
 app.use((req, res, next) => { req.io = io; next(); });
 
 app.use(cors({
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
-    origin: [
-        process.env.FRONTEND_URL || "http://localhost:3000",
-        "https://olympus-33lb.onrender.com",
-        "https://localhost"
-    ]
+    origin: ORIGENS
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 
-// Middleware para autenticação JWT
-function checkAuthenticated(req, res, next) {
-    const token = req.headers["authorization"]?.split(" ")[1];
-    if (!token) {
-        return res.status(401).json({ error: "Token não fornecido" });
-    }
+// Rate limit nas rotas sensíveis a força bruta / custo
+const limitarAuth = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 20,
+    standardHeaders: "draft-7",
+    legacyHeaders: false,
+    message: { error: "Muitas tentativas. Tente novamente em alguns minutos." },
+});
+const limitarHercules = rateLimit({
+    windowMs: 60 * 1000,
+    limit: 10,
+    standardHeaders: "draft-7",
+    legacyHeaders: false,
+    message: { erro: "Muitas mensagens seguidas. Aguarde um pouco." },
+});
 
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ error: "Token inválido" });
-        }
-        req.user = decoded;
-        next();
-    });
-}
+app.use("/login", limitarAuth);
+app.use("/usuarios/forgot-password", limitarAuth);
+app.use("/usuarios/reset-password", limitarAuth);
+app.post("/usuarios", limitarAuth);
+app.use("/hercules/chat", limitarHercules);
 
 // ------------------- ROTAS REST -------------------
 
 app.use("/usuarios", usuariosRouter);
 app.use("/", loginRouter);
-app.use("/academias", academiaRouter);
 app.use("/exercicios", exerciciosRouter);
 app.use("/treinos", treinosRouter);
 app.use("/avaliacoes", avaliacoesRouter);
@@ -99,24 +113,40 @@ app.use("/push",    pushRouter);
 app.use("/cardio",  cardioRouter);
 app.use("/agua",         aguaRouter);
 app.use("/gamificacao",  gamificacaoRouter);
-
-// ------------------- ROTAS PROTEGIDAS -------------------
-
-app.get("/home", checkAuthenticated, (req, res) => {
-    res.json({ message: "Você está logado e pode ver isso!", user: req.user });
-});
+app.use("/assinaturas",  assinaturasRouter);
 
 // ------------------- ARQUIVOS ESTÁTICOS -------------------
 
 // Frontend React build
 app.use(express.static(path.join(__dirname, "../front/build")));
 
-// Uploads (imagens de avatar, etc.)
+// Uploads (imagens dos grupos musculares, etc.)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Catch-all route para React Router
 app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "../front/build", "index.html"));
+});
+
+// ------------------- TRATAMENTO DE ERROS -------------------
+
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+    // JSON malformado no body
+    if (err.type === "entity.parse.failed") {
+        return res.status(400).json({ error: "JSON inválido." });
+    }
+    // Erros de entrada do Postgres (id não numérico, data inválida, FK inexistente…)
+    if (["22P02", "22007", "22008", "23503", "23502"].includes(err.code)) {
+        return res.status(400).json({ error: "Dados inválidos." });
+    }
+    console.error(`Erro em ${req.method} ${req.originalUrl}:`, err);
+    if (res.headersSent) return;
+    res.status(500).json({ error: "Erro interno do servidor" });
+});
+
+process.on("unhandledRejection", (err) => {
+    console.error("Promise rejeitada sem tratamento:", err);
 });
 
 // ------------------- INICIALIZAÇÃO -------------------

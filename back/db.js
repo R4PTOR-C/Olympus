@@ -12,7 +12,31 @@ const pool = new Pool({
     }
 });
 
+// Erro numa conexão ociosa não pode derrubar o processo
+pool.on('error', (err) => {
+    console.error('Erro inesperado no pool do PostgreSQL:', err.message);
+});
+
+// Executa `fn` dentro de uma transação, com todas as queries no MESMO client.
+// (BEGIN/COMMIT via pool.query não funciona: cada query pode ir para uma
+// conexão diferente.) `fn` recebe um objeto com a mesma interface `query`.
+async function transaction(fn) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const result = await fn(client);
+        await client.query('COMMIT');
+        return result;
+    } catch (err) {
+        await client.query('ROLLBACK').catch(() => {});
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
 module.exports = {
     query: (text, params) => pool.query(text, params),
+    transaction,
+    pool,
 };
-

@@ -13,49 +13,59 @@ function authenticate(req, res, next) {
     });
 }
 
+const mesmoId = (a, b) => a != null && b != null && parseInt(a) === parseInt(b);
+
+// O id informado é o do próprio usuário autenticado?
+const ehProprioUsuario = (req, id) => mesmoId(req.user?.userId, id);
+
+// Administradores: ids listados em ADMIN_USER_IDS (ex: "1,7")
+function ehAdmin(req) {
+    const ids = (process.env.ADMIN_USER_IDS || '')
+        .split(',').map(s => parseInt(s.trim())).filter(Number.isInteger);
+    return ids.includes(parseInt(req.user?.userId));
+}
+
+function requireAdmin(req, res, next) {
+    if (!ehAdmin(req)) return res.status(403).json({ error: 'Acesso restrito a administradores.' });
+    next();
+}
+
+// Middleware: o id em req.params[paramName] precisa ser o próprio usuário
+function requireSelf(paramName) {
+    return (req, res, next) => {
+        if (!ehProprioUsuario(req, req.params[paramName])) {
+            return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
+        next();
+    };
+}
+
+const ehProfessor = (req) =>
+    req.user?.userFuncao === 'Professor' || req.user?.userFuncaoExtra === 'Professor';
+
+// Próprio usuário, ou professor com vínculo ativo com ele
+async function verificarVinculo(req, alunoId) {
+    if (ehProprioUsuario(req, alunoId)) return true;
+    if (!ehProfessor(req)) return false;
+    const { rows } = await db.query(
+        `SELECT id FROM vinculos
+         WHERE professor_id = $1 AND aluno_id = $2 AND status = 'ativo'`,
+        [req.user.userId, alunoId]
+    );
+    return rows.length > 0;
+}
+
 // Middleware: exige que o professor tenha vínculo ativo com o aluno
 // O id do aluno vem de req.params[paramName]
 function requireVinculo(paramName = 'usuarioId') {
     return async (req, res, next) => {
         try {
-            const { userId, userFuncao } = req.user;
-            const targetId = parseInt(req.params[paramName]);
-
-            // Próprio usuário sempre pode acessar seus dados
-            if (parseInt(userId) === targetId) return next();
-
-            // Professor precisa ter vínculo ativo (funcao principal ou extra)
-            const isProfessor = userFuncao === 'Professor' || req.user.userFuncaoExtra === 'Professor';
-            if (isProfessor) {
-                const { rows } = await db.query(
-                    `SELECT id FROM vinculos
-                     WHERE professor_id = $1 AND aluno_id = $2 AND status = 'ativo'`,
-                    [userId, targetId]
-                );
-                if (rows.length) return next();
-            }
-
+            if (await verificarVinculo(req, req.params[paramName])) return next();
             return res.status(403).json({ error: 'Acesso não autorizado.' });
-        } catch {
-            return res.status(500).json({ error: 'Erro interno.' });
+        } catch (err) {
+            next(err);
         }
     };
-}
-
-// Helper usado dentro de handlers quando o alunoId vem do banco (ex: via treinoId)
-async function verificarVinculo(req, alunoId) {
-    const { userId, userFuncao } = req.user;
-    if (parseInt(userId) === parseInt(alunoId)) return true;
-    const isProfessor = userFuncao === 'Professor' || req.user?.userFuncaoExtra === 'Professor';
-    if (isProfessor) {
-        const { rows } = await db.query(
-            `SELECT id FROM vinculos
-             WHERE professor_id = $1 AND aluno_id = $2 AND status = 'ativo'`,
-            [userId, alunoId]
-        );
-        return rows.length > 0;
-    }
-    return false;
 }
 
 // Helper: existe amizade aceita entre dois usuários?
@@ -70,4 +80,46 @@ async function saoAmigos(userIdA, userIdB) {
     return rows.length > 0;
 }
 
-module.exports = { authenticate, requireVinculo, verificarVinculo, saoAmigos };
+// Carrega um treino e verifica o acesso.
+//   modo 'escrita' → dono ou professor vinculado
+//   modo 'leitura' → também amigos aceitos (podem ver e copiar)
+// Responde 404/403 e devolve null quando não pode.
+async function autorizarTreino(req, res, treinoId, modo = 'escrita') {
+    const { rows } = await db.query('SELECT * FROM treinos WHERE id = $1', [treinoId]);
+    if (!rows.length) {
+        res.status(404).json({ error: 'Treino não encontrado' });
+        return null;
+    }
+    const treino = rows[0];
+    if (await verificarVinculo(req, treino.usuario_id)) return treino;
+    if (modo === 'leitura' && await saoAmigos(req.user.userId, treino.usuario_id)) return treino;
+    res.status(403).json({ error: 'Acesso não autorizado.' });
+    return null;
+}
+
+// Mesmo esquema para uma sessão de treino (treinos_realizados)
+async function autorizarTreinoRealizado(req, res, id) {
+    const { rows } = await db.query('SELECT * FROM treinos_realizados WHERE id = $1', [id]);
+    if (!rows.length) {
+        res.status(404).json({ error: 'Treino realizado não encontrado.' });
+        return null;
+    }
+    if (!(await verificarVinculo(req, rows[0].usuario_id))) {
+        res.status(403).json({ error: 'Acesso não autorizado.' });
+        return null;
+    }
+    return rows[0];
+}
+
+module.exports = {
+    authenticate,
+    requireAdmin,
+    requireSelf,
+    requireVinculo,
+    verificarVinculo,
+    saoAmigos,
+    ehAdmin,
+    ehProprioUsuario,
+    autorizarTreino,
+    autorizarTreinoRealizado,
+};

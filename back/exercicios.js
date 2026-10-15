@@ -1,4 +1,5 @@
-// exercicios.js
+// exercicios.js — catálogo global de exercícios.
+// Leitura: qualquer usuário logado. Escrita: só administradores (ADMIN_USER_IDS).
 const express = require('express');
 const db = require('./db');
 const router = express.Router();
@@ -6,7 +7,7 @@ const router = express.Router();
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('./config/cloudinary');
-const { authenticate } = require('./middleware/auth');
+const { authenticate, requireAdmin } = require('./middleware/auth');
 
 // Configura o storage para Cloudinary
 const storage = new CloudinaryStorage({
@@ -18,114 +19,91 @@ const storage = new CloudinaryStorage({
     }),
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage, limits: { fileSize: 30 * 1024 * 1024 } });
 
 function toTitleCase(str) {
     return str
+        .trim()
         .toLowerCase()
         .split(' ')
         .map(p => p.charAt(0).toUpperCase() + p.slice(1))
         .join(' ');
 }
 
+// Valida o body de criação/edição. Devolve a mensagem de erro, ou null.
+function validar({ nome_exercicio, grupo_muscular }) {
+    if (typeof nome_exercicio !== 'string' || !nome_exercicio.trim()) return 'Nome do exercício é obrigatório.';
+    if (typeof grupo_muscular !== 'string' || !grupo_muscular.trim()) return 'Grupo muscular é obrigatório.';
+    return null;
+}
 
 // Listar exercícios
 router.get('/', authenticate, async (req, res) => {
-    try {
-        const { rows } = await db.query('SELECT * FROM exercicios');
-        res.json(rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+    const { rows } = await db.query('SELECT * FROM exercicios');
+    res.json(rows);
 });
 
 // Criar exercício (com upload opcional de gif ou vídeo)
-router.post('/', authenticate, upload.single('media'), async (req, res) => {
-    let { nome_exercicio, grupo_muscular, nivel } = req.body;
-    nome_exercicio = toTitleCase(nome_exercicio);
+router.post('/', authenticate, requireAdmin, upload.single('media'), async (req, res) => {
+    const erro = validar(req.body);
+    if (erro) return res.status(400).json({ error: erro });
+    const { grupo_muscular, nivel } = req.body;
+    const nome_exercicio = toTitleCase(req.body.nome_exercicio);
     const gifUrl = req.file?.path || null; // URL pública do Cloudinary
 
-    try {
-        const resultado = await db.query(
-            `INSERT INTO exercicios (nome_exercicio, grupo_muscular, nivel, gif_url)
-             VALUES ($1, $2, $3, $4) RETURNING *`,
-            [nome_exercicio, grupo_muscular, nivel, gifUrl]
-        );
-
-        res.status(201).json(resultado.rows[0]);
-    } catch (err) {
-        console.error('Erro ao criar o exercício:', err);
-        res.status(500).json({ error: 'Erro ao criar o exercício' });
-    }
+    const resultado = await db.query(
+        `INSERT INTO exercicios (nome_exercicio, grupo_muscular, nivel, gif_url)
+         VALUES ($1, $2, $3, $4) RETURNING *`,
+        [nome_exercicio, grupo_muscular, nivel, gifUrl]
+    );
+    res.status(201).json(resultado.rows[0]);
 });
 
 // Buscar por ID
-router.get('/exercicios/:id', authenticate, async (req, res) => {
+// (o caminho /exercicios/exercicios/:id é mantido por compatibilidade com o front)
+router.get(['/exercicios/:id', '/:id'], authenticate, async (req, res) => {
     const { id } = req.params;
-
-    try {
-        const result = await db.query('SELECT * FROM exercicios WHERE id = $1', [id]);
-
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: 'Exercício não encontrado.' });
-        }
-
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error('Erro ao buscar exercício:', error);
-        res.status(500).json({ error: 'Erro interno do servidor.' });
+    const result = await db.query('SELECT * FROM exercicios WHERE id = $1', [id]);
+    if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Exercício não encontrado.' });
     }
+    res.json(result.rows[0]);
 });
 
 // Atualizar exercício (com gif ou vídeo opcional)
-router.put('/:id', authenticate, upload.single('media'), async (req, res) => {
+router.put('/:id', authenticate, requireAdmin, upload.single('media'), async (req, res) => {
+    const erro = validar(req.body);
+    if (erro) return res.status(400).json({ error: erro });
     const { id } = req.params;
-    let { nome_exercicio, grupo_muscular, nivel } = req.body;
-    nome_exercicio = toTitleCase(nome_exercicio);
+    const { grupo_muscular, nivel } = req.body;
+    const nome_exercicio = toTitleCase(req.body.nome_exercicio);
     const gifUrl = req.file?.path || null;
 
-    try {
-        const query = `
-            UPDATE exercicios
-            SET nome_exercicio = $1,
-                grupo_muscular = $2,
-                nivel = $3,
-                gif_url = COALESCE($4, gif_url)
-            WHERE id = $5
-                RETURNING *;
-        `;
-        const values = [nome_exercicio, grupo_muscular, nivel, gifUrl, id];
-        const result = await db.query(query, values);
+    const result = await db.query(
+        `UPDATE exercicios
+         SET nome_exercicio = $1,
+             grupo_muscular = $2,
+             nivel = $3,
+             gif_url = COALESCE($4, gif_url)
+         WHERE id = $5
+         RETURNING *`,
+        [nome_exercicio, grupo_muscular, nivel, gifUrl, id]
+    );
 
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: 'Exercício não encontrado.' });
-        }
-
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error('Erro ao atualizar exercício:', error);
-        res.status(500).json({ error: 'Erro ao atualizar exercício.' });
+    if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Exercício não encontrado.' });
     }
+    res.json(result.rows[0]);
 });
 
 // Deletar exercício por ID
-router.delete('/:id', authenticate, async (req, res) => {
+router.delete('/:id', authenticate, requireAdmin, async (req, res) => {
     const { id } = req.params;
-
-    try {
-        const result = await db.query('DELETE FROM exercicios WHERE id = $1 RETURNING *', [id]);
-
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: 'Exercício não encontrado.' });
-        }
-
-        res.status(200).json({ message: 'Exercício deletado com sucesso.' });
-    } catch (err) {
-        console.error('Erro ao deletar exercício:', err);
-        res.status(500).json({ error: 'Erro ao deletar exercício.' });
+    const result = await db.query('DELETE FROM exercicios WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Exercício não encontrado.' });
     }
+    res.status(200).json({ message: 'Exercício deletado com sucesso.' });
 });
-
 
 module.exports = router;

@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('./db'); // ajuste o caminho conforme sua estrutura
+const db = require('./db');
 const { authenticate } = require('./middleware/auth');
 const router = express.Router();
 
@@ -7,7 +7,7 @@ const router = express.Router();
 const ehProprioUsuario = (req, id) => parseInt(req.user.userId) === parseInt(id);
 
 // GET - lista todos os professores
-router.get('/', async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
     try {
         const { rows } = await db.query(`
       SELECT 
@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET - professor por ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
     const { id } = req.params;
     try {
         const { rows } = await db.query(`

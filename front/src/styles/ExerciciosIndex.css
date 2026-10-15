@@ -522,6 +522,18 @@ tr.ex-serie-done .ex-serie-num {
     animation: ex-fade-in 0.2s ease;
 }
 
+.ex-aviso-retry {
+    margin-left: auto;
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border: 1px solid currentColor;
+    border-radius: var(--ex-radius-sm);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
 @keyframes ex-fade-in {
     from { opacity: 0; transform: translateY(-4px); }
     to   { opacity: 1; transform: translateY(0); }

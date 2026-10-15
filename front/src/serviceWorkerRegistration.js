@@ -8,51 +8,29 @@ const isLocalhost = Boolean(
     )
 );
 
-export function register(config) {
+export function register() {
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
 
             if (isLocalhost) {
-                checkValidServiceWorker(swUrl, config);
-
-                navigator.serviceWorker.ready.then(() => {
-                    console.log('[PWA] Service Worker pronto (localhost)');
-                });
+                checkValidServiceWorker(swUrl);
             } else {
-                registerValidSW(swUrl, config);
+                registerValidSW(swUrl);
             }
         });
     }
 }
 
-function registerValidSW(swUrl, config) {
+function registerValidSW(swUrl) {
     navigator.serviceWorker
         .register(swUrl)
-        .then((registration) => {
-            console.log('[PWA] Service Worker registrado');
-
-            registration.onupdatefound = () => {
-                const installingWorker = registration.installing;
-                if (installingWorker == null) return;
-
-                installingWorker.onstatechange = () => {
-                    if (installingWorker.state === 'installed') {
-                        if (navigator.serviceWorker.controller) {
-                            console.log('[PWA] Novo conteúdo disponível; atualize a página.');
-                        } else {
-                            console.log('[PWA] Conteúdo cacheado para uso offline.');
-                        }
-                    }
-                };
-            };
-        })
         .catch((error) => {
             console.error('[PWA] Erro ao registrar Service Worker:', error);
         });
 }
 
-function checkValidServiceWorker(swUrl, config) {
+function checkValidServiceWorker(swUrl) {
     fetch(swUrl, { headers: { 'Service-Worker': 'script' } })
         .then((response) => {
             const contentType = response.headers.get('content-type');
@@ -66,22 +44,17 @@ function checkValidServiceWorker(swUrl, config) {
                     });
                 });
             } else {
-                registerValidSW(swUrl, config);
+                registerValidSW(swUrl);
             }
         })
-        .catch(() => {
-            console.log('[PWA] Sem conexão com a internet.');
-        });
+        .catch(() => { /* sem conexão: segue sem service worker */ });
 }
 
+// Remove qualquer service worker registrado (não espera por um que não existe)
 export function unregister() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready
-            .then((registration) => {
-                registration.unregister();
-            })
-            .catch((error) => {
-                console.error(error.message);
-            });
+        navigator.serviceWorker.getRegistrations()
+            .then((registrations) => registrations.forEach((r) => r.unregister()))
+            .catch((error) => console.error(error.message));
     }
 }

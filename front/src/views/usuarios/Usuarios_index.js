@@ -120,7 +120,7 @@ const Usuarios_index = () => {
         }
     }, [userId, token]);
 
-    useEffect(() => { carregar(); clearMensagensNaoLidas(); }, [carregar]);
+    useEffect(() => { carregar(); clearMensagensNaoLidas(); }, [carregar, clearMensagensNaoLidas]);
     useSocketRefresh(carregar);
 
     const toggleProcurando = async () => {
@@ -208,6 +208,8 @@ const Usuarios_index = () => {
             {modalPlanos && (
                 <PlanosModal
                     planoAtual={statusPlano?.plano || 'gratuito'}
+                    usuarioId={userId}
+                    onPlanoAtualizado={carregar}
                     onClose={() => setModalPlanos(false)}
                 />
             )}

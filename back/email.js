@@ -1,23 +1,18 @@
-const nodemailer = require('nodemailer');
+// Script manual de teste do envio de e-mail: `node email.js destino@exemplo.com`
+// Usa as credenciais do ambiente (EMAIL_USER / EMAIL_PASS), nunca do código.
+require('dotenv').config();
+const { enviarEmail } = require('./config/email');
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'olympusgymapp@gmail.com',
-        pass: 'ndfi llcd tqqm gdos',
-    },
-});
+const destino = process.argv[2];
+if (!destino) {
+    console.error('Uso: node email.js destino@exemplo.com');
+    process.exit(1);
+}
 
-const mailOptions = {
-    from: 'olympusgymapp@gmail.com',
-    to: 'rafaelcroriz7@gmail.com', // Substitua pelo seu e-mail
+enviarEmail({
+    to: destino,
     subject: 'Teste de Nodemailer',
     text: 'Este é um e-mail de teste enviado pelo Nodemailer.',
-};
-
-transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-        return console.log('Erro ao enviar e-mail:', error);
-    }
-    console.log('E-mail enviado:', info.response);
-});
+})
+    .then(info => console.log('E-mail enviado:', info.response))
+    .catch(err => console.log('Erro ao enviar e-mail:', err.message));

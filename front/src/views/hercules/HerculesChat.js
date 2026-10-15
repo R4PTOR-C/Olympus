@@ -126,7 +126,6 @@ function HerculesChat() {
     const [loadingMsg, setLoadingMsg] = useState(LOADING_MSGS[0]);
     const [copiedIdx, setCopiedIdx] = useState(null);
     const { userId } = useContext(AuthContext);
-    const [ultimaMeta, setUltimaMeta] = useState(null);
     const [conversaAtiva, setConversaAtiva] = useState(null);
     const [conversas, setConversas] = useState([]);
     const [sidebarAberta, setSidebarAberta] = useState(false);
@@ -181,14 +180,11 @@ function HerculesChat() {
     const carregarConversa = (conversa) => {
         setConversaAtiva(conversa.id);
         setChat([]);
-        setUltimaMeta(null);
         fetch(`${API}/hercules/historico/${conversa.id}`)
             .then(r => r.json())
             .then(rows => {
                 if (Array.isArray(rows)) {
                     setChat(rows.map(r => ({ autor: r.autor === 'user' ? 'Você' : 'Hércules', texto: r.texto, meta: r.meta })));
-                    const ultima = rows.filter(r => r.autor === 'hercules').pop();
-                    if (ultima?.meta) setUltimaMeta(ultima.meta);
                 }
             })
             .catch(() => {});
@@ -197,7 +193,6 @@ function HerculesChat() {
     const novaConversa = () => {
         setConversaAtiva(null);
         setChat([]);
-        setUltimaMeta(null);
         setSidebarAberta(false);
     };
 
@@ -216,16 +211,8 @@ function HerculesChat() {
         }
     };
 
-    const salvarMensagem = (autor, texto, meta, idConversa) => {
-        fetch(`${API}/hercules/historico`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usuarioId: userId, autor, texto, meta: meta || null, conversaId: idConversa }),
-        }).catch(() => {});
-    };
-
-    const enviar = async (extra = {}) => {
-        if (!msg.trim() && !extra.confirmado) return;
+    const enviar = async () => {
+        if (!msg.trim()) return;
 
         // Primeira mensagem da conversa → criar conversa
         let idConversa = conversaAtiva;
@@ -234,7 +221,7 @@ function HerculesChat() {
                 const res = await fetch(`${API}/hercules/conversas`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usuarioId: userId, titulo: msg.trim().substring(0, 50) }),
+                    body: JSON.stringify({ titulo: msg.trim().substring(0, 50) }),
                 });
                 const nova = await res.json();
                 idConversa = nova.id;
@@ -243,11 +230,8 @@ function HerculesChat() {
             } catch { /* continua sem conversa_id */ }
         }
 
-        const novaMsg = extra.confirmado ? null : { autor: 'Você', texto: msg };
-        if (novaMsg) {
-            setChat(prev => [...prev, novaMsg]);
-            salvarMensagem('user', msg, null, idConversa);
-        }
+        // As mensagens são gravadas pelo servidor em /hercules/chat
+        setChat(prev => [...prev, { autor: 'Você', texto: msg }]);
         setMsg('');
         setLoading(true);
 
@@ -257,21 +241,16 @@ function HerculesChat() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     mensagem: msg,
-                    usuarioId: userId,
                     conversaId: idConversa,
-                    ...ultimaMeta,
-                    ...extra,
                 }),
             });
 
             const data = await res.json();
-            setUltimaMeta(data);
+            if (!res.ok) throw Object.assign(new Error(data.erro || 'Erro ao falar com Hércules.'), { daApi: true });
             setChat(prev => [...prev, { autor: 'Hércules', texto: data.texto, meta: data }]);
-            salvarMensagem('hercules', data.texto, data, idConversa);
-        } catch {
-            const textoErro = '⚠️ Erro ao falar com Hércules. Tente novamente.';
+        } catch (err) {
+            const textoErro = `⚠️ ${err.daApi ? err.message : 'Erro ao falar com Hércules.'} Tente novamente.`;
             setChat(prev => [...prev, { autor: 'Hércules', texto: textoErro }]);
-            salvarMensagem('hercules', textoErro, null, idConversa);
         } finally {
             setLoading(false);
         }
@@ -336,22 +315,6 @@ function HerculesChat() {
 
                         {c.autor === 'Hércules' && (
                             <div className="hc-msg-actions">
-                                {c.meta?.confirmado === false && (
-                                    <>
-                                        <button
-                                            className="hc-btn-confirm"
-                                            onClick={() => enviar({ confirmado: true })}
-                                        >
-                                            Confirmar
-                                        </button>
-                                        <button
-                                            className="hc-btn-alter"
-                                            onClick={() => setMsg('')}
-                                        >
-                                            Alterar
-                                        </button>
-                                    </>
-                                )}
                                 <button
                                     className={`hc-btn-copy${copiedIdx === i ? ' copied' : ''}`}
                                     title="Copiar mensagem"

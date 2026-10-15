@@ -1,6 +1,6 @@
 // public/service-worker.js
 
-const CACHE_NAME = 'atlanteon-v1';
+const CACHE_NAME = 'atlanteon-v2';
 
 // ── INSTALL: cacheia o shell do app ──────────────────────────────────────────
 self.addEventListener('install', (event) => {

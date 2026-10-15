@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
+import { URL_PRIVACIDADE } from '../../utils/links';
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
@@ -870,6 +871,15 @@ function Onboarding() {
                         >
                             Entrar
                         </span>
+                    </span>
+                )}
+
+                {isAccountStep && (
+                    <span style={{ ...S.loginLink, fontSize: '0.75rem' }}>
+                        Ao criar a conta, você concorda com a{' '}
+                        <a href={URL_PRIVACIDADE} target="_blank" rel="noopener noreferrer" style={{ color: '#4A90D9' }}>
+                            Política de Privacidade
+                        </a>.
                     </span>
                 )}
             </div>

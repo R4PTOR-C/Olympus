@@ -1,5 +1,6 @@
-front/.env
 back/.env
 front/android/local.properties
 cookies.txt
 uploads/
+node_modules/
+*:Zone.Identifier

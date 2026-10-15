@@ -3,6 +3,7 @@ const express = require('express');
 const db      = require('./db');
 const { enviarPush } = require('./push');
 const { authenticate } = require('./middleware/auth');
+const { planoDoUsuario } = require('./assinaturas');
 const router  = express.Router();
 
 const LIMITES_PLANO = { gratuito: 10, pro: 50, elite: null };
@@ -28,11 +29,10 @@ router.get('/professor/:professorId/status-plano', authenticate, async (req, res
     const { professorId } = req.params;
     if (!ehProprioUsuario(req, professorId)) return res.status(403).json({ error: 'Acesso não autorizado.' });
     try {
-        const [planRes, countRes] = await Promise.all([
-            db.query(`SELECT plano FROM professores WHERE usuario_id = $1`, [professorId]),
+        const [plano, countRes] = await Promise.all([
+            planoDoUsuario(professorId),
             db.query(`SELECT COUNT(*) FROM vinculos WHERE professor_id = $1 AND status = 'ativo'`, [professorId]),
         ]);
-        const plano        = planRes.rows[0]?.plano || 'gratuito';
         const total_alunos = parseInt(countRes.rows[0]?.count || 0);
         const limite       = LIMITES_PLANO[plano] ?? null;
         res.json({ plano, total_alunos, limite, pode_adicionar: limite === null || total_alunos < limite });
@@ -125,12 +125,18 @@ router.post('/', authenticate, async (req, res) => {
         return res.status(403).json({ error: 'Acesso não autorizado.' });
     }
     try {
+        // O professor_id precisa ser de fato um professor
+        const prof = await db.query(
+            `SELECT 1 FROM usuarios WHERE id = $1 AND (funcao = 'Professor' OR funcao_extra = 'Professor')`,
+            [professor_id]
+        );
+        if (!prof.rows.length) return res.status(400).json({ error: 'Professor inválido.' });
+
         // Verifica limite do plano do professor
-        const [planRes, countRes] = await Promise.all([
-            db.query(`SELECT plano FROM professores WHERE usuario_id = $1`, [professor_id]),
+        const [plano, countRes] = await Promise.all([
+            planoDoUsuario(professor_id),
             db.query(`SELECT COUNT(*) FROM vinculos WHERE professor_id = $1 AND status = 'ativo'`, [professor_id]),
         ]);
-        const plano  = planRes.rows[0]?.plano || 'gratuito';
         const limite = LIMITES_PLANO[plano] ?? null;
         if (limite !== null && parseInt(countRes.rows[0].count) >= limite) {
             return res.status(403).json({ error: 'Limite de alunos do plano atingido.', code: 'LIMITE_PLANO' });
@@ -254,38 +260,45 @@ router.patch('/:id/aceitar', authenticate, async (req, res) => {
             return res.status(403).json({ error: 'Acesso não autorizado.' });
         }
 
-        await db.query('BEGIN');
+        const vinculo = await db.transaction(async (tx) => {
+            const { rows } = await tx.query(
+                `UPDATE vinculos SET status = 'ativo' WHERE id = $1 AND status = 'pendente' RETURNING *`,
+                [id]
+            );
+            if (!rows.length) return null;
+            const v = rows[0];
 
-        const { rows } = await db.query(
-            `UPDATE vinculos SET status = 'ativo' WHERE id = $1 AND status = 'pendente' RETURNING *`,
-            [id]
-        );
-        if (!rows.length) {
-            await db.query('ROLLBACK');
-            return res.status(404).json({ error: 'Pedido não encontrado ou já processado.' });
-        }
+            // O aluno pode ter aceitado outro professor depois deste pedido
+            const outro = await tx.query(
+                `SELECT 1 FROM vinculos WHERE aluno_id = $1 AND status = 'ativo' AND id != $2`,
+                [v.aluno_id, id]
+            );
+            if (outro.rows.length) {
+                const err = new Error('Aluno já possui um professor ativo.');
+                err.status = 409;
+                throw err;
+            }
 
-        const vinculo = rows[0];
+            await tx.query(
+                `UPDATE vinculos SET status = 'encerrado'
+                 WHERE aluno_id = $1 AND status = 'pendente' AND id != $2`,
+                [v.aluno_id, id]
+            );
 
-        await db.query(
-            `UPDATE vinculos SET status = 'encerrado'
-             WHERE aluno_id = $1 AND status = 'pendente' AND id != $2`,
-            [vinculo.aluno_id, id]
-        );
-
-        // Cria o chat entre professor e aluno (se ainda não existir)
-        await db.query(
-            `INSERT INTO chats (usuario1_id, usuario2_id)
-             SELECT $1, $2
-             WHERE NOT EXISTS (
-                 SELECT 1 FROM chats
-                 WHERE (usuario1_id = $1 AND usuario2_id = $2)
-                    OR (usuario1_id = $2 AND usuario2_id = $1)
-             )`,
-            [vinculo.professor_id, vinculo.aluno_id]
-        );
-
-        await db.query('COMMIT');
+            // Cria o chat entre professor e aluno (se ainda não existir)
+            await tx.query(
+                `INSERT INTO chats (usuario1_id, usuario2_id)
+                 SELECT $1, $2
+                 WHERE NOT EXISTS (
+                     SELECT 1 FROM chats
+                     WHERE (usuario1_id = $1 AND usuario2_id = $2)
+                        OR (usuario1_id = $2 AND usuario2_id = $1)
+                 )`,
+                [v.professor_id, v.aluno_id]
+            );
+            return v;
+        });
+        if (!vinculo) return res.status(404).json({ error: 'Pedido não encontrado ou já processado.' });
 
         // notifica ambos em tempo real
         req.io?.to(`user_${vinculo.professor_id}`).emit('atualizar_tela', { tipo: 'vinculos' });
@@ -305,7 +318,7 @@ router.patch('/:id/aceitar', authenticate, async (req, res) => {
 
         res.json(vinculo);
     } catch (err) {
-        await db.query('ROLLBACK').catch(() => {});
+        if (err.status === 409) return res.status(409).json({ error: err.message });
         console.error('Erro ao aceitar vínculo:', err);
         res.status(500).json({ error: 'Erro interno.' });
     }
@@ -366,33 +379,29 @@ router.delete('/:id', authenticate, async (req, res) => {
             return res.status(403).json({ error: 'Acesso não autorizado.' });
         }
 
-        await db.query('BEGIN');
+        const encerrado = await db.transaction(async (tx) => {
+            const { rows } = await tx.query(
+                `UPDATE vinculos SET status = 'encerrado'
+                 WHERE id = $1 AND status = 'ativo'
+                 RETURNING *`,
+                [id]
+            );
+            if (!rows.length) return null;
+            const { professor_id, aluno_id } = rows[0];
 
-        const { rows } = await db.query(
-            `UPDATE vinculos SET status = 'encerrado'
-             WHERE id = $1 AND status = 'ativo'
-             RETURNING *`,
-            [id]
-        );
-        if (!rows.length) {
-            await db.query('ROLLBACK');
-            return res.status(404).json({ error: 'Vínculo não encontrado.' });
-        }
+            // Arquiva o chat entre os dois
+            await tx.query(
+                `UPDATE chats SET arquivado = TRUE
+                 WHERE (usuario1_id = $1 AND usuario2_id = $2)
+                    OR (usuario1_id = $2 AND usuario2_id = $1)`,
+                [professor_id, aluno_id]
+            );
+            return rows[0];
+        });
+        if (!encerrado) return res.status(404).json({ error: 'Vínculo não encontrado.' });
 
-        const { professor_id, aluno_id } = rows[0];
-
-        // Arquiva o chat entre os dois
-        await db.query(
-            `UPDATE chats SET arquivado = TRUE
-             WHERE (usuario1_id = $1 AND usuario2_id = $2)
-                OR (usuario1_id = $2 AND usuario2_id = $1)`,
-            [professor_id, aluno_id]
-        );
-
-        await db.query('COMMIT');
         res.json({ message: 'Vínculo encerrado.' });
     } catch (err) {
-        await db.query('ROLLBACK').catch(() => {});
         console.error('Erro ao encerrar vínculo:', err);
         res.status(500).json({ error: 'Erro interno.' });
     }

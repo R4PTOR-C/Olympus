@@ -1,6 +1,8 @@
 const express = require('express');
 const db = require('./db');
 const { authenticate, requireVinculo, verificarVinculo } = require('./middleware/auth');
+const { processarEvento } = require('./gamificacao_engine');
+const { hojeSP } = require('./config/datas');
 const router = express.Router();
 
 // Lista sessões de um usuário (com join no nome do exercício)
@@ -31,6 +33,9 @@ router.get('/usuarios/:usuarioId', authenticate, requireVinculo('usuarioId'), as
 // Cria uma sessão de cardio
 router.post('/', authenticate, async (req, res) => {
     const { usuario_id, exercicio_id, duracao_min, distancia_km, data } = req.body;
+    if (!exercicio_id || !(Number(duracao_min) > 0)) {
+        return res.status(400).json({ error: 'Exercício e duração são obrigatórios.' });
+    }
     try {
         if (!(await verificarVinculo(req, usuario_id))) {
             return res.status(403).json({ error: 'Acesso não autorizado.' });
@@ -38,10 +43,9 @@ router.post('/', authenticate, async (req, res) => {
         const { rows } = await db.query(
             `INSERT INTO cardio_sessoes (usuario_id, exercicio_id, duracao_min, distancia_km, data)
              VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-            [usuario_id, exercicio_id, duracao_min, distancia_km || null, data || new Date().toISOString().split('T')[0]]
+            [usuario_id, exercicio_id, duracao_min, distancia_km || null, data || hojeSP()]
         );
 
-        const { processarEvento } = require('./gamificacao_engine');
         await processarEvento('cardio_registrado', usuario_id);
 
         res.status(201).json(rows[0]);

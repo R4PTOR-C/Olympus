@@ -20,7 +20,7 @@ export default function BadgeLosangos() {
                 <h1 style={S.h1}>Badge grego — variações de losango</h1>
                 <p style={S.sub}>
                     Aro, grega e losangos desenhados em SVG. A figura central é o recorte do
-                    <code style={S.code}>badge-nivel-1-1.png</code> (branco + alpha), tingida pela cor escolhida.
+                    <code style={S.code}>badge-nivel-1-1.webp</code> (branco + alpha), tingida pela cor escolhida.
                 </p>
 
                 <div style={S.controles}>
@@ -61,9 +61,9 @@ export default function BadgeLosangos() {
                 <h2 style={S.h2}>Comparação com o PNG original</h2>
                 <div style={S.grid}>
                     <div style={S.card}>
-                        <img src="/badge-nivel-1-1.png" alt="original" style={{ width: tamanho, height: tamanho }} />
+                        <img src="/badge-nivel-1-1.webp" alt="original" style={{ width: tamanho, height: tamanho }} />
                         <div style={S.cardTitulo}>PNG original</div>
-                        <div style={S.cardDesc}>badge-nivel-1-1.png</div>
+                        <div style={S.cardDesc}>badge-nivel-1-1.webp</div>
                     </div>
                     <div style={S.card}>
                         <BadgeGrego gemas={3} cor={cor} tamanho={tamanho} />

@@ -56,36 +56,23 @@ function Home() {
                     setLoading(false);
                 }
             })
-            .catch(err => {
-                console.error('Erro ao verificar sessão:', err);
+            .catch(() => {
                 setError('Erro ao verificar sessão');
                 setLoading(false);
             });
+    // fetchTreinos só chama setState (estável); não precisa ser dependência
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [navigate, darkMode]);
 
     const refresh = useCallback(async () => {
         const token = localStorage.getItem('token');
         if (user.userId && token) await fetchTreinos(user.userId, token);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user.userId]);
 
     useSocketRefresh(refresh);
 
-    const handleAbandonarTreino = async () => {
-        if (!treinoAtivo?.treino_realizado_id) return;
-        const token = localStorage.getItem('token');
-        try {
-            const res = await fetch(
-                `${process.env.REACT_APP_API_BASE_URL}/treinos/treinos_realizados/${treinoAtivo.treino_realizado_id}/finalizar`,
-                { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
-            );
-            if (res.ok) setTreinoAtivo(null);
-        } catch {
-            console.error('Erro ao abandonar treino');
-        }
-    };
-
     const fetchTreinoAtivo = async (userId, token) => {
-        console.log('[Home] fetchTreinoAtivo chamado, userId:', userId);
         try {
             const res = await fetch(
                 `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treino-ativo`,
@@ -100,7 +87,6 @@ function Home() {
     };
 
     const fetchTreinos = async (userId, token) => {
-        console.log('[Home] fetchTreinos chamado, userId:', userId);
         try {
             const response = await fetch(
                 `${process.env.REACT_APP_API_BASE_URL}/treinos/usuarios/${userId}/treinos`,

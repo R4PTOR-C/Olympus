@@ -1,6 +1,8 @@
 const express = require('express');
 const db      = require('./db');
 const { authenticate, requireVinculo, verificarVinculo } = require('./middleware/auth');
+const { processarEvento } = require('./gamificacao_engine');
+const { hojeSP, sqlDiaSP } = require('./config/datas');
 const router  = express.Router();
 
 const calcularMeta = (peso) => Math.round((peso * 35) / 50) * 50;
@@ -9,13 +11,13 @@ const calcularMeta = (peso) => Math.round((peso * 35) / 50) * 50;
 // Retorna total consumido hoje, meta e lista de registros
 router.get('/usuarios/:userId/hoje', authenticate, requireVinculo('userId'), async (req, res) => {
     const { userId } = req.params;
-    const hoje = new Date().toISOString().split('T')[0];
+    const hoje = hojeSP();
     try {
         const [registrosRes, usuarioRes] = await Promise.all([
             db.query(
                 `SELECT id, ml, created_at
                  FROM agua_registros
-                 WHERE usuario_id = $1 AND created_at::date = $2
+                 WHERE usuario_id = $1 AND ${sqlDiaSP('created_at')} = $2::date
                  ORDER BY created_at ASC`,
                 [userId, hoje]
             ),
@@ -40,15 +42,14 @@ router.get('/usuarios/:userId/hoje', authenticate, requireVinculo('userId'), asy
 // Adiciona um registro de consumo
 router.post('/usuarios/:userId', authenticate, requireVinculo('userId'), async (req, res) => {
     const { userId } = req.params;
-    const { ml } = req.body;
-    if (!ml || ml <= 0) return res.status(400).json({ error: 'ml inválido.' });
+    const ml = Number(req.body.ml);
+    if (!Number.isInteger(ml) || ml <= 0 || ml > 5000) return res.status(400).json({ error: 'ml inválido.' });
     try {
         const { rows } = await db.query(
             `INSERT INTO agua_registros (usuario_id, ml) VALUES ($1, $2) RETURNING *`,
             [userId, ml]
         );
 
-        const { processarEvento } = require('./gamificacao_engine');
         const gamResult = await processarEvento('agua_adicionada', userId);
 
         res.status(201).json({ ...rows[0], xp_ganho: gamResult.xp_ganho, completados: gamResult.completados });
@@ -80,8 +81,8 @@ router.delete('/registros/:id', authenticate, async (req, res) => {
 // Atualiza a meta diária do usuário
 router.put('/usuarios/:userId/meta', authenticate, requireVinculo('userId'), async (req, res) => {
     const { userId } = req.params;
-    const { meta_agua_ml } = req.body;
-    if (!meta_agua_ml || meta_agua_ml < 500 || meta_agua_ml > 6000)
+    const meta_agua_ml = Number(req.body.meta_agua_ml);
+    if (!Number.isInteger(meta_agua_ml) || meta_agua_ml < 500 || meta_agua_ml > 6000)
         return res.status(400).json({ error: 'Meta inválida.' });
     try {
         await db.query(
