@@ -2,7 +2,7 @@
 const express = require('express');
 const db      = require('./db');
 const { enviarPush } = require('./push');
-const { authenticate } = require('./middleware/auth');
+const { authenticate, existeBloqueio, SQL_SEM_BLOQUEIO } = require('./middleware/auth');
 const { planoDoUsuario } = require('./assinaturas');
 const router  = express.Router();
 
@@ -80,8 +80,9 @@ router.get('/professores-disponiveis', authenticate, async (req, res) => {
             LEFT JOIN professores p ON p.usuario_id = u.id
             WHERE u.funcao = 'Professor'
               AND u.procurando = TRUE
+              AND ${SQL_SEM_BLOQUEIO('u.id', '$1')}
             ORDER BY u.nome
-        `);
+        `, [req.user.userId]);
         res.json(rows);
     } catch (err) {
         console.error('Erro ao buscar professores disponíveis:', err);
@@ -103,8 +104,9 @@ router.get('/alunos-disponiveis', authenticate, async (req, res) => {
             FROM usuarios u
             WHERE u.funcao = 'Aluno'
               AND u.procurando = TRUE
+              AND ${SQL_SEM_BLOQUEIO('u.id', '$1')}
             ORDER BY u.nome
-        `);
+        `, [req.user.userId]);
         res.json(rows);
     } catch (err) {
         console.error('Erro ao buscar alunos disponíveis:', err);
@@ -126,6 +128,10 @@ router.post('/', authenticate, async (req, res) => {
     }
     try {
         // O professor_id precisa ser de fato um professor
+        if (await existeBloqueio(professor_id, aluno_id)) {
+            return res.status(403).json({ error: 'Não é possível se conectar com este usuário.' });
+        }
+
         const prof = await db.query(
             `SELECT 1 FROM usuarios WHERE id = $1 AND (funcao = 'Professor' OR funcao_extra = 'Professor')`,
             [professor_id]

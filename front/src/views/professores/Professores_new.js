@@ -6,6 +6,7 @@ import LocationPicker from '../components/LocationPicker';
 import CalendarioData, { normalizarData } from '../components/CalendarioData';
 import '../../styles/Auth.css';
 import '../../styles/ModalEdicaoCampo.css';
+import { URL_PRIVACIDADE, URL_TERMOS } from '../../utils/links';
 
 const maskCref = (v) => {
     const clean = v.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
@@ -402,6 +403,12 @@ function Professor_new() {
                         <button type="submit" className="auth-btn" disabled={loading}>
                             {loading ? 'Cadastrando...' : 'Cadastrar Professor'}
                         </button>
+
+                        <p className="auth-footer-text" style={{ fontSize: '0.75rem', marginTop: 12, textAlign: 'center' }}>
+                            Ao criar a conta, você concorda com os{' '}
+                            <a href={URL_TERMOS} target="_blank" rel="noopener noreferrer">Termos de Uso</a>{' '}e a{' '}
+                            <a href={URL_PRIVACIDADE} target="_blank" rel="noopener noreferrer">Política de Privacidade</a>.
+                        </p>
                     </form>
                 </div>
 

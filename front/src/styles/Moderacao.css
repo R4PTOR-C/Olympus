@@ -1,0 +1,205 @@
+/* Denúncia e bloqueio — mesma linguagem visual dos modais .mcf-* */
+
+/* ── Modal de denúncia ── */
+.md-sheet {
+    max-height: 92dvh;
+    overflow-y: auto;
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+}
+
+.md-motivos {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 6px 0 2px;
+}
+
+.md-motivo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    color: #e8edf5;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-align: left;
+}
+
+.md-motivo input { accent-color: #4A90D9; margin: 0; }
+
+.md-motivo.ativo {
+    border-color: rgba(74, 144, 217, 0.6);
+    background: rgba(74, 144, 217, 0.1);
+}
+
+.md-detalhes {
+    width: 100%;
+    min-height: 72px;
+    resize: vertical;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: #e8edf5;
+    font: inherit;
+    font-size: 0.85rem;
+}
+
+.md-detalhes::placeholder { color: rgba(200, 209, 220, 0.4); }
+
+.md-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    color: rgba(200, 209, 220, 0.75);
+    cursor: pointer;
+}
+
+.md-check input { accent-color: #e05c5c; width: 16px; height: 16px; margin: 0; }
+
+.md-erro {
+    font-size: 0.8rem;
+    color: #e05c5c;
+    margin: 0;
+}
+
+.md-citacao {
+    margin: 0;
+    padding: 8px 12px;
+    border-left: 3px solid rgba(74, 144, 217, 0.5);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.8rem;
+    color: rgba(200, 209, 220, 0.75);
+    max-height: 96px;
+    overflow: hidden;
+    white-space: pre-wrap;
+}
+
+/* ── Menu "⋮" de ações sobre um usuário ── */
+.md-acoes { position: relative; flex-shrink: 0; }
+
+.md-acoes-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: inherit;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.md-acoes-menu {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    z-index: 50;
+    min-width: 190px;
+    padding: 6px;
+    border-radius: 12px;
+    background: #151b28;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+}
+
+.md-acoes-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #e8edf5;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.md-acoes-item:hover, .md-acoes-item:focus-visible { background: rgba(255, 255, 255, 0.06); }
+.md-acoes-item.perigoso { color: #e05c5c; }
+
+/* ── Aviso no lugar do campo de mensagem ── */
+.md-chat-bloqueado {
+    padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--hc-text-dim, rgba(200, 209, 220, 0.6));
+    border-top: 1px solid rgba(128, 128, 128, 0.15);
+}
+
+/* Link "Denunciar" embaixo de uma mensagem recebida */
+.md-msg-denunciar {
+    margin-top: 4px;
+    padding: 2px 0;
+    border: none;
+    background: none;
+    color: #e05c5c;
+    font-size: 0.72rem;
+    cursor: pointer;
+}
+
+/* ── Lista de bloqueados (perfil) ── */
+.md-bloqueados { padding: 0 16px 20px; }
+
+.md-bloqueados-titulo {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin: 0 0 8px;
+}
+
+.md-bloqueado {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    margin-bottom: 6px;
+}
+
+.md-bloqueado img, .md-bloqueado-sem-foto {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--color-border);
+    flex-shrink: 0;
+}
+
+.md-bloqueado-nome {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.85rem;
+    color: var(--color-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.md-bloqueado button {
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-accent);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.md-vazio { font-size: 0.8rem; color: var(--color-text-dim); margin: 0; }

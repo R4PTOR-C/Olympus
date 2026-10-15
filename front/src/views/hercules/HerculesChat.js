@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useContext } from 'react';
 import { AuthContext } from '../../AuthContext';
 import HerculesSidebar from './HerculesSidebar';
 import '../../styles/HerculesChat.css';
+import ModalDenuncia from '../components/ModalDenuncia';
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
@@ -122,6 +123,7 @@ const LOADING_MSGS = [
 function HerculesChat() {
     const [msg, setMsg] = useState('');
     const [chat, setChat] = useState([]);
+    const [denunciada, setDenunciada] = useState(null); // resposta no modal de denúncia
     const [loading, setLoading] = useState(false);
     const [loadingMsg, setLoadingMsg] = useState(LOADING_MSGS[0]);
     const [copiedIdx, setCopiedIdx] = useState(null);
@@ -250,7 +252,7 @@ function HerculesChat() {
             setChat(prev => [...prev, { autor: 'Hércules', texto: data.texto, meta: data }]);
         } catch (err) {
             const textoErro = `⚠️ ${err.daApi ? err.message : 'Erro ao falar com Hércules.'} Tente novamente.`;
-            setChat(prev => [...prev, { autor: 'Hércules', texto: textoErro }]);
+            setChat(prev => [...prev, { autor: 'Hércules', texto: textoErro, local: true }]);
         } finally {
             setLoading(false);
         }
@@ -264,6 +266,15 @@ function HerculesChat() {
 
     return (
         <div className="hc-container">
+
+            {denunciada && (
+                <ModalDenuncia
+                    tipo="hercules"
+                    dados={{ conteudo: denunciada.texto, conversa_id: conversaAtiva || undefined }}
+                    citacao={denunciada.texto}
+                    onClose={() => setDenunciada(null)}
+                />
+            )}
 
             <HerculesSidebar
                 aberta={sidebarAberta}
@@ -330,6 +341,19 @@ function HerculesChat() {
                                         </svg>
                                     )}
                                 </button>
+                                {/* Respostas da IA podem ser denunciadas (política de IA generativa da Play) */}
+                                {!c.local && (
+                                    <button
+                                        className="hc-btn-copy"
+                                        title="Denunciar resposta"
+                                        aria-label="Denunciar resposta"
+                                        onClick={() => setDenunciada(c)}
+                                    >
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
+                                        </svg>
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>

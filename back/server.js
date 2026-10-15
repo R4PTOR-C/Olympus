@@ -28,6 +28,7 @@ const cardioRouter  = require("./cardio");
 const aguaRouter         = require("./agua");
 const gamificacaoRouter  = require("./gamificacao");
 const assinaturasRouter  = require("./assinaturas");
+const moderacaoRouter    = require("./moderacao");
 
 // 🔹 Módulo separado para eventos de chat em tempo real
 const chatSocket = require("./socket/chatSocket");
@@ -114,6 +115,7 @@ app.use("/cardio",  cardioRouter);
 app.use("/agua",         aguaRouter);
 app.use("/gamificacao",  gamificacaoRouter);
 app.use("/assinaturas",  assinaturasRouter);
+app.use("/moderacao",    moderacaoRouter);
 
 // ------------------- ARQUIVOS ESTÁTICOS -------------------
 

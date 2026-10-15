@@ -3,6 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../AuthContext";
 import { io } from "socket.io-client";
 import '../../styles/HerculesChat.css';
+import AcoesUsuario from '../components/AcoesUsuario';
+import ModalDenuncia from '../components/ModalDenuncia';
+import { situacaoBloqueio } from '../../services/moderacao';
 
 function ChatView() {
     const { chatId }  = useParams();
@@ -14,6 +17,9 @@ function ChatView() {
     const [parceiro,        setParceiro]        = useState(null);
     const [usuarioDigitando,setUsuarioDigitando]= useState(false);
     const [digitando,       setDigitando]       = useState(false);
+    const [bloqueio,        setBloqueio]        = useState({ voce_bloqueou: false, bloqueado: false });
+    const [msgSelecionada,  setMsgSelecionada]  = useState(null); // id da mensagem com "Denunciar" visível
+    const [msgDenunciada,   setMsgDenunciada]   = useState(null); // mensagem no modal de denúncia
 
     const messagesEndRef = useRef(null);
     const socketRef      = useRef(null);
@@ -33,6 +39,10 @@ function ChatView() {
         socketRef.current.on("usuario_parou_digitar", (uid) => {
             if (uid !== userId) setUsuarioDigitando(false);
         });
+        // O servidor recusou a mensagem: existe bloqueio entre os dois
+        socketRef.current.on("mensagem_bloqueada", () => {
+            setBloqueio(prev => ({ ...prev, bloqueado: true }));
+        });
 
         return () => socketRef.current.disconnect();
     }, [API_URL, chatId, userId]);
@@ -50,12 +60,12 @@ function ChatView() {
                 const chat = await resChat.json();
                 const msgs = await resMsgs.json();
 
-                setParceiro(
-                    chat.usuario1_id === userId
-                        ? { nome: chat.nome2, avatar: chat.avatar2 }
-                        : { nome: chat.nome1, avatar: chat.avatar1 }
-                );
+                const p = chat.usuario1_id === userId
+                    ? { id: chat.usuario2_id, nome: chat.nome2, avatar: chat.avatar2 }
+                    : { id: chat.usuario1_id, nome: chat.nome1, avatar: chat.avatar1 };
+                setParceiro(p);
                 setMensagens(msgs);
+                situacaoBloqueio(p.id).then(setBloqueio).catch(() => {});
             } catch {
                 /* mantém a tela vazia; o usuário pode voltar e tentar de novo */
             }
@@ -131,6 +141,13 @@ function ChatView() {
                         {usuarioDigitando ? 'digitando...' : 'online'}
                     </div>
                 </div>
+
+                <AcoesUsuario
+                    usuarioId={parceiro?.id}
+                    nome={parceiro?.nome}
+                    voceBloqueou={bloqueio.voce_bloqueou}
+                    onAlterado={(bloqueado) => setBloqueio({ voce_bloqueou: bloqueado, bloqueado })}
+                />
             </div>
 
             {/* ── MENSAGENS ── */}
@@ -149,10 +166,22 @@ function ChatView() {
                     const hora = new Date(m.criado_em).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     return (
                         <div key={m.id} className={`hc-msg ${isMe ? 'me' : 'herc'}`}>
-                            <div className="hc-bubble">{m.conteudo}</div>
+                            {/* Tocar numa mensagem recebida mostra a opção de denunciar */}
+                            <div
+                                className="hc-bubble"
+                                onClick={isMe ? undefined : () => setMsgSelecionada(sel => (sel === m.id ? null : m.id))}
+                                style={isMe ? undefined : { cursor: 'pointer' }}
+                            >
+                                {m.conteudo}
+                            </div>
                             <span style={{ fontSize: '0.62rem', color: 'var(--hc-text-dim)', marginTop: 3, letterSpacing: '0.04em' }}>
                                 {hora}
                             </span>
+                            {!isMe && msgSelecionada === m.id && (
+                                <button className="md-msg-denunciar" onClick={() => { setMsgDenunciada(m); setMsgSelecionada(null); }}>
+                                    Denunciar mensagem
+                                </button>
+                            )}
                         </div>
                     );
                 })}
@@ -169,6 +198,13 @@ function ChatView() {
             </div>
 
             {/* ── INPUT ── */}
+            {bloqueio.bloqueado ? (
+                <div className="md-chat-bloqueado">
+                    {bloqueio.voce_bloqueou
+                        ? 'Você bloqueou este usuário. Desbloqueie pelo menu ⋮ para voltar a conversar.'
+                        : 'Não é possível enviar mensagens nesta conversa.'}
+                </div>
+            ) : (
             <form className="hc-input-bar" onSubmit={enviarMensagem}>
                 <input
                     className="hc-input"
@@ -185,6 +221,18 @@ function ChatView() {
                     </svg>
                 </button>
             </form>
+            )}
+
+            {msgDenunciada && (
+                <ModalDenuncia
+                    tipo="mensagem"
+                    dados={{ mensagem_id: msgDenunciada.id }}
+                    nome={parceiro?.nome}
+                    citacao={msgDenunciada.conteudo}
+                    onClose={() => setMsgDenunciada(null)}
+                    onEnviada={({ bloqueou }) => { if (bloqueou) setBloqueio({ voce_bloqueou: true, bloqueado: true }); }}
+                />
+            )}
 
         </div>
     );

@@ -3,3 +3,4 @@
 const SITE_URL = 'https://olympus-33lb.onrender.com';
 
 export const URL_PRIVACIDADE = `${SITE_URL}/privacidade.html`;
+export const URL_TERMOS = `${SITE_URL}/termos.html`;

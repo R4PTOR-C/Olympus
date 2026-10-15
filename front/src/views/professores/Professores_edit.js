@@ -5,7 +5,8 @@ import CropAvatar from '../components/CropAvatar';
 import LocationPicker from '../components/LocationPicker';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
 import ModalApagarConta from '../components/ModalApagarConta';
-import { URL_PRIVACIDADE } from '../../utils/links';
+import { URL_PRIVACIDADE, URL_TERMOS } from '../../utils/links';
+import BloqueadosLista from '../components/BloqueadosLista';
 import ModalConfirmar from '../components/ModalConfirmar';
 import PageStateHandler from '../components/PageStateHandler';
 import '../../styles/UsuariosEdit.css';
@@ -409,6 +410,8 @@ const ProfessoresEdit = () => {
                     onSelect={handleSalvarLocalizacao}
                 />
 
+                <BloqueadosLista />
+
                 {/* ── Apagar conta ── */}
                 <div style={{ padding: '0 16px 32px' }}>
                     <button
@@ -424,6 +427,14 @@ const ProfessoresEdit = () => {
                         style={{ display: 'block', marginTop: 14, textAlign: 'center', color: 'var(--ue-text-muted)', fontSize: '0.78rem' }}
                     >
                         Política de Privacidade
+                    </a>
+                    <a
+                        href={URL_TERMOS}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ display: 'block', marginTop: 8, textAlign: 'center', color: 'var(--ue-text-muted)', fontSize: '0.78rem' }}
+                    >
+                        Termos de Uso
                     </a>
                 </div>
 

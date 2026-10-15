@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('./db');
-const { authenticate } = require('./middleware/auth');
+const { authenticate, existeBloqueio } = require('./middleware/auth');
 
 // Helper: o usuário autenticado é participante do chat?
 async function ehParticipante(req, chatId) {
@@ -28,6 +28,10 @@ router.post('/iniciar', authenticate, async (req, res) => {
     }
 
     try {
+        if (await existeBloqueio(usuario1_id, usuario2_id)) {
+            return res.status(403).json({ error: 'Não é possível conversar com este usuário.', code: 'BLOQUEADO' });
+        }
+
         // Verifica se já existe um chat entre esses usuários
         const { rows: existentes } = await db.query(
             `SELECT * FROM chats
@@ -153,6 +157,10 @@ router.post('/mensagens', authenticate, async (req, res) => {
     try {
         if (!(await ehParticipante(req, chat_id))) {
             return res.status(403).json({ error: 'Acesso não autorizado.' });
+        }
+        const { rows: chat } = await db.query('SELECT usuario1_id, usuario2_id FROM chats WHERE id = $1', [chat_id]);
+        if (await existeBloqueio(chat[0].usuario1_id, chat[0].usuario2_id)) {
+            return res.status(403).json({ error: 'Não é possível conversar com este usuário.', code: 'BLOQUEADO' });
         }
         const { rows } = await db.query(
             `INSERT INTO mensagens (chat_id, remetente_id, conteudo)

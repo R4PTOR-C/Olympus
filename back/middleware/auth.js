@@ -80,6 +80,27 @@ async function saoAmigos(userIdA, userIdB) {
     return rows.length > 0;
 }
 
+// Existe bloqueio entre dois usuários, em qualquer sentido? Bloqueio impede
+// contato nos dois sentidos (mensagem, amizade, conexão professor ↔ aluno).
+async function existeBloqueio(userIdA, userIdB) {
+    const { rows } = await db.query(
+        `SELECT 1 FROM bloqueios
+         WHERE (bloqueador_id = $1 AND bloqueado_id = $2)
+            OR (bloqueador_id = $2 AND bloqueado_id = $1)
+         LIMIT 1`,
+        [userIdA, userIdB]
+    );
+    return rows.length > 0;
+}
+
+// Trecho de SQL para tirar de listagens os usuários bloqueados (nos dois
+// sentidos). `colunaUsuario` = coluna com o id listado; `param` = $n do usuário logado.
+const SQL_SEM_BLOQUEIO = (colunaUsuario, param) => `NOT EXISTS (
+    SELECT 1 FROM bloqueios bl
+    WHERE (bl.bloqueador_id = ${param} AND bl.bloqueado_id = ${colunaUsuario})
+       OR (bl.bloqueador_id = ${colunaUsuario} AND bl.bloqueado_id = ${param})
+)`;
+
 // Carrega um treino e verifica o acesso.
 //   modo 'escrita' → dono ou professor vinculado
 //   modo 'leitura' → também amigos aceitos (podem ver e copiar)
@@ -118,6 +139,8 @@ module.exports = {
     requireVinculo,
     verificarVinculo,
     saoAmigos,
+    existeBloqueio,
+    SQL_SEM_BLOQUEIO,
     ehAdmin,
     ehProprioUsuario,
     autorizarTreino,

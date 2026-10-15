@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import '../../styles/UsuariosView.css';
 import '../../styles/TreinosForm.css';
 import '../../styles/Social.css';
 import PullToRefresh from '../components/PullToRefresh';
 import BadgeNivel from '../components/BadgeNivel';
+import AcoesUsuario from '../components/AcoesUsuario';
 
 const API = process.env.REACT_APP_API_BASE_URL;
 const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
@@ -25,6 +26,7 @@ export default function AmigoTreinos() {
     const { amigoId } = useParams();
     const { state }   = useLocation();
     const { userId }  = useContext(AuthContext);
+    const navigate    = useNavigate();
 
     const nomeAmigo   = state?.nome || 'Amigo';
     const avatarAmigo = state?.avatar || null;
@@ -132,6 +134,15 @@ export default function AmigoTreinos() {
             <PullToRefresh onRefresh={carregar} />
 
             {/* ── HEADER ── */}
+            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 5, color: '#fff' }}>
+                {/* Bloquear desfaz a amizade: volta para a tela social */}
+                <AcoesUsuario
+                    usuarioId={Number(amigoId)}
+                    nome={nomeAmigo}
+                    onAlterado={(bloqueado) => { if (bloqueado) navigate('/social', { replace: true }); }}
+                />
+            </div>
             <div className="uv-header">
                 {avatarAmigo ? (
                     <img src={avatarAmigo} alt={nomeAmigo} className="uv-avatar" />
@@ -144,6 +155,7 @@ export default function AmigoTreinos() {
                 )}
                 <h1 className="uv-user-name">{nomeAmigo}</h1>
                 <div style={{ marginTop: 12 }}><BadgeNivel nivel={nivelAmigo} variant="full" expansivel /></div>
+            </div>
             </div>
 
             {/* ── BOARD (somente leitura, exercícios em dropdown) ── */}

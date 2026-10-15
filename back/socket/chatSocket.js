@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config/jwt");
 const { enviarPush } = require("../push");
+const { existeBloqueio } = require("../middleware/auth");
 
 const MAX_MENSAGEM = 2000;
 
@@ -55,6 +56,13 @@ module.exports = (io, db) => {
                 const chat = await ehParticipante(socket.userId, chatId);
                 if (!chat) return;
 
+                // Bloqueio em qualquer sentido impede a conversa
+                const outroId = chat.usuario1_id === socket.userId ? chat.usuario2_id : chat.usuario1_id;
+                if (await existeBloqueio(socket.userId, outroId)) {
+                    socket.emit("mensagem_bloqueada", { chat_id: chatId });
+                    return;
+                }
+
                 const { rows } = await db.query(
                     `INSERT INTO mensagens (chat_id, remetente_id, conteudo)
                      VALUES ($1, $2, $3)
@@ -65,8 +73,7 @@ module.exports = (io, db) => {
 
                 // notificação para o destinatário (opcional: falha não afeta o envio)
                 try {
-                    const destinatarioId = chat.usuario1_id === socket.userId
-                        ? chat.usuario2_id : chat.usuario1_id;
+                    const destinatarioId = outroId;
                     const senderRes = await db.query("SELECT nome FROM usuarios WHERE id = $1", [socket.userId]);
                     const senderName = senderRes.rows[0]?.nome || "Mensagem";
                     // notifica sala pessoal (badge na navbar)
