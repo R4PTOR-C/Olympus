@@ -73,8 +73,10 @@ export const AuthProvider = ({ children }) => {
                 setUser({ loggedIn: false });
             }
             setLoading(false);
+            // Com ?splash na URL a splash fica parada na tela (para revisar o visual)
+            const fixarSplash = new URLSearchParams(window.location.search).has('splash');
             const splash = document.getElementById('splash');
-            if (splash) {
+            if (splash && !fixarSplash) {
                 splash.classList.add('hide');
                 setTimeout(() => splash.remove(), 380);
             }
