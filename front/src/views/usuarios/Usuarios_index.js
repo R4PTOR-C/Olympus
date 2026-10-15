@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import useSocketRefresh from '../../hooks/useSocketRefresh';
 import PlanosModal from '../professores/PlanosModal';
+import { billingDisponivel, iniciarBilling, ouvirBilling } from '../../services/billing';
 import '../../styles/home.css';
 import '../../styles/AlunosIndex.css';
 import '../../styles/Vinculos.css';
@@ -12,14 +13,32 @@ const API = process.env.REACT_APP_API_BASE_URL;
 function PlanoBanner({ statusPlano, onVerPlanos }) {
     if (!statusPlano) return null;
     const { plano, total_alunos, limite } = statusPlano;
-    if (!limite) return null;
+    const nomePlano = plano.charAt(0).toUpperCase() + plano.slice(1);
+
+    // Plano sem limite (Elite): faixa simples, mas com acesso aos planos
+    // (é por lá que se gerencia a assinatura)
+    if (!limite) {
+        return (
+            <div style={{
+                margin: '0 16px 14px', padding: '10px 14px', borderRadius: 14,
+                background: 'rgba(74,144,217,0.06)', border: '1px solid rgba(74,144,217,0.15)',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#4A90D9', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.03em' }}>
+                    {total_alunos} alunos · Plano {nomePlano} · ilimitado
+                </span>
+                <button onClick={onVerPlanos} style={{ background: 'none', border: 'none', color: '#4A90D9', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', fontFamily: "'Barlow', sans-serif", padding: 0 }}>
+                    Meu plano →
+                </button>
+            </div>
+        );
+    }
 
     const pct       = total_alunos / limite;
     const restantes = limite - total_alunos;
     const atingido  = total_alunos >= limite;
     const alerta    = !atingido && pct >= 0.7;
     const cor       = atingido ? '#FC8181' : alerta ? '#F6AD55' : '#4A90D9';
-    const nomePlano = plano.charAt(0).toUpperCase() + plano.slice(1);
 
     return (
         <div style={{
@@ -53,10 +72,10 @@ function PlanoBanner({ statusPlano, onVerPlanos }) {
 
             <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', fontFamily: "'Barlow', sans-serif" }}>
                 {atingido
-                    ? 'Limite atingido. Assine um plano para adicionar mais alunos.'
+                    ? `Limite atingido. ${plano === 'gratuito' ? 'Assine' : 'Mude para'} um plano maior para adicionar mais alunos.`
                     : alerta
-                    ? `Restam apenas ${restantes} vaga${restantes !== 1 ? 's' : ''} no plano gratuito.`
-                    : `${restantes} vagas disponíveis no plano gratuito.`
+                    ? `Restam apenas ${restantes} vaga${restantes !== 1 ? 's' : ''} no plano ${nomePlano}.`
+                    : `${restantes} vaga${restantes !== 1 ? 's' : ''} disponíve${restantes !== 1 ? 'is' : 'l'} no plano ${nomePlano}.`
                 }
             </span>
         </div>
@@ -121,6 +140,14 @@ const Usuarios_index = () => {
     }, [userId, token]);
 
     useEffect(() => { carregar(); clearMensagensNaoLidas(); }, [carregar, clearMensagensNaoLidas]);
+
+    // Billing ligado assim que o professor entra (no app Android): compras
+    // reentregues pela Google são confirmadas mesmo sem abrir a tela de planos.
+    useEffect(() => {
+        if (!billingDisponivel() || !userId) return undefined;
+        iniciarBilling({ usuarioId: userId });
+        return ouvirBilling({ onPlanoAtualizado: carregar });
+    }, [userId, carregar]);
     useSocketRefresh(carregar);
 
     const toggleProcurando = async () => {

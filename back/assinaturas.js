@@ -100,6 +100,8 @@ function interpretar(compra) {
         autoRenova: Boolean(item?.autoRenewingPlan?.autoRenewEnabled),
         orderId: compra.latestOrderId || null,
         precisaConfirmar: compra.acknowledgementState === 'ACKNOWLEDGEMENT_STATE_PENDING',
+        // Troca de plano (upgrade/downgrade): token da assinatura que esta substitui
+        tokenSubstituido: compra.linkedPurchaseToken || null,
         contaExterna: compra.externalAccountIdentifiers?.obfuscatedExternalAccountId || null,
         teste: Boolean(compra.testPurchase),
     };
@@ -158,6 +160,20 @@ async function sincronizar(purchaseToken, usuarioId = null) {
 
     await gravar(alvo, purchaseToken, dados);
 
+    // Upgrade imediato (ex: Pro → Elite): a assinatura antiga deixa de valer
+    // agora. Num downgrade (Elite → Pro, modo DEFERRED) a antiga continua até
+    // vencer — o plano vigente é sempre o maior entre as ativas.
+    if (dados.tokenSubstituido && dados.temDireito) {
+        await db.query(
+            `UPDATE assinaturas
+                SET status = 'substituida', auto_renova = FALSE, atualizado_em = NOW()
+              WHERE store = 'google' AND purchase_token = $1 AND usuario_id = $2
+                AND CASE plano WHEN 'elite' THEN 2 WHEN 'pro' THEN 1 ELSE 0 END
+                    <= CASE $3::text WHEN 'elite' THEN 2 WHEN 'pro' THEN 1 ELSE 0 END`,
+            [dados.tokenSubstituido, alvo, dados.plano]
+        );
+    }
+
     // Sem acknowledge em até 3 dias o Google estorna a compra automaticamente.
     if (dados.precisaConfirmar) {
         try {
@@ -178,23 +194,31 @@ async function sincronizar(purchaseToken, usuarioId = null) {
 // ─────────────────────────────────────────
 router.get('/minha', authenticate, async (req, res) => {
     const usuarioId = parseInt(req.user.userId);
-    try {
-        const [plano, { rows }] = await Promise.all([
-            planoDoUsuario(usuarioId),
-            db.query(
-                `SELECT store, product_id, plano, status, expira_em, auto_renova, ambiente_teste
-                   FROM assinaturas
-                  WHERE usuario_id = $1
-                  ORDER BY atualizado_em DESC
-                  LIMIT 1`,
-                [usuarioId]
-            ),
-        ]);
-        res.json({ plano, assinatura: rows[0] || null });
-    } catch (err) {
-        console.error('Erro ao buscar assinatura:', err);
-        res.status(500).json({ error: 'Erro interno.' });
-    }
+    const [plano, { rows }, ativa] = await Promise.all([
+        planoDoUsuario(usuarioId),
+        db.query(
+            `SELECT store, product_id, plano, status, expira_em, auto_renova, ambiente_teste
+               FROM assinaturas
+              WHERE usuario_id = $1
+              ORDER BY atualizado_em DESC
+              LIMIT 1`,
+            [usuarioId]
+        ),
+        // Assinatura que hoje dá o plano: o app precisa do token dela para
+        // TROCAR de plano (upgrade/downgrade) em vez de criar uma segunda.
+        db.query(
+            `SELECT plano, product_id, purchase_token
+               FROM assinaturas
+              WHERE usuario_id = $1 AND store = 'google'
+                AND status = ANY($2::text[])
+                AND (expira_em IS NULL OR expira_em > NOW())
+              ORDER BY CASE plano WHEN 'elite' THEN 2 WHEN 'pro' THEN 1 ELSE 0 END DESC,
+                       expira_em DESC NULLS LAST
+              LIMIT 1`,
+            [usuarioId, STATUS_COM_DIREITO]
+        ),
+    ]);
+    res.json({ plano, assinatura: rows[0] || null, ativa: ativa.rows[0] || null });
 });
 
 // ─────────────────────────────────────────

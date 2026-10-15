@@ -43,24 +43,36 @@ export async function buscarMinhaAssinatura() {
     return res.json();
 }
 
-// ── Inicialização ────────────────────────────────────────────────────────────
+// ── Inicialização ───────────────────────────────────────────────────────────
 
 let promessaInit = null;
-let aoAtualizarPlano = null;
-let aoFalhar = null;
+
+// Várias telas podem querer saber quando o plano muda (a tela de alunos e o
+// modal de planos). Cada uma se inscreve e se desinscreve ao desmontar.
+const ouvintes = new Set();
+const avisar = (evento, ...args) => ouvintes.forEach(o => o[evento]?.(...args));
+
+/**
+ * Escuta eventos do billing. Devolve a função para parar de escutar.
+ *   onPlanoAtualizado(plano) — backend confirmou uma compra
+ *   onPendente()             — pagamento pendente (Pix/boleto): libera quando a Google confirmar
+ *   onErro(mensagem)         — a compra foi feita mas a validação falhou
+ */
+export function ouvirBilling(ouvinte) {
+    ouvintes.add(ouvinte);
+    return () => ouvintes.delete(ouvinte);
+}
 
 /**
  * Inicializa o billing. Pode ser chamado várias vezes — só roda de fato uma.
+ * Deve ser chamado assim que o professor entra no app (não só ao abrir os
+ * planos): compras cuja validação falhou são reentregues pela Google na
+ * abertura do app, e precisam ser confirmadas em até 3 dias ou são estornadas.
  *
- * @param usuarioId        id do professor logado (vira o obfuscatedAccountId na Google)
- * @param onPlanoAtualizado callback(plano) quando o backend confirma uma compra
- * @param onErro            callback(mensagem) quando a validação da compra falha
+ * @param usuarioId id do professor logado (vira o obfuscatedAccountId na Google)
  * @returns Promise<boolean> true se o billing está de pé
  */
-export function iniciarBilling({ usuarioId, onPlanoAtualizado, onErro }) {
-    aoAtualizarPlano = onPlanoAtualizado;
-    aoFalhar = onErro;
-
+export function iniciarBilling({ usuarioId }) {
     const store = getStore();
     if (!store) return Promise.resolve(false);
     if (promessaInit) return promessaInit;
@@ -82,31 +94,31 @@ export function iniciarBilling({ usuarioId, onPlanoAtualizado, onErro }) {
         }))
     );
 
-    store.when().approved(async (transaction) => {
-        const purchaseToken = transaction.nativePurchase?.purchaseToken;
-        if (!purchaseToken) return;
-        try {
-            const { plano } = await validarNoBackend(purchaseToken);
-            // Só finaliza depois que o servidor reconheceu a compra.
-            await transaction.finish();
-            aoAtualizarPlano?.(plano);
-        } catch (err) {
-            // Não finaliza: a Google reentrega a transação na próxima abertura
-            // do app, e o backend também confirma pelo RTDN. Mas o usuário
-            // precisa sair do estado "comprando", senão o botão trava.
-            console.error('Falha ao validar compra:', err);
-            aoFalhar?.(
-                'O pagamento foi feito, mas não conseguimos confirmar agora. ' +
-                'Abra o app de novo em instantes ou use "Restaurar compras".'
-            );
-        }
-    });
+    store.when()
+        .pending(() => avisar('onPendente'))
+        .approved(async (transaction) => {
+            const purchaseToken = transaction.nativePurchase?.purchaseToken;
+            if (!purchaseToken) return;
+            try {
+                const { plano } = await validarNoBackend(purchaseToken);
+                // Só finaliza depois que o servidor reconheceu a compra.
+                await transaction.finish();
+                avisar('onPlanoAtualizado', plano);
+            } catch {
+                // Não finaliza: a Google reentrega a transação na próxima abertura
+                // do app, e o backend também confirma pelo RTDN. Mas o usuário
+                // precisa sair do estado "comprando", senão o botão trava.
+                avisar('onErro',
+                    'O pagamento foi feito, mas não conseguimos confirmar agora. ' +
+                    'Abra o app de novo em instantes ou use "Restaurar compras".'
+                );
+            }
+        });
 
     promessaInit = store
         .initialize([Platform.GOOGLE_PLAY])
         .then(() => true)
-        .catch((err) => {
-            console.error('Falha ao inicializar billing:', err);
+        .catch(() => {
             promessaInit = null;
             return false;
         });
@@ -130,17 +142,46 @@ export function precoDaLoja(plano) {
     return fases[fases.length - 1].price || null;
 }
 
-/** Abre o fluxo de compra da Google. Resolve quando a folha de pagamento fecha. */
-export async function assinar(plano) {
+const ORDEM_PLANO = { gratuito: 0, pro: 1, elite: 2 };
+
+/**
+ * Abre o fluxo de compra da Google. Resolve quando a folha de pagamento fecha.
+ * Devolve false se o usuário só fechou a folha (cancelou), true se seguiu.
+ *
+ * `ativa` = assinatura vigente ({ plano, purchase_token }, de /assinaturas/minha).
+ * Com ela, a compra vira TROCA de plano: a Google substitui a assinatura
+ * antiga em vez de criar uma segunda (o que cobraria as duas).
+ *   upgrade   → vale na hora, cobrando só a diferença proporcional
+ *   downgrade → vale quando o período já pago acabar
+ */
+export async function assinar(plano, ativa = null) {
     const store = getStore();
     if (!store) throw new Error('Assinatura disponível apenas no aplicativo.');
 
-    const produto = store.get(PRODUTOS[plano], window.CdvPurchase.Platform.GOOGLE_PLAY);
+    const { Platform, ErrorCode, GooglePlay } = window.CdvPurchase;
+    const produto = store.get(PRODUTOS[plano], Platform.GOOGLE_PLAY);
     const oferta = produto?.getOffer();
     if (!oferta) throw new Error('Plano indisponível na loja no momento.');
 
-    const erro = await store.order(oferta);
-    if (erro) throw new Error(erro.message || 'Compra não concluída.');
+    let extra;
+    if (ativa?.purchase_token && ativa.plano !== plano) {
+        const upgrade = ORDEM_PLANO[plano] > ORDEM_PLANO[ativa.plano];
+        extra = {
+            googlePlay: {
+                oldPurchaseToken: ativa.purchase_token,
+                replacementMode: upgrade
+                    ? GooglePlay.ReplacementMode.CHARGE_PRORATED_PRICE
+                    : GooglePlay.ReplacementMode.DEFERRED,
+            },
+        };
+    }
+
+    const erro = await store.order(oferta, extra);
+    if (erro) {
+        if (erro.code === ErrorCode.PAYMENT_CANCELLED) return false;
+        throw new Error('Não foi possível concluir a compra. Tente novamente.');
+    }
+    return true;
 }
 
 /** Reenvia ao backend todas as compras que o aparelho conhece. */
