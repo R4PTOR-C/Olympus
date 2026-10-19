@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../AuthContext';
 import PageStateHandler from '../components/PageStateHandler';
-import BadgeNivel from '../components/BadgeNivel';
+import EstrelasNivel from '../components/EstrelasNivel';
 import RankModal from '../components/RankModal';
-import { infoNivel, NIVEIS, TIERS } from '../components/rankInfo';
+import TrilhaRanks from './TrilhaRanks';
+import { infoNivel, arteFallback, TOTAL_NIVEIS } from '../components/rankInfo';
 import '../../styles/Progresso.css';
 
 const API = process.env.REACT_APP_API_BASE_URL;
@@ -76,7 +77,7 @@ export default function Progresso() {
     const token = localStorage.getItem('token');
     const [dados, setDados] = useState(null);
     const [rankAberto, setRankAberto] = useState(null); // nível exibido no modal
-    const trilhaRef = useRef(null);
+    const [arteHeroFallback, setArteHeroFallback] = useState(false);
 
     useEffect(() => {
         if (!userId) return;
@@ -87,17 +88,6 @@ export default function Progresso() {
             .then(setDados)
             .catch(() => {});
     }, [userId, token]);
-
-    // Centraliza o tier atual na trilha assim que os dados chegam
-    useEffect(() => {
-        if (!dados || !trilhaRef.current) return;
-        const alvo = trilhaRef.current.querySelector('[data-tier-atual="sim"]');
-        if (!alvo) return;
-        trilhaRef.current.scrollTo({
-            left: alvo.offsetLeft - (trilhaRef.current.clientWidth - alvo.offsetWidth) / 2,
-            behavior: 'smooth',
-        });
-    }, [dados]);
 
     if (!dados) return (
         <PageStateHandler>
@@ -134,128 +124,98 @@ export default function Progresso() {
                 </div>
 
                 {/* ── HERO: rank atual ── */}
-                <div className="pg-hero" style={{ '--rank-cor': cor }}>
-                    <div className="pg-hero-glow" style={{ background: `radial-gradient(circle, ${cor}33 0%, transparent 70%)` }} />
-
+                <section className="pg-hero" style={{ '--rank-cor': cor, '--rank-acento': corAcento }}>
                     <button
                         type="button"
-                        className="pg-hero-badge"
+                        className="pg-hero-arte"
                         onClick={() => setRankAberto(nivel)}
                         aria-label={`Ver detalhes do rank ${info.nome}`}
                     >
-                        <BadgeNivel nivel={nivel} variant="full" />
+                        <span className="pg-hero-halo" aria-hidden="true" />
+                        <img
+                            src={arteHeroFallback ? arteFallback(info.tier) : info.arte}
+                            alt={`Arte do rank ${info.nome}`}
+                            onError={() => setArteHeroFallback(true)}
+                        />
                     </button>
 
-                    {/* Barra de XP até o próximo rank */}
-                    <div className="pg-xp-area">
-                        <div className="pg-xp-labels">
-                            <span style={{ color: cor }}>Nível {nivel} · {info.nome}</span>
-                            <span>{isMax ? 'RANK MÁXIMO' : `Próximo: ${proximoNome}`}</span>
-                        </div>
-                        <div className="pg-xp-track">
-                            <div className="pg-xp-fill" style={{ width: `${pct * 100}%`, background: `linear-gradient(90deg, ${cor}, ${corAcento})`, boxShadow: `0 0 10px ${cor}88` }} />
-                        </div>
-                        <div className="pg-xp-sub">
-                            {isMax
-                                ? `${dados.xp_total} XP — você chegou ao topo do Olimpo! 🏛️`
-                                : `Faltam ${faltam} XP para ${proximoNome}`}
-                        </div>
-                    </div>
+                    <div className="pg-hero-info">
+                        <span className="pg-hero-kicker">Seu rank · nível {nivel} de {TOTAL_NIVEIS}</span>
+                        <h2 className="pg-hero-nome">
+                            {info.nomeTier} <span className="pg-hero-romano">{info.romano}</span>
+                        </h2>
+                        <EstrelasNivel nivel={nivel} size={18} gap={5} cor={corAcento} corVazia={`${corAcento}4D`} />
+                        <p className="pg-hero-lore">{info.lore}</p>
 
-                    {/* Stats */}
-                    <div className="pg-stats">
-                        <div className="pg-stat"><span className="pg-stat-val">{dados.xp_total}</span><span className="pg-stat-lbl">XP total</span></div>
-                        <div className="pg-stat"><span className="pg-stat-val">{dados.streak_atual}</span><span className="pg-stat-lbl">Sequência</span></div>
-                        <div className="pg-stat"><span className="pg-stat-val">{dados.maior_streak}</span><span className="pg-stat-lbl">Recorde</span></div>
-                    </div>
-                </div>
+                        {/* Barra de XP até o próximo rank */}
+                        <div className="pg-xp-area">
+                            <div className="pg-xp-labels">
+                                <span>{dados.xp_no_nivel} / {isMax ? '—' : dados.xp_para_proximo} XP</span>
+                                <span>{isMax ? 'Rank máximo' : `Próximo: ${proximoNome}`}</span>
+                            </div>
+                            <div className="pg-xp-track" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct * 100)}>
+                                <div className="pg-xp-fill" style={{ width: `${pct * 100}%` }} />
+                            </div>
+                            <div className="pg-xp-sub">
+                                {isMax
+                                    ? `${dados.xp_total} XP. Você chegou ao topo do Olimpo.`
+                                    : <>Faltam <strong>{faltam} XP</strong> para {proximoNome}</>}
+                            </div>
+                        </div>
 
-                {/* ── JORNADA DOS RANKS ── */}
-                <div className="pg-section">
-                    <span className="pg-section-label">Jornada dos Ranks</span>
-                    <div className="pg-trilha" ref={trilhaRef}>
-                        {TIERS.map(t => {
-                            const ranks = NIVEIS.filter(r => r.tier === t.tier);
-                            const tierAtual = t.tier === info.tier;
-                            const tierAberto = dados.xp_total >= t.xpMin;
-                            return (
-                                <div
-                                    key={t.tier}
-                                    className={`pg-tier${tierAtual ? ' pg-tier-atual' : ''}`}
-                                    data-tier-atual={tierAtual ? 'sim' : undefined}
-                                    style={{ borderColor: tierAtual ? `${t.cor}66` : undefined }}
-                                >
-                                    <span className="pg-tier-nome" style={{ color: tierAberto ? t.cor : 'var(--color-text-dim)' }}>
-                                        {t.nome}
-                                    </span>
-                                    <div className="pg-tier-ranks">
-                                        <div className="pg-trilha-line" />
-                                        {ranks.map(r => {
-                                            const conquistado = dados.xp_total >= r.xpMin;
-                                            const atual = r.nivel === nivel;
-                                            return (
-                                                <button
-                                                    key={r.nivel}
-                                                    type="button"
-                                                    className={`pg-rank pg-rank-btn${atual ? ' pg-rank-atual' : ''}`}
-                                                    onClick={() => setRankAberto(r.nivel)}
-                                                    aria-label={`Ver detalhes do rank ${r.nome}`}
-                                                >
-                                                    <div
-                                                        className="pg-rank-medal"
-                                                        style={{
-                                                            filter: conquistado ? 'none' : 'grayscale(1)',
-                                                            opacity: conquistado ? 1 : 0.4,
-                                                            boxShadow: atual ? `0 0 0 2px ${r.cor}, 0 0 16px ${r.cor}88` : 'none',
-                                                        }}
-                                                    >
-                                                        <BadgeNivel nivel={r.nivel} variant="medal" tamanho={atual ? 58 : 46} />
-                                                        {!conquistado && (
-                                                            <span className="pg-rank-lock">
-                                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                                    <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                                                </svg>
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <span className="pg-rank-nome" style={{ color: atual ? r.cor : 'var(--color-text-dim)' }}>{r.romano}</span>
-                                                    <span className="pg-rank-xp">{r.xpMin === 0 ? 'Início' : r.xpMin}</span>
-                                                    {atual && <span className="pg-rank-voce" style={{ background: r.cor }}>VOCÊ</span>}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                        {/* Stats */}
+                        <dl className="pg-stats">
+                            <div className="pg-stat"><dt className="pg-stat-lbl">XP total</dt><dd className="pg-stat-val">{dados.xp_total}</dd></div>
+                            <div className="pg-stat"><dt className="pg-stat-lbl">Sequência</dt><dd className="pg-stat-val">{dados.streak_atual}</dd></div>
+                            <div className="pg-stat"><dt className="pg-stat-lbl">Recorde</dt><dd className="pg-stat-val">{dados.maior_streak}</dd></div>
+                        </dl>
+                    </div>
+                </section>
+
+                <div className="pg-colunas">
+                    {/* ── JORNADA DOS RANKS ── */}
+                    <section className="pg-section">
+                        <div className="pg-section-head">
+                            <span className="pg-section-label">Jornada dos ranks</span>
+                            <span className="pg-section-meta">{nivel} de {TOTAL_NIVEIS} conquistados</span>
+                        </div>
+                        <TrilhaRanks
+                            nivel={nivel}
+                            xpTotal={dados.xp_total}
+                            pctNivel={pct}
+                            faltam={faltam}
+                            onAbrir={setRankAberto}
+                        />
+                    </section>
+
+                    {/* ── OBJETIVOS ── */}
+                    <div className="pg-objetivos">
+                        {diarios.length > 0 && (
+                            <section className="pg-section">
+                                <span className="pg-section-label">Objetivos diários</span>
+                                <div className="pg-obj-list">
+                                    {diarios.map((obj, i) => <CardObjetivo key={obj.id} obj={obj} index={i} />)}
                                 </div>
-                            );
-                        })}
+                            </section>
+                        )}
+
+                        {semanais.length > 0 && (
+                            <section className="pg-section">
+                                <span className="pg-section-label">Objetivos semanais</span>
+                                <div className="pg-obj-list">
+                                    {semanais.map((obj, i) => <CardObjetivo key={obj.id} obj={obj} index={i} />)}
+                                </div>
+                            </section>
+                        )}
                     </div>
                 </div>
-
-                {/* ── OBJETIVOS DIÁRIOS ── */}
-                {diarios.length > 0 && (
-                    <div className="pg-section">
-                        <span className="pg-section-label">Objetivos Diários</span>
-                        <div className="pg-obj-list">
-                            {diarios.map((obj, i) => <CardObjetivo key={obj.id} obj={obj} index={i} />)}
-                        </div>
-                    </div>
-                )}
-
-                {/* ── OBJETIVOS SEMANAIS ── */}
-                {semanais.length > 0 && (
-                    <div className="pg-section">
-                        <span className="pg-section-label">Objetivos Semanais</span>
-                        <div className="pg-obj-list">
-                            {semanais.map((obj, i) => <CardObjetivo key={obj.id} obj={obj} index={i} />)}
-                        </div>
-                    </div>
-                )}
 
                 {/* ── MODAL DE RANK ── */}
                 {rankAberto && (
                     <RankModal
                         nivel={rankAberto}
                         xpTotal={dados.xp_total}
+                        onNavegar={setRankAberto}
                         onClose={() => setRankAberto(null)}
                     />
                 )}
