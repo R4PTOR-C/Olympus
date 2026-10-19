@@ -6,72 +6,98 @@
 <title>Excluir conta — Atlanteon</title>
 <meta name="description" content="Como excluir sua conta do Atlanteon e os dados associados a ela.">
 <link rel="icon" href="/favicon.ico">
-<style>
-  :root {
-    --bg: #f7f8fa; --card: #ffffff; --text: #1d2330; --muted: #5b6474;
-    --line: #e3e6ec; --accent: #2f6fb8;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #0e1118; --card: #161b25; --text: #e6e9ef; --muted: #9aa3b2; --line: #262d3a; --accent: #6aa8ec; }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding-inline: 16px; }
-  main { max-width: 760px; margin: 0 auto; padding-block: 40px 64px; }
-  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 6px; }
-  h2 { font-size: 1.2rem; margin: 36px 0 10px; padding-top: 8px; border-top: 1px solid var(--line); }
-  .muted { color: var(--muted); font-size: 0.92rem; }
-  a { color: var(--accent); }
-  ol, ul { padding-left: 1.3em; }
-  li { margin: 5px 0; }
-  .box { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin: 18px 0; }
-</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono&family=Newsreader:opsz,wght@6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/legal.css?v=1">
 </head>
 <body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-logo" href="/" aria-label="Atlanteon, página inicial"><img src="/logo_texto_azul.png" alt="Atlanteon" width="142" height="18"></a>
+    <nav class="site-nav" aria-label="Documentos">
+      <a href="/privacidade.html">Privacidade</a>
+      <a href="/termos.html">Termos</a>
+      <a href="/excluir-conta.html" aria-current="page">Excluir conta</a>
+    </nav>
+  </div>
+</header>
+
 <main>
-
-<h1>Excluir sua conta do Atlanteon</h1>
-<p class="muted">Aplicativo Atlanteon · desenvolvido por Fenrys</p>
-
-<h2>Pelo aplicativo (imediato)</h2>
-<ol>
-  <li>Abra o Atlanteon e entre na sua conta.</li>
-  <li>Abra o menu e toque em <strong>Perfil</strong>.</li>
-  <li>No fim da página, toque em <strong>Apagar conta</strong>.</li>
-  <li>Digite seu e-mail para confirmar.</li>
-</ol>
-<p>A conta e os dados são apagados na hora, de forma definitiva.</p>
-
-<h2>Sem acesso ao aplicativo</h2>
-<p>
-  Envie um e-mail para <a href="mailto:olympusgymapp@gmail.com?subject=Excluir%20conta%20Atlanteon">olympusgymapp@gmail.com</a>
-  com o assunto <strong>“Excluir conta”</strong>, a partir do endereço de e-mail cadastrado no app.
-  Confirmamos o pedido e concluímos a exclusão em até 15 dias.
-</p>
-
-<h2>O que é apagado</h2>
-<div class="box">
-  <ul>
-    <li>Cadastro e perfil: nome, e-mail, senha, foto, dados físicos e preferências de treino.</li>
-    <li>Treinos, séries registradas, observações, cardio, avaliações físicas e registros de água.</li>
-    <li>Progresso de gamificação (XP, nível, sequência e objetivos).</li>
-    <li>Amizades, vínculos com personal trainers, chats e mensagens.</li>
-    <li>Conversas com o assistente Hércules.</li>
-    <li>Perfil profissional de personal trainer e registros de assinatura.</li>
-  </ul>
+<div class="doc-hero">
+  <p class="doc-kicker">Atlanteon · desenvolvido por Fenrys</p>
+  <h1>Excluir sua conta do Atlanteon</h1>
+  <p class="doc-lead">Você pode apagar sua conta e todos os dados ligados a ela a qualquer momento: pelo próprio app, na hora, ou por e-mail, se não tiver mais acesso.</p>
 </div>
+
+<div class="doc-layout">
+<article class="doc-body doc-body-larga">
+
+<div class="caminhos">
+  <section class="caminho">
+    <span class="caminho-tag ok">Imediato</span>
+    <h2 id="pelo-app">Pelo aplicativo</h2>
+    <ol class="passos">
+      <li>Abra o Atlanteon e entre na sua conta.</li>
+      <li>Abra o menu e toque em <strong>Perfil</strong>.</li>
+      <li>No fim da página, toque em <strong>Apagar conta</strong>.</li>
+      <li>Digite seu e-mail para confirmar.</li>
+    </ol>
+    <p class="caminho-nota">A conta e os dados são apagados na hora, de forma definitiva.</p>
+  </section>
+
+  <section class="caminho">
+    <span class="caminho-tag info">Até 15 dias</span>
+    <h2 id="sem-acesso">Sem acesso ao aplicativo</h2>
+    <p>
+      Envie um e-mail para <a href="mailto:olympusgymapp@gmail.com?subject=Excluir%20conta%20Atlanteon">olympusgymapp@gmail.com</a>
+      com o assunto <strong>“Excluir conta”</strong>, a partir do endereço de e-mail cadastrado no app.
+    </p>
+    <p>Confirmamos o pedido e concluímos a exclusão em até 15 dias.</p>
+    <a class="btn" href="mailto:olympusgymapp@gmail.com?subject=Excluir%20conta%20Atlanteon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+      Enviar pedido por e-mail
+    </a>
+  </section>
+</div>
+
+<h2 id="o-que-e-apagado">O que é apagado</h2>
+<ul>
+  <li>Cadastro e perfil: nome, e-mail, senha, foto, dados físicos e preferências de treino.</li>
+  <li>Treinos, séries registradas, observações, cardio, avaliações físicas e registros de água.</li>
+  <li>Progresso de gamificação (XP, nível, sequência e objetivos).</li>
+  <li>Amizades, vínculos com personal trainers, chats e mensagens.</li>
+  <li>Conversas com o assistente Hércules.</li>
+  <li>Perfil profissional de personal trainer e registros de assinatura.</li>
+</ul>
 <p>
   Cópias de segurança automáticas podem manter esses dados por um período limitado, até serem substituídas.
   Registros de compra feitos pelo Google Play também ficam com o Google, conforme a política dele.
 </p>
-<p>
-  <strong>Tem assinatura?</strong> Apagar a conta não cancela a cobrança. Cancele também no app da Google Play,
-  em <em>Pagamentos e assinaturas › Assinaturas</em>.
-</p>
 
-<p class="muted" style="margin-top:36px">
-  Mais detalhes na nossa <a href="/privacidade.html">Política de Privacidade</a>.
-</p>
+<div class="doc-aviso" role="note">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg>
+  <p>
+    <strong>Tem assinatura?</strong> Apagar a conta não cancela a cobrança. Cancele também no app da Google Play,
+    em <em>Pagamentos e assinaturas › Assinaturas</em>.
+  </p>
+</div>
 
+<p>Mais detalhes na nossa <a href="/privacidade.html">Política de Privacidade</a>.</p>
+
+</article>
+</div>
 </main>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <p>Atlanteon · Fenrys Technologies · <a href="mailto:olympusgymapp@gmail.com">olympusgymapp@gmail.com</a></p>
+    <nav aria-label="Documentos">
+      <a href="/privacidade.html">Privacidade</a>
+      <a href="/termos.html">Termos de Uso</a>
+      <a href="/excluir-conta.html">Excluir conta</a>
+    </nav>
+  </div>
+</footer>
 </body>
 </html>

@@ -6,45 +6,44 @@
 <title>Política de Privacidade — Atlanteon</title>
 <meta name="description" content="Como o Atlanteon coleta, usa, compartilha e protege seus dados pessoais.">
 <link rel="icon" href="/favicon.ico">
-<style>
-  :root {
-    --bg: #f7f8fa; --card: #ffffff; --text: #1d2330; --muted: #5b6474;
-    --line: #e3e6ec; --accent: #2f6fb8;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #0e1118; --card: #161b25; --text: #e6e9ef; --muted: #9aa3b2; --line: #262d3a; --accent: #6aa8ec; }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding-inline: 16px; }
-  main { max-width: 760px; margin: 0 auto; padding-block: 40px 64px; }
-  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 6px; }
-  h2 { font-size: 1.2rem; margin: 40px 0 10px; padding-top: 8px; border-top: 1px solid var(--line); }
-  h3 { font-size: 1rem; margin: 22px 0 6px; }
-  p, li { color: var(--text); }
-  .muted { color: var(--muted); font-size: 0.92rem; }
-  a { color: var(--accent); }
-  ul { padding-left: 1.2em; }
-  li { margin: 4px 0; }
-  .box { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin: 18px 0; }
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.93rem; }
-  th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
-  th { color: var(--muted); font-weight: 600; }
-</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono&family=Newsreader:opsz,wght@6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/legal.css?v=1">
 </head>
 <body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-logo" href="/" aria-label="Atlanteon, página inicial"><img src="/logo_texto_azul.png" alt="Atlanteon" width="142" height="18"></a>
+    <nav class="site-nav" aria-label="Documentos">
+      <a href="/privacidade.html" aria-current="page">Privacidade</a>
+      <a href="/termos.html">Termos</a>
+      <a href="/excluir-conta.html">Excluir conta</a>
+    </nav>
+  </div>
+</header>
+
 <main>
-
-<h1>Política de Privacidade</h1>
-<p class="muted">Atlanteon · Última atualização: 15 de outubro de 2026</p>
-
-<div class="box">
-  <strong>Resumo:</strong> coletamos os dados que você informa para usar o app (cadastro, perfil e treinos)
-  e usamos esses dados só para fazer o Atlanteon funcionar. Não vendemos seus dados e não mostramos anúncios.
-  Você pode apagar sua conta e todos os seus dados a qualquer momento, pelo próprio app.
+<div class="doc-hero">
+  <p class="doc-kicker">Atlanteon · Atualizado em 15 de outubro de 2026</p>
+  <h1>Política de Privacidade</h1>
+  <p class="doc-lead">Como o Atlanteon coleta, usa, compartilha e protege seus dados pessoais, e como você controla tudo isso.</p>
 </div>
 
-<h2>1. Quem somos</h2>
+<div class="doc-layout com-sumario">
+<details class="doc-toc">
+  <summary>Nesta página</summary>
+  <nav aria-label="Seções"><ol></ol></nav>
+</details>
+
+<article class="doc-body">
+
+<aside class="doc-resumo">
+  <span class="doc-resumo-lbl">Resumo</span>
+  <p>Coletamos os dados que você informa para usar o app (cadastro, perfil e treinos) e usamos esses dados só para fazer o Atlanteon funcionar. Não vendemos seus dados e não mostramos anúncios. Você pode apagar sua conta e todos os seus dados a qualquer momento, pelo próprio app.</p>
+</aside>
+
+<h2 id="quem-somos"><span class="sec-num">01</span>Quem somos</h2>
 <p>
   O Atlanteon é um aplicativo de gestão de treinos para alunos e personal trainers, disponível
   para Android e na web. O responsável pelo tratamento dos seus dados pessoais (controlador, nos termos da
@@ -55,11 +54,11 @@
   <a href="mailto:olympusgymapp@gmail.com">olympusgymapp@gmail.com</a>.
 </p>
 
-<h2>2. Dados que coletamos</h2>
+<h2 id="dados-que-coletamos"><span class="sec-num">02</span>Dados que coletamos</h2>
 <p>Coletamos apenas o que você mesmo informa ou gera ao usar o app:</p>
-<div class="table-wrap">
-<table>
-  <tr><th>Categoria</th><th>Dados</th></tr>
+<table class="doc-table">
+  <thead><tr><th>Categoria</th><th>Dados</th></tr></thead>
+  <tbody>
   <tr><td>Conta</td><td>Nome, e-mail, senha (guardada apenas como hash criptográfico, nunca em texto), gênero, data de nascimento, telefone e foto de perfil.</td></tr>
   <tr><td>Perfil de treino</td><td>Idade, altura, peso, objetivo, nível de experiência, dias disponíveis, duração das sessões e local de treino.</td></tr>
   <tr><td>Treinos e saúde</td><td>Fichas de treino, séries executadas (carga e repetições), observações, sessões de cardio (duração e distância), avaliações físicas (peso, altura, percentual de gordura e medidas corporais) e registros de consumo de água.</td></tr>
@@ -70,14 +69,14 @@
   <tr><td>Personal trainers</td><td>CREF, especialidade, experiência, descrição, preço por hora, cidade, estado e forma de contato.</td></tr>
   <tr><td>Assinaturas</td><td>Identificador da compra fornecido pelo Google Play, plano contratado, status e datas de início e expiração. <strong>Não recebemos nem armazenamos dados de cartão ou pagamento</strong> — isso fica inteiramente com o Google.</td></tr>
   <tr><td>Notificações</td><td>Identificador técnico do dispositivo ou navegador para envio de notificações, se você as ativar.</td></tr>
+  </tbody>
 </table>
-</div>
 <p>
   Não coletamos sua localização por GPS, seus contatos, nem dados de outros apps. Não usamos ferramentas de
   publicidade ou de rastreamento de terceiros.
 </p>
 
-<h2>3. Para que usamos seus dados</h2>
+<h2 id="para-que-usamos-seus-dados"><span class="sec-num">03</span>Para que usamos seus dados</h2>
 <ul>
   <li>Criar e manter sua conta e permitir o login.</li>
   <li>Montar, registrar e acompanhar seus treinos, sua evolução e suas avaliações.</li>
@@ -88,7 +87,7 @@
   <li>Manter a segurança do serviço e cumprir obrigações legais.</li>
 </ul>
 
-<h2>4. Bases legais</h2>
+<h2 id="bases-legais"><span class="sec-num">04</span>Bases legais</h2>
 <p>Tratamos seus dados com base nas hipóteses da LGPD:</p>
 <ul>
   <li><strong>Execução de contrato</strong> (art. 7º, V): dados necessários para prestar o serviço que você contratou ao se cadastrar.</li>
@@ -96,7 +95,7 @@
   <li><strong>Cumprimento de obrigação legal</strong> (art. 7º, II) e <strong>legítimo interesse</strong> (art. 7º, IX): segurança, prevenção a fraudes e registros exigidos por lei.</li>
 </ul>
 
-<h2>5. Quem pode ver seus dados</h2>
+<h2 id="quem-pode-ver-seus-dados"><span class="sec-num">05</span>Quem pode ver seus dados</h2>
 <h3>Dentro do app</h3>
 <ul>
   <li><strong>Outros usuários</strong> podem ver seu nome, foto, nível e XP (na busca de amigos e no ranking).</li>
@@ -118,14 +117,14 @@
   Podemos divulgar dados quando exigido por lei ou por ordem de autoridade competente.
 </p>
 
-<h2>6. Transferência internacional</h2>
+<h2 id="transferencia-internacional"><span class="sec-num">06</span>Transferência internacional</h2>
 <p>
   Nossos servidores e parte dos prestadores acima ficam fora do Brasil, principalmente nos Estados Unidos.
   Essas transferências seguem o art. 33 da LGPD e são feitas com fornecedores que adotam medidas de segurança
   e proteção de dados compatíveis.
 </p>
 
-<h2>7. Segurança</h2>
+<h2 id="seguranca"><span class="sec-num">07</span>Segurança</h2>
 <ul>
   <li>Toda a comunicação entre o app e nossos servidores é criptografada (HTTPS).</li>
   <li>Senhas são armazenadas apenas como hash criptográfico (bcrypt).</li>
@@ -133,7 +132,7 @@
 </ul>
 <p>Nenhum sistema é totalmente imune a falhas. Se ocorrer um incidente relevante, avisaremos os afetados e a ANPD, conforme a lei.</p>
 
-<h2>8. Por quanto tempo guardamos</h2>
+<h2 id="por-quanto-tempo-guardamos"><span class="sec-num">08</span>Por quanto tempo guardamos</h2>
 <p>
   Guardamos seus dados enquanto sua conta existir. Quando você apaga a conta, removemos seu cadastro e os dados
   associados a ela (treinos, séries, avaliações, cardio, amizades, vínculos, mensagens, conversas com o
@@ -141,14 +140,14 @@
   até serem substituídas. Registros de compra também são mantidos pelo Google, conforme a política dele.
 </p>
 
-<h2 id="exclusao">9. Como apagar sua conta e seus dados</h2>
+<h2 id="exclusao"><span class="sec-num">09</span>Como apagar sua conta e seus dados</h2>
 <ul>
   <li><strong>Pelo app:</strong> abra o menu, toque em <em>Perfil</em> e, no fim da página, em <em>Apagar conta</em> e confirme digitando seu e-mail. A exclusão é imediata e definitiva.</li>
   <li><strong>Sem acesso ao app:</strong> veja a página <a href="/excluir-conta.html">Excluir conta</a> ou mande um e-mail para <a href="mailto:olympusgymapp@gmail.com">olympusgymapp@gmail.com</a> a partir do endereço cadastrado.</li>
 </ul>
 <p>Apagar a conta não cancela automaticamente uma assinatura do Google Play. Cancele também em Google Play › Pagamentos e assinaturas.</p>
 
-<h2>10. Seus direitos</h2>
+<h2 id="seus-direitos"><span class="sec-num">10</span>Seus direitos</h2>
 <p>Pela LGPD (art. 18), você pode, a qualquer momento:</p>
 <ul>
   <li>confirmar se tratamos seus dados e acessá-los;</li>
@@ -163,19 +162,34 @@
   Respondemos em até 15 dias. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).
 </p>
 
-<h2>11. Crianças e adolescentes</h2>
+<h2 id="criancas-e-adolescentes"><span class="sec-num">11</span>Crianças e adolescentes</h2>
 <p>
   O Atlanteon não é direcionado a menores de 13 anos. Adolescentes devem usar o app com o conhecimento dos
   responsáveis. Se identificarmos dados de uma criança coletados sem o consentimento dos responsáveis, vamos
   apagá-los.
 </p>
 
-<h2>12. Alterações nesta política</h2>
+<h2 id="alteracoes-nesta-politica"><span class="sec-num">12</span>Alterações nesta política</h2>
 <p>
   Podemos atualizar esta política. A data da última atualização fica no topo da página. Se a mudança for
   relevante, avisaremos pelo app.
 </p>
 
+</article>
+</div>
 </main>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <p>Atlanteon · Fenrys Technologies · <a href="mailto:olympusgymapp@gmail.com">olympusgymapp@gmail.com</a></p>
+    <nav aria-label="Documentos">
+      <a href="/privacidade.html">Privacidade</a>
+      <a href="/termos.html">Termos de Uso</a>
+      <a href="/excluir-conta.html">Excluir conta</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="/legal.js?v=1" defer></script>
 </body>
 </html>
