@@ -131,7 +131,7 @@ function Home() {
             );
             if (!response.ok) throw new Error();
             const data = await response.json();
-            setExerciciosTreinoDoDia(data.slice(0, 4));
+            setExerciciosTreinoDoDia(data);
         } catch {
             console.error('Erro ao buscar exercícios do treino');
         }
