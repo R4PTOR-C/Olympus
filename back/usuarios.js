@@ -10,7 +10,7 @@ const { authenticate, requireAdmin, requireSelf, verificarVinculo } = require('.
 const router = express.Router();
 
 // Link do e-mail de redefinição de senha
-const APP_URL = process.env.APP_URL || 'https://olympus-33lb.onrender.com';
+const APP_URL = process.env.APP_URL || 'https://www.atlanteontraining.com.br';
 
 const FUNCOES = ['Aluno', 'Professor'];
 const SENHA_MIN = 6;

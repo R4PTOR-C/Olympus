@@ -40,6 +40,8 @@ const PORT = process.env.PORT || 5000;
 // Origens permitidas (web + app Capacitor, que roda em https://localhost)
 const ORIGENS = [
     process.env.FRONTEND_URL || "http://localhost:3000",
+    "https://atlanteontraining.com.br",
+    "https://www.atlanteontraining.com.br",
     "https://olympus-33lb.onrender.com",
     "https://localhost"
 ];
