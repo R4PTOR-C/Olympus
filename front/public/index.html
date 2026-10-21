@@ -41,7 +41,7 @@
       position: fixed;
       inset: 0;
       z-index: 99999;
-      background: white;
+      background: #2F6FB8;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -57,6 +57,8 @@
       height: 200px;
       object-fit: contain;
         margin-bottom: -75px;
+      /* Logos são pretas com fundo transparente: viram brancas sobre o azul */
+      filter: brightness(0) invert(1);
 
     }
     #splash p {
@@ -64,10 +66,10 @@
       font-family: 'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
       font-size: 2rem;
       letter-spacing: 0.12em;
-      color: #19222B !important;
+      color: #F9FBFD !important;
     }
     #splash {
-      color: #19222B !important;
+      color: #F9FBFD !important;
     }
     /* Assinatura da Fenrys no rodapé da splash */
     #splash .splash-credito {
@@ -83,7 +85,7 @@
       font-size: 0.75rem;
       font-weight: 500;
       letter-spacing: 0.04em;
-      color: rgba(25, 34, 43, 0.55);
+      color: rgba(249, 251, 253, 0.75);
     }
     #splash .splash-credito img {
       width: 30px;
@@ -92,13 +94,39 @@
       /* Mesmo tom apagado do texto ao lado */
       opacity: 0.7;
     }
+    /* Modo escuro: fundo do ícone escuro e logos no azul do tridente */
+    html.splash-escuro #splash {
+      background: #0B0F14;
+    }
+    html.splash-escuro #splash .splash-logo {
+      filter: none;
+    }
+    html.splash-escuro #splash .splash-emblema {
+      content: url(/splash-emblema-azul.png);
+    }
+    html.splash-escuro #splash .splash-texto {
+      content: url(/splash-texto-azul.png);
+    }
+    html.splash-escuro #splash .splash-credito {
+      color: rgba(249, 251, 253, 0.55);
+    }
   </style>
+  <script>
+    // Mesma regra do AuthContext: escolha manual em 'tema', senão segue o celular
+    try {
+      var tema = localStorage.getItem('tema');
+      if (!tema && localStorage.getItem('darkMode') === 'true') tema = 'escuro'; // chave antiga
+      var escuro = tema ? tema === 'escuro'
+        : !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (escuro) document.documentElement.classList.add('splash-escuro');
+    } catch (e) { /* storage indisponível */ }
+  </script>
 </head>
 <body>
 <noscript>You need to enable JavaScript to run this app.</noscript>
 <div id="splash">
-  <img src="/logo2.png" alt="Atlanteon" />
-    <img src="/logo_texto.png" alt="Atlanteon" />
+  <img src="/logo2.png" alt="Atlanteon" class="splash-logo splash-emblema" />
+    <img src="/logo_texto.png" alt="Atlanteon" class="splash-logo splash-texto" />
   <div class="splash-credito">
     <img src="/fenrys-logo.png" alt="" />
     <span>by Fenrys Technologies</span>

@@ -18,15 +18,45 @@ export const AuthProvider = ({ children }) => {
     const socketRef = useRef(null);
     const [funcaoAtiva, setFuncaoAtiva] = useState(null);
 
-    // ✅ Estado de dark mode
-    const [darkMode, setDarkMode] = useState(() => {
-        const savedTheme = localStorage.getItem("darkMode");
-        return savedTheme ? savedTheme === "true" : false;
+    // ✅ Tema: segue o celular, a menos que o usuário tenha escolhido um.
+    // localStorage 'tema' = 'claro' | 'escuro' (escolha manual); ausente = sistema.
+    // O index.html lê a mesma chave para pintar a splash antes do React.
+    const [temaManual, setTemaManual] = useState(() => {
+        try {
+            // Migração: a chave antiga era sempre gravada; só 'true' era escolha de fato
+            const antigo = localStorage.getItem('darkMode');
+            if (antigo !== null) {
+                localStorage.removeItem('darkMode');
+                if (antigo === 'true' && !localStorage.getItem('tema')) localStorage.setItem('tema', 'escuro');
+            }
+            return localStorage.getItem('tema');
+        } catch { return null; }
     });
+    const [sistemaEscuro, setSistemaEscuro] = useState(
+        () => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
+    );
+    const darkMode = temaManual ? temaManual === 'escuro' : sistemaEscuro;
 
-    // 🔹 Salvar tema e aplicar classe no body sempre que mudar
     useEffect(() => {
-        try { localStorage.setItem('darkMode', darkMode); } catch { /* storage indisponível */ }
+        const mql = window.matchMedia?.('(prefers-color-scheme: dark)');
+        if (!mql) return;
+        const onChange = (e) => setSistemaEscuro(e.matches);
+        mql.addEventListener('change', onChange);
+        return () => mql.removeEventListener('change', onChange);
+    }, []);
+
+    // Escolher o mesmo tema do celular volta a seguir o sistema
+    const setDarkMode = useCallback((escuro) => {
+        const tema = escuro === sistemaEscuro ? null : (escuro ? 'escuro' : 'claro');
+        try {
+            if (tema) localStorage.setItem('tema', tema);
+            else localStorage.removeItem('tema');
+        } catch { /* storage indisponível */ }
+        setTemaManual(tema);
+    }, [sistemaEscuro]);
+
+    // 🔹 Aplicar classe no body sempre que mudar
+    useEffect(() => {
         document.body.classList.toggle('dark-mode', darkMode);
     }, [darkMode]);
 
