@@ -218,10 +218,10 @@ function Home() {
                                 <div className="h-desktop-hero-day">{today}</div>
                                 <div className="h-desktop-hero-date">{dateRange}</div>
                                 {user.streakAtual > 0 && (
-                                    <div className="h-streak-badge" title={`Maior sequência: ${user.maiorStreak} dias`} onClick={() => navigate('/progresso')} style={{ cursor: 'pointer' }}>
+                                    <div className="h-streak-badge" title={`Maior sequência: ${user.maiorStreak} ${user.maiorStreak === 1 ? 'dia' : 'dias'}`} onClick={() => navigate('/progresso')} style={{ cursor: 'pointer' }}>
                                         <span className="h-streak-icon">🔥</span>
                                         <span className="h-streak-count">{user.streakAtual}</span>
-                                        <span className="h-streak-label">dias</span>
+                                        <span className="h-streak-label">{user.streakAtual === 1 ? 'dia' : 'dias'}</span>
                                     </div>
                                 )}
                             </div>
@@ -232,10 +232,10 @@ function Home() {
                             <span className="h-week-header-title">Semana</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 {user.streakAtual > 0 && (
-                                    <div className="h-streak-badge h-streak-mobile" title={`Maior sequência: ${user.maiorStreak} dias`} onClick={() => navigate('/progresso')} style={{ cursor: 'pointer' }}>
+                                    <div className="h-streak-badge h-streak-mobile" title={`Maior sequência: ${user.maiorStreak} ${user.maiorStreak === 1 ? 'dia' : 'dias'}`} onClick={() => navigate('/progresso')} style={{ cursor: 'pointer' }}>
                                         <span className="h-streak-icon">🔥</span>
                                         <span className="h-streak-count">{user.streakAtual}</span>
-                                        <span className="h-streak-label">dias</span>
+                                        <span className="h-streak-label">{user.streakAtual === 1 ? 'dia' : 'dias'}</span>
                                     </div>
                                 )}
                                 <span className="h-week-header-date">{today.split('-')[0].trim()} · {dateRange}</span>

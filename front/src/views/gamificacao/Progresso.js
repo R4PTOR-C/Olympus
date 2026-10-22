@@ -119,7 +119,7 @@ export default function Progresso() {
                 <div className="pg-header">
                     <span className="pg-title">Progresso</span>
                     {dados.streak_atual > 0 && (
-                        <span className="pg-streak">🔥 {dados.streak_atual} dias</span>
+                        <span className="pg-streak">🔥 {dados.streak_atual} {dados.streak_atual === 1 ? 'dia' : 'dias'}</span>
                     )}
                 </div>
 

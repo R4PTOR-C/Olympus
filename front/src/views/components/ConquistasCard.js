@@ -92,7 +92,7 @@ export default function ConquistasCard({ userId }) {
                 <span style={S.label}>Conquistas</span>
                 <div style={S.topRight}>
                     {dados.streak_atual > 0 && (
-                        <span style={S.streakBadge}>🔥 {dados.streak_atual} dias</span>
+                        <span style={S.streakBadge}>🔥 {dados.streak_atual} {dados.streak_atual === 1 ? 'dia' : 'dias'}</span>
                     )}
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(74,144,217,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M9 18l6-6-6-6"/>
