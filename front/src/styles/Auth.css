@@ -89,6 +89,20 @@
     margin-bottom: -30px; /* ~32,4% de 105 */
 }
 
+/* Login: mesmo degradê do ícone e da splash, com as logos (pretas) em branco */
+.auth-header-marca {
+    background: linear-gradient(180deg, #3F86D8 0%, #2A62AA 50%, #163F7C 100%);
+}
+
+.auth-header-marca::before {
+    display: none;
+}
+
+.auth-header-marca .auth-logo,
+.auth-header-marca .auth-logo-texto {
+    filter: brightness(0) invert(1) drop-shadow(0 4px 8px rgba(8, 25, 55, 0.45));
+}
+
 .auth-header-icon {
     width: 52px;
     height: 52px;

@@ -73,7 +73,7 @@ function Login() {
             <div className="auth-card">
 
                 {/* ── HEADER ── */}
-                <div className="auth-header">
+                <div className="auth-header auth-header-marca">
                     <img src="/logo2.png" alt="Atlanteon" className="auth-logo" width="132" height="132" decoding="sync" fetchpriority="high" />
                     <img src="/logo_texto.png" alt="Atlanteon" className="auth-logo-texto" width="210" height="105" decoding="sync" />
                 </div>
