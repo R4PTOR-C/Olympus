@@ -219,7 +219,8 @@ const S = {
     topBar: {
         width: '100%',
         maxWidth: 480,
-        padding: '24px 24px 0',
+        // Abaixo da barra de status/notch (o app desenha atrás dela)
+        padding: 'calc(24px + env(safe-area-inset-top, 0px)) 24px 0',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -227,10 +228,10 @@ const S = {
     },
     btnBack: {
         flexShrink: 0,
-        width: 36,
-        height: 36,
-        marginRight: 12,
-        marginLeft: -8,
+        width: 44, // área de toque mínima recomendada no iOS
+        height: 44,
+        marginRight: 8,
+        marginLeft: -12,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

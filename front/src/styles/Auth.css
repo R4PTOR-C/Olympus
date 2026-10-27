@@ -18,7 +18,7 @@
 /* Variante para o cadastro (formulário longo — alinha no topo) */
 .auth-page.top {
     justify-content: flex-start;
-    padding-top: 32px;
+    padding-top: calc(32px + env(safe-area-inset-top, 0px));
     padding-bottom: 40px;
 }
 
