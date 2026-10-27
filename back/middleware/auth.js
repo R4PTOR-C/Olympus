@@ -101,6 +101,23 @@ const SQL_SEM_BLOQUEIO = (colunaUsuario, param) => `NOT EXISTS (
        OR (bl.bloqueador_id = ${colunaUsuario} AND bl.bloqueado_id = ${param})
 )`;
 
+// Contas de teste em produção (usuarios.conta_teste): só aparecem para outras
+// contas de teste; contas de teste veem todo mundo. Mesmos parâmetros do
+// SQL_SEM_BLOQUEIO.
+const SQL_VISIVEL = (colunaUsuario, param) => `(
+    NOT (SELECT conta_teste FROM usuarios WHERE id = ${colunaUsuario})
+    OR (SELECT conta_teste FROM usuarios WHERE id = ${param})
+)`;
+
+// Conta de teste e conta real não se conectam (vínculo, amizade), em nenhum sentido
+async function mundosDiferentes(userIdA, userIdB) {
+    const { rows } = await db.query(
+        'SELECT COUNT(DISTINCT conta_teste)::int AS n FROM usuarios WHERE id IN ($1, $2)',
+        [userIdA, userIdB]
+    );
+    return rows[0].n > 1;
+}
+
 // Carrega um treino e verifica o acesso.
 //   modo 'escrita' → dono ou professor vinculado
 //   modo 'leitura' → também amigos aceitos (podem ver e copiar)
@@ -141,6 +158,8 @@ module.exports = {
     saoAmigos,
     existeBloqueio,
     SQL_SEM_BLOQUEIO,
+    SQL_VISIVEL,
+    mundosDiferentes,
     ehAdmin,
     ehProprioUsuario,
     autorizarTreino,

@@ -2,7 +2,7 @@
 const express = require('express');
 const db      = require('./db');
 const { enviarPush } = require('./push');
-const { authenticate, saoAmigos, existeBloqueio, SQL_SEM_BLOQUEIO } = require('./middleware/auth');
+const { authenticate, saoAmigos, existeBloqueio, SQL_SEM_BLOQUEIO, SQL_VISIVEL, mundosDiferentes } = require('./middleware/auth');
 const router  = express.Router();
 
 // Helpers de autorização
@@ -33,6 +33,7 @@ router.get('/buscar', authenticate, async (req, res) => {
              WHERE u.nome ILIKE $1
                AND u.id <> $2
                AND ${SQL_SEM_BLOQUEIO('u.id', '$2')}
+               AND ${SQL_VISIVEL('u.id', '$2')}
                AND u.id NOT IN (
                    SELECT CASE WHEN solicitante_id = $2 THEN destinatario_id ELSE solicitante_id END
                    FROM amizades
@@ -61,6 +62,7 @@ router.get('/sugestoes', authenticate, async (req, res) => {
              LEFT JOIN gamificacao_usuario g ON g.usuario_id = u.id
              WHERE u.id <> $1
                AND ${SQL_SEM_BLOQUEIO('u.id', '$1')}
+               AND ${SQL_VISIVEL('u.id', '$1')}
                AND u.id NOT IN (
                    SELECT CASE WHEN solicitante_id = $1 THEN destinatario_id ELSE solicitante_id END
                    FROM amizades
@@ -160,8 +162,8 @@ router.post('/', authenticate, async (req, res) => {
     if (destinatario_id === solicitante_id) return res.status(400).json({ error: 'Não é possível adicionar a si mesmo.' });
 
     try {
-        // Bloqueio em qualquer sentido: resposta genérica, sem revelar quem bloqueou
-        if (await existeBloqueio(solicitante_id, destinatario_id)) {
+        // Bloqueio em qualquer sentido (ou conta de teste x real): resposta genérica
+        if (await existeBloqueio(solicitante_id, destinatario_id) || await mundosDiferentes(solicitante_id, destinatario_id)) {
             return res.status(403).json({ error: 'Não é possível adicionar este usuário.' });
         }
 

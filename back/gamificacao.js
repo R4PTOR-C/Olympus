@@ -1,7 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 const db      = require('./db');
-const { authenticate, requireVinculo } = require('./middleware/auth');
+const { authenticate, requireVinculo, SQL_VISIVEL } = require('./middleware/auth');
 const { calcNivel, getObjetivosComProgresso } = require('./gamificacao_engine');
 
 router.get('/usuarios/:userId/progresso', authenticate, requireVinculo('userId'), async (req, res) => {
@@ -44,17 +44,20 @@ router.get('/ranking', authenticate, async (req, res) => {
              FROM gamificacao_usuario g
              JOIN usuarios u ON u.id = g.usuario_id
              WHERE g.xp_total > 0
+               AND ${SQL_VISIVEL('u.id', '$1')}
              ORDER BY g.xp_total DESC
-             LIMIT 100`
+             LIMIT 100`,
+            [userId]
         );
 
-        // Posição do próprio usuário, mesmo fora do top 100
+        // Posição do próprio usuário, mesmo fora do top 100 (no mesmo ranking que ele vê)
         const { rows: minha } = await db.query(
             `SELECT posicao, xp_total FROM (
                  SELECT usuario_id, xp_total,
                         RANK() OVER (ORDER BY xp_total DESC)::int AS posicao
                  FROM gamificacao_usuario
                  WHERE xp_total > 0
+                   AND ${SQL_VISIVEL('usuario_id', '$1')}
              ) r WHERE r.usuario_id = $1`,
             [userId]
         );

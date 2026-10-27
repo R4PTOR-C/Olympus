@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('./db');
-const { authenticate } = require('./middleware/auth');
+const { authenticate, SQL_VISIVEL } = require('./middleware/auth');
 const router = express.Router();
 
 // Autorização: o usuário só pode mexer no próprio perfil de professor
@@ -24,8 +24,9 @@ router.get('/', authenticate, async (req, res) => {
         p.contato
       FROM professores p
       JOIN usuarios u ON u.id = p.usuario_id
+      WHERE ${SQL_VISIVEL('u.id', '$1')}
       ORDER BY p.data_cadastro DESC;
-    `);
+    `, [req.user.userId]);
         res.json(rows);
     } catch (err) {
         console.error('Erro ao listar professores:', err);

@@ -2,7 +2,7 @@
 const express = require('express');
 const db      = require('./db');
 const { enviarPush } = require('./push');
-const { authenticate, existeBloqueio, SQL_SEM_BLOQUEIO } = require('./middleware/auth');
+const { authenticate, existeBloqueio, SQL_SEM_BLOQUEIO, SQL_VISIVEL, mundosDiferentes } = require('./middleware/auth');
 const { planoDoUsuario } = require('./assinaturas');
 const router  = express.Router();
 
@@ -81,6 +81,7 @@ router.get('/professores-disponiveis', authenticate, async (req, res) => {
             WHERE u.funcao = 'Professor'
               AND u.procurando = TRUE
               AND ${SQL_SEM_BLOQUEIO('u.id', '$1')}
+              AND ${SQL_VISIVEL('u.id', '$1')}
             ORDER BY u.nome
         `, [req.user.userId]);
         res.json(rows);
@@ -105,6 +106,7 @@ router.get('/alunos-disponiveis', authenticate, async (req, res) => {
             WHERE u.funcao = 'Aluno'
               AND u.procurando = TRUE
               AND ${SQL_SEM_BLOQUEIO('u.id', '$1')}
+              AND ${SQL_VISIVEL('u.id', '$1')}
             ORDER BY u.nome
         `, [req.user.userId]);
         res.json(rows);
@@ -128,7 +130,7 @@ router.post('/', authenticate, async (req, res) => {
     }
     try {
         // O professor_id precisa ser de fato um professor
-        if (await existeBloqueio(professor_id, aluno_id)) {
+        if (await existeBloqueio(professor_id, aluno_id) || await mundosDiferentes(professor_id, aluno_id)) {
             return res.status(403).json({ error: 'Não é possível se conectar com este usuário.' });
         }
 
