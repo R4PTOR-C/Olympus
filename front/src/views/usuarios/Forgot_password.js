@@ -59,9 +59,13 @@ function ForgotPassword() {
                                     <polyline points="20 6 9 17 4 12"/>
                                 </svg>
                             </div>
-                            <p className="auth-success-title">Email enviado!</p>
+                            {/* O backend responde igual exista ou não a conta, então o texto não afirma que enviou */}
+                            <p className="auth-success-title">Verifique seu email</p>
                             <p className="auth-success-text">
-                                Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.
+                                Se houver uma conta com <strong style={{ color: '#E8EDF5', overflowWrap: 'anywhere' }}>{email.trim()}</strong>, você vai receber um link em alguns minutos.
+                            </p>
+                            <p className="auth-success-text" style={{ marginTop: 12 }}>
+                                Não chegou? Confira o spam ou se o email foi digitado certo.
                             </p>
                         </div>
                     ) : (

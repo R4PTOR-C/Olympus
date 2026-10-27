@@ -225,6 +225,22 @@ const S = {
         justifyContent: 'space-between',
         boxSizing: 'border-box',
     },
+    btnBack: {
+        flexShrink: 0,
+        width: 36,
+        height: 36,
+        marginRight: 12,
+        marginLeft: -8,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'transparent',
+        border: 'none',
+        borderRadius: '50%',
+        color: 'rgba(232,237,245,0.7)',
+        cursor: 'pointer',
+        padding: 0,
+    },
     progressOuter: {
         flex: 1,
         height: 3,
@@ -528,6 +544,7 @@ function Onboarding() {
     const [currentStep, setCurrentStep] = useState(0);
     const [selections, setSelections] = useState({});
     const [animKey, setAnimKey] = useState(0);
+    const [voltando, setVoltando] = useState(false); // direção da animação
     const [finishing, setFinishing] = useState(false);
 
     // Account creation (final step)
@@ -569,6 +586,10 @@ function Onboarding() {
                 from { opacity: 0; transform: translateX(40px); }
                 to   { opacity: 1; transform: translateX(0); }
             }
+            @keyframes slideInBack {
+                from { opacity: 0; transform: translateX(-40px); }
+                to   { opacity: 1; transform: translateX(0); }
+            }
             @keyframes slideOut {
                 from { opacity: 1; transform: translateX(0); }
                 to   { opacity: 0; transform: translateX(-40px); }
@@ -588,13 +609,25 @@ function Onboarding() {
     const advance = () => {
         if (!isStepComplete()) return;
         if (isAccountStep) { createAccount(); return; }
+        setVoltando(false);
         setAnimKey(k => k + 1);
         setCurrentStep(s => s + 1);
     };
 
     const skip = () => {
+        setVoltando(false);
         setAnimKey(k => k + 1);
         setCurrentStep(s => s + 1);
+    };
+
+    // Volta uma etapa mantendo o que já foi escolhido; na primeira, volta ao login
+    const back = () => {
+        if (finishing) return;
+        if (currentStep === 0) { navigate('/'); return; }
+        setAccountError(null);
+        setVoltando(true);
+        setAnimKey(k => k + 1);
+        setCurrentStep(s => s - 1);
     };
 
     const createAccount = async () => {
@@ -822,6 +855,17 @@ function Onboarding() {
         <div style={S.page}>
             {/* ── Top bar ── */}
             <div style={S.topBar}>
+                <button
+                    type="button"
+                    style={S.btnBack}
+                    onClick={back}
+                    disabled={finishing}
+                    aria-label={currentStep === 0 ? 'Voltar ao login' : 'Voltar para a etapa anterior'}
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                </button>
                 <div style={S.progressOuter}>
                     <div style={S.progressInner(progress)} />
                 </div>
@@ -833,7 +877,7 @@ function Onboarding() {
                 key={animKey}
                 style={{
                     ...S.content,
-                    animation: 'slideIn 0.35s cubic-bezier(0.4,0,0.2,1) both',
+                    animation: `${voltando ? 'slideInBack' : 'slideIn'} 0.35s cubic-bezier(0.4,0,0.2,1) both`,
                 }}
             >
                 <h1 style={S.stepTitle}>
