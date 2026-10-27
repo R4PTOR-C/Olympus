@@ -4,6 +4,8 @@ import { AuthContext } from '../../AuthContext';
 import CropAvatar from '../components/CropAvatar';
 import LocationPicker from '../components/LocationPicker';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
+import ModalTrocarEmail from '../components/ModalTrocarEmail';
+import CampoEmail from '../components/CampoEmail';
 import ModalApagarConta from '../components/ModalApagarConta';
 import { URL_PRIVACIDADE, URL_TERMOS } from '../../utils/links';
 import BloqueadosLista from '../components/BloqueadosLista';
@@ -74,6 +76,7 @@ const ProfessoresEdit = () => {
     const [loading,       setLoading]       = useState(true);
     const [error,         setError]         = useState(null);
     const [campoEditando,     setCampoEditando]     = useState(null);
+    const [trocandoEmail,     setTrocandoEmail]     = useState(false);
     const [modalLocalizacao,  setModalLocalizacao]  = useState(false);
 
     useEffect(() => {
@@ -239,6 +242,10 @@ const ProfessoresEdit = () => {
                 {titulo}
             </div>
             {campos.map(campo => {
+                // usuario, não dados: o id do professor sobrescreveria o do usuário
+                if (campo.name === 'email') {
+                    return <CampoEmail key="email" usuario={usuario} onEditar={() => setTrocandoEmail(true)} />;
+                }
                 const val = formatarValor(campo, dados);
                 return (
                     <div key={campo.name} className="ue-field" onClick={() => setCampoEditando(campo)}>
@@ -399,6 +406,15 @@ const ProfessoresEdit = () => {
                         valorAtual={dados[campoEditando.name]}
                         onClose={() => setCampoEditando(null)}
                         onSave={handleSalvarCampo}
+                    />
+                )}
+
+                {trocandoEmail && (
+                    <ModalTrocarEmail
+                        usuarioId={id}
+                        emailAtual={usuario.email}
+                        onClose={() => setTrocandoEmail(false)}
+                        onSucesso={(novo) => { setUsuario(prev => ({ ...prev, email_pendente: novo })); setTrocandoEmail(false); }}
                     />
                 )}
 

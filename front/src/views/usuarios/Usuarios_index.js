@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../AuthContext';
 import useSocketRefresh from '../../hooks/useSocketRefresh';
 import PlanosModal from '../professores/PlanosModal';
+import AvisoConfirmarEmail from '../components/AvisoConfirmarEmail';
 import { billingDisponivel, iniciarBilling, ouvirBilling } from '../../services/billing';
 import '../../styles/home.css';
 import '../../styles/AlunosIndex.css';
@@ -225,6 +226,8 @@ const Usuarios_index = () => {
                     {loading ? 'Carregando...' : `${meusAlunos.length} aluno${meusAlunos.length !== 1 ? 's' : ''} vinculado${meusAlunos.length !== 1 ? 's' : ''}`}
                 </p>
             </div>
+
+            <AvisoConfirmarEmail />
 
             {/* ── BANNER PLANO ── */}
             {!loading && (

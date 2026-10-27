@@ -67,7 +67,9 @@ export const AuthProvider = ({ children }) => {
             userId: dados.userId,
             funcao: dados.userFuncao,
             funcao_extra: dados.userFuncaoExtra || null,
-            avatar: dados.userAvatar
+            avatar: dados.userAvatar,
+            email: dados.email,
+            emailVerificado: dados.emailVerificado
         });
         const saved = localStorage.getItem(`funcaoAtiva_${dados.userId}`);
         const funcaoValida = (saved === dados.userFuncao || saved === dados.userFuncaoExtra)
@@ -160,6 +162,11 @@ export const AuthProvider = ({ children }) => {
         setFuncaoAtiva(fa);
         conectarSocket(userData.userId);
         subscribeParaPush();
+        // A resposta do /login não traz o status do email; a sessão traz
+        fetch(`${API}/session`)
+            .then(r => r.json())
+            .then(d => { if (d?.loggedIn) setUser(prev => ({ ...prev, email: d.email, emailVerificado: d.emailVerificado })); })
+            .catch(() => { /* sem conexão: o aviso aparece na próxima abertura */ });
     };
 
     const trocarFuncao = () => {

@@ -47,7 +47,7 @@ router.post('/login', async (req, res) => {
 // já excluídas.
 router.get('/session', authenticate, async (req, res) => {
     const { rows } = await db.query(
-        `SELECT u.nome, u.funcao, u.funcao_extra, u.avatar, g.streak_atual, g.maior_streak
+        `SELECT u.nome, u.email, u.funcao, u.funcao_extra, u.avatar, u.email_verificado, g.streak_atual, g.maior_streak
          FROM usuarios u
          LEFT JOIN gamificacao_usuario g ON g.usuario_id = u.id
          WHERE u.id = $1`,
@@ -64,6 +64,8 @@ router.get('/session', authenticate, async (req, res) => {
         userAvatar: u.avatar,
         streakAtual: u.streak_atual || 0,
         maiorStreak: u.maior_streak || 0,
+        email: u.email,
+        emailVerificado: u.email_verificado !== false,
     });
 });
 

@@ -7,9 +7,8 @@ const pool = new Pool({
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
     port: parseInt(process.env.DB_PORT) || 5432,
-    ssl: {
-        rejectUnauthorized: false
-    }
+    // Render exige SSL; o Postgres local (olympus_dev) não usa
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
 });
 
 // Erro numa conexão ociosa não pode derrubar o processo

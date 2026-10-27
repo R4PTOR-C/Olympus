@@ -7,6 +7,7 @@ import PullToRefresh from './components/PullToRefresh';
 import useSocketRefresh from '../hooks/useSocketRefresh';
 import CorpoMuscular from './components/CorpoMuscular';
 import AguaWidget from './components/AguaWidget';
+import AvisoConfirmarEmail from './components/AvisoConfirmarEmail';
 
 const WEEK = [
     { short: 'Seg', full: 'Segunda-feira', jsDay: 1 },
@@ -208,6 +209,8 @@ function Home() {
                     </>
                 ) : user.loggedIn ? (
                     <>
+                        <AvisoConfirmarEmail />
+
                         {/* ── DESKTOP HERO ── */}
                         <div className="h-desktop-hero">
                             <div className="h-desktop-hero-left">

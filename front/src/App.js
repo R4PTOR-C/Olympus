@@ -10,6 +10,7 @@ import Home from "./views/home";
 import UsuariosEdit from './views/usuarios/Usuarios_edit';
 import ForgotPassword from "./views/usuarios/Forgot_password";
 import ResetPassword from "./views/usuarios/Reset_password";
+import ConfirmarEmail from "./views/usuarios/ConfirmarEmail";
 import ExerciciosNew from "./views/exercicios/Exercicios_new";
 import TreinosForm from './views/treinos/TreinosForm';
 import Navbar from "./views/components/navbar";
@@ -125,6 +126,7 @@ function AppContent() {
                 <Route path="/treinos/:treinoId/exercicios" element={<ProtectedRoute><ExerciciosIndex /></ProtectedRoute>} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/nova_senha/:token" element={<ResetPassword />} />
+                <Route path="/confirmar-email/:token" element={<ConfirmarEmail />} />
                 <Route path="/avaliacoes/:id" element={<ProtectedRoute><AvaliacoesView /></ProtectedRoute>} />
                 <Route path="/avaliacoes/:id/new" element={<ProtectedRoute><AvaliacoesNew /></ProtectedRoute>} />
                 <Route path="/hercules" element={<ProtectedRoute><HerculesChat /></ProtectedRoute>} />

@@ -19,7 +19,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Remove campos sensíveis antes de devolver um usuário ao cliente
 const limparUsuario = (u) => {
     if (!u) return u;
-    const { senha, reset_password_token, reset_password_expires, ...resto } = u;
+    const { senha, reset_password_token, reset_password_expires, email_token, email_token_expires, ...resto } = u;
     return resto;
 };
 
@@ -27,6 +27,37 @@ const normalizarEmail = (email) => (typeof email === 'string' ? email.trim().toL
 
 // O token de reset é guardado só como hash: quem ler o banco não consegue usá-lo
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
+
+// ── Confirmação de email ──
+// Um único token por usuário: confirma o email do cadastro ou, se houver
+// email_pendente, efetiva a troca. Vale 24h; guardado só como hash.
+const EMAIL_TOKEN_VALIDADE_MS = 24 * 3600000;
+const REENVIO_INTERVALO_MS = 60000;
+
+const novoTokenEmail = () => {
+    const token = crypto.randomBytes(32).toString('hex');
+    return { token, hash: hashToken(token), expira: new Date(Date.now() + EMAIL_TOKEN_VALIDADE_MS) };
+};
+
+// Chamado sem await: o Gmail leva segundos e a resposta não depende dele.
+// Falha no envio não desfaz cadastro/troca: o usuário pode pedir reenvio.
+const enviarConfirmacaoEmail = async (to, token, troca) => {
+    try {
+        await enviarEmail({
+            to,
+            subject: troca ? 'Confirme seu novo email' : 'Confirme seu email',
+            text: (troca
+                ? 'Você pediu para usar este email na sua conta Atlanteon. Confirme pelo link abaixo:'
+                : 'Bem-vindo ao Atlanteon! Confirme seu email pelo link abaixo:')
+                + `\n\n${APP_URL}/confirmar-email/${token}\n\nO link vale por 24 horas. Se não foi você, ignore este email.`,
+        });
+    } catch (err) {
+        console.error('Erro ao enviar email de confirmação:', err.message);
+    }
+};
+
+// "fulano@gmail.com" → "f*****@gmail.com"
+const mascararEmail = (email) => email.replace(/^(.)[^@]*/, (_, c) => c + '*****');
 
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
@@ -96,6 +127,82 @@ router.post('/forgot-password', async (req, res) => {
     res.json(resposta);
 });
 
+// POST - confirma o email (cadastro) ou efetiva a troca para o email pendente.
+// Público: quem clica no link pode não estar logado naquele navegador.
+router.post('/confirmar-email/:token', async (req, res) => {
+    const { rows } = await db.query(
+        `SELECT id, email, email_pendente FROM usuarios
+         WHERE email_token = $1 AND email_token_expires > NOW()`,
+        [hashToken(String(req.params.token))]
+    );
+    if (!rows.length) {
+        return res.status(400).json({ error: 'Link inválido ou expirado. Peça um novo no app.' });
+    }
+    const u = rows[0];
+
+    if (!u.email_pendente) {
+        await db.query(
+            'UPDATE usuarios SET email_verificado = true, email_token = NULL, email_token_expires = NULL WHERE id = $1',
+            [u.id]
+        );
+        return res.json({ ok: true, email: u.email });
+    }
+
+    try {
+        await db.query(
+            `UPDATE usuarios SET email = email_pendente, email_pendente = NULL, email_verificado = true,
+                    email_token = NULL, email_token_expires = NULL
+             WHERE id = $1`,
+            [u.id]
+        );
+    } catch (err) {
+        // Alguém se cadastrou com esse email enquanto a troca esperava confirmação
+        if (err.code === '23505') {
+            await db.query('UPDATE usuarios SET email_pendente = NULL, email_token = NULL, email_token_expires = NULL WHERE id = $1', [u.id]);
+            return res.status(400).json({ error: 'Esse email passou a ser usado por outra conta. A troca foi cancelada.' });
+        }
+        throw err;
+    }
+
+    // Avisa o email antigo: se não foi o dono, ele fica sabendo na hora
+    try {
+        await enviarEmail({
+            to: u.email,
+            subject: 'O email da sua conta foi alterado',
+            text: `O email da sua conta Atlanteon foi alterado para ${mascararEmail(u.email_pendente)}.\n\nSe não foi você, responda este email para recuperarmos sua conta.`,
+        });
+    } catch (err) {
+        console.error('Erro ao avisar email antigo:', err.message);
+    }
+    res.json({ ok: true, email: u.email_pendente });
+});
+
+// POST - reenvia o link de confirmação (do cadastro ou da troca pendente)
+router.post('/:id/reenviar-confirmacao', authenticate, requireSelf('id'), async (req, res) => {
+    const { rows } = await db.query(
+        'SELECT email, email_pendente, email_verificado, email_token_expires FROM usuarios WHERE id = $1',
+        [req.params.id]
+    );
+    const u = rows[0];
+    if (!u) return res.status(404).json({ error: 'Usuário não encontrado' });
+    if (u.email_verificado && !u.email_pendente) {
+        return res.status(400).json({ error: 'Seu email já está confirmado.' });
+    }
+    // O último token foi criado em (expira - validade): segura reenvios seguidos
+    const criadoEm = u.email_token_expires ? new Date(u.email_token_expires).getTime() - EMAIL_TOKEN_VALIDADE_MS : 0;
+    if (Date.now() - criadoEm < REENVIO_INTERVALO_MS) {
+        return res.status(429).json({ error: 'Aguarde um minuto para pedir outro email.' });
+    }
+
+    const confirmacao = novoTokenEmail();
+    await db.query(
+        'UPDATE usuarios SET email_token = $1, email_token_expires = $2 WHERE id = $3',
+        [confirmacao.hash, confirmacao.expira, req.params.id]
+    );
+    enviarConfirmacaoEmail(u.email_pendente || u.email, confirmacao.token, Boolean(u.email_pendente));
+    res.json({ ok: true, email: u.email_pendente || u.email });
+});
+
 // POST - reset password
 router.post('/reset-password/:token', async (req, res) => {
     const { token } = req.params;
@@ -112,7 +219,8 @@ router.post('/reset-password/:token', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(senha, 10);
     await db.query(
-        'UPDATE usuarios SET senha = $1, reset_password_token = NULL, reset_password_expires = NULL WHERE id = $2',
+        // Abrir o link do email prova que o email é dele
+        'UPDATE usuarios SET senha = $1, reset_password_token = NULL, reset_password_expires = NULL, email_verificado = true WHERE id = $2',
         [hashedPassword, rows[0].id]
     );
 
@@ -157,15 +265,19 @@ router.post('/', upload.single('avatar'), async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(senha, 10);
+    const confirmacao = novoTokenEmail();
 
     try {
         const resultado = await db.query(
             `INSERT INTO usuarios
-            (nome, email, genero, senha, funcao, avatar, data_nascimento, telefone, altura, peso, objetivo)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+            (nome, email, genero, senha, funcao, avatar, data_nascimento, telefone, altura, peso, objetivo,
+             email_verificado, email_token, email_token_expires)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,false,$12,$13)
             RETURNING *`,
-            [nome.trim(), normalizedEmail, genero, hashedPassword, funcaoFinal, avatar, data_nascimento || null, telefone || null, altura || null, peso || null, objetivo || null]
+            [nome.trim(), normalizedEmail, genero, hashedPassword, funcaoFinal, avatar, data_nascimento || null, telefone || null, altura || null, peso || null, objetivo || null,
+             confirmacao.hash, confirmacao.expira]
         );
+        enviarConfirmacaoEmail(normalizedEmail, confirmacao.token, false);
         res.status(201).json(limparUsuario(resultado.rows[0]));
     } catch (err) {
         // Corrida entre dois cadastros com o mesmo email
@@ -236,14 +348,30 @@ router.put('/:id', authenticate, requireSelf('id'), upload.single('avatar'), asy
     const values = [];
 
     // Lista de campos que podem ser atualizados
-    const permitidos = ['nome', 'email', 'genero', 'idade', 'data_nascimento', 'telefone', 'altura', 'peso', 'objetivo', 'nivel_experiencia', 'dias_disponiveis', 'tempo_sessao', 'local_treino', 'onboarding_concluido'];
+    // Email não entra aqui: a troca só vale depois de confirmada (ver abaixo)
+    const permitidos = ['nome', 'genero', 'idade', 'data_nascimento', 'telefone', 'altura', 'peso', 'objetivo', 'nivel_experiencia', 'dias_disponiveis', 'tempo_sessao', 'local_treino', 'onboarding_concluido'];
 
+    const atual = await db.query('SELECT email, senha FROM usuarios WHERE id = $1', [id]);
+    if (!atual.rows.length) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+    let novoEmail = null;
     if (req.body.email !== undefined) {
         const email = normalizarEmail(req.body.email);
         if (!EMAIL_RE.test(email)) return res.status(400).json({ error: 'Email inválido.' });
-        const dono = await db.query('SELECT id FROM usuarios WHERE email = $1 AND id <> $2', [email, id]);
-        if (dono.rows.length) return res.status(400).json({ error: 'Email já cadastrado.' });
-        req.body.email = email;
+        if (email !== atual.rows[0].email) {
+            const dono = await db.query('SELECT id FROM usuarios WHERE email = $1 AND id <> $2', [email, id]);
+            if (dono.rows.length) return res.status(400).json({ error: 'Email já cadastrado.' });
+            novoEmail = email;
+        }
+    }
+
+    // Trocar email ou senha exige a senha atual: protege quem deixa o celular desbloqueado
+    if (novoEmail || req.body.senha) {
+        const senhaAtual = typeof req.body.senha_atual === 'string' ? req.body.senha_atual : '';
+        if (!senhaAtual) return res.status(400).json({ error: 'Informe sua senha atual.' });
+        if (!(await bcrypt.compare(senhaAtual, atual.rows[0].senha))) {
+            return res.status(400).json({ error: 'Senha atual incorreta.' });
+        }
     }
 
     // Monta a query apenas com os campos enviados no body
@@ -269,6 +397,18 @@ router.put('/:id', authenticate, requireSelf('id'), upload.single('avatar'), asy
         campos.push(`avatar = $${values.length}`);
     }
 
+    // Novo email fica pendente até o clique no link enviado para ele
+    let confirmacao = null;
+    if (novoEmail) {
+        confirmacao = novoTokenEmail();
+        values.push(novoEmail, confirmacao.hash, confirmacao.expira);
+        campos.push(
+            `email_pendente = $${values.length - 2}`,
+            `email_token = $${values.length - 1}`,
+            `email_token_expires = $${values.length}`
+        );
+    }
+
     if (campos.length === 0) {
         return res.status(400).json({ error: 'Nenhum campo válido enviado para atualização' });
     }
@@ -289,6 +429,7 @@ router.put('/:id', authenticate, requireSelf('id'), upload.single('avatar'), asy
     }
 
     if (anterior) await apagarAvatarCloudinary(anterior.rows[0]?.avatar);
+    if (confirmacao) enviarConfirmacaoEmail(novoEmail, confirmacao.token, true);
 
     res.json({ message: 'Usuário atualizado com sucesso', usuario: limparUsuario(resultado.rows[0]) });
 });

@@ -98,6 +98,7 @@ app.use("/login", limitarAuth);
 app.use("/usuarios/forgot-password", limitarAuth);
 app.use("/usuarios/reset-password", limitarAuth);
 app.post("/usuarios", limitarAuth);
+app.use("/usuarios/confirmar-email", limitarAuth);
 app.use("/hercules/chat", limitarHercules);
 
 // ------------------- ROTAS REST -------------------

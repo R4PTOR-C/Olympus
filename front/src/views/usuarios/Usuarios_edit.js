@@ -4,6 +4,8 @@ import { AuthContext } from '../../AuthContext';
 import CropAvatar from '../components/CropAvatar';
 import ModalCarregando from '../components/ModalCarregando';
 import ModalEdicaoCampo from '../components/ModalEdicaoCampo';
+import ModalTrocarEmail from '../components/ModalTrocarEmail';
+import CampoEmail from '../components/CampoEmail';
 import ModalApagarConta from '../components/ModalApagarConta';
 import { URL_PRIVACIDADE, URL_TERMOS } from '../../utils/links';
 import BloqueadosLista from '../components/BloqueadosLista';
@@ -62,6 +64,7 @@ const UsuariosEdit = () => {
     const [loading,           setLoading]           = useState(true);
     const [error,             setError]             = useState(null);
     const [campoEditando,     setCampoEditando]     = useState(null);
+    const [trocandoEmail,     setTrocandoEmail]     = useState(false);
     const [funcaoExtraLoading,   setFuncaoExtraLoading]   = useState(false);
     const [showApagarConta,      setShowApagarConta]      = useState(false);
     const [showConfirmarRemover, setShowConfirmarRemover] = useState(false);
@@ -240,6 +243,9 @@ const UsuariosEdit = () => {
                             Dados Pessoais
                         </div>
                         {dadosPessoais.map(campo => {
+                            if (campo.name === 'email') {
+                                return <CampoEmail key="email" usuario={usuario} onEditar={() => setTrocandoEmail(true)} />;
+                            }
                             const val = formatarValor(campo, usuario);
                             return (
                                 <div
@@ -368,6 +374,15 @@ const UsuariosEdit = () => {
                         valorAtual={usuario[campoEditando.name]}
                         onClose={() => setCampoEditando(null)}
                         onSave={handleSalvarCampo}
+                    />
+                )}
+
+                {trocandoEmail && (
+                    <ModalTrocarEmail
+                        usuarioId={id}
+                        emailAtual={usuario.email}
+                        onClose={() => setTrocandoEmail(false)}
+                        onSucesso={(novo) => { setUsuario(prev => ({ ...prev, email_pendente: novo })); setTrocandoEmail(false); }}
                     />
                 )}
 
