@@ -129,7 +129,7 @@ export function iniciarBilling({ usuarioId }) {
 // ── Ações ────────────────────────────────────────────────────────────────────
 
 /**
- * Preço formatado pela loja (ex: "R$ 29,90"), ou null se ainda não carregou.
+ * Preço formatado pela loja (ex: "R$ 19,90"), ou null se ainda não carregou.
  * Usa a última fase de cobrança — se o plano tiver teste grátis, a primeira
  * fase é R$ 0,00 e não é o que queremos mostrar no card.
  */

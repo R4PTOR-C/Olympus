@@ -30,7 +30,7 @@ const PLANOS = [
     {
         key: 'pro',
         nome: 'Pro',
-        preco: 'R$ 29,90',
+        preco: 'R$ 19,90',
         periodo: '/mês',
         destaque: true,
         limite: '50 alunos',
@@ -39,7 +39,7 @@ const PLANOS = [
     {
         key: 'elite',
         nome: 'Elite',
-        preco: 'R$ 79,90',
+        preco: 'R$ 59,90',
         periodo: '/mês',
         destaque: false,
         limite: 'Ilimitado',

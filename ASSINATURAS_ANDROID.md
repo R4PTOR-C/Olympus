@@ -49,8 +49,8 @@ Monetizar → Produtos → Assinaturas. Criar duas, com **exatamente** estes IDs
 
 | ID da assinatura | Plano | Preço |
 |---|---|---|
-| `olympus_pro_mensal` | pro | R$ 29,90 / mês |
-| `olympus_elite_mensal` | elite | R$ 79,90 / mês |
+| `olympus_pro_mensal` | pro | R$ 19,90 / mês |
+| `olympus_elite_mensal` | elite | R$ 59,90 / mês |
 
 Cada uma precisa de um **plano base** mensal com renovação automática, ativado.
 
